@@ -1,0 +1,92 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "PhotoStorage API",
+        "description": "Документация для PhotoStorage",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000",
+            "description": "Локальный сервер"
+        }
+    ],
+    "paths": {
+        "/photos": {
+            "post": {
+                "tags": [
+                    "Photos"
+                ],
+                "summary": "Загрузить новое фото",
+                "operationId": "010d106a89fc04c38d02c3ecd3dc375b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "properties": {
+                                    "userId": {
+                                        "type": "integer",
+                                        "example": 123
+                                    },
+                                    "file": {
+                                        "description": "Файл изображения",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Фото успешно загружено",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "photo_id": {
+                                            "type": "string",
+                                            "example": "uuid"
+                                        },
+                                        "upload_url": {
+                                            "type": "string",
+                                            "example": "http://minio:9000/photo/..."
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "uploaded"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "csrfToken": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "csrfToken": {
+                "type": "apiKey",
+                "name": "X-CSRF-TOKEN",
+                "in": "header"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Photos",
+            "description": "Photos"
+        }
+    ]
+}

@@ -1,0 +1,157 @@
+services:
+
+  # ============================================================
+  # AUTH SERVICE
+  # ============================================================
+  authservice:
+    build: ./backend/authservice
+    container_name: auth-service
+    restart: unless-stopped
+    env_file:
+      - ./backend/authservice/.env
+    depends_on:
+      - postgres_auth
+      - rabbitmq
+    networks:
+      - appnet
+    ports:
+      - "8100:80"
+    volumes:
+      - ./backend/authservice:/var/www
+      - ./backend/authservice/storage:/var/www/storage
+      - ./backend/authservice/bootstrap/cache:/var/www/bootstrap/cache
+    working_dir: /var/www
+
+  postgres_auth:
+    image: postgres:16
+    container_name: pg-auth
+    environment:
+      POSTGRES_DB: auth
+      POSTGRES_USER: user1
+      POSTGRES_PASSWORD: pass1
+    ports:
+      - "5433:5432"
+    networks:
+      - appnet
+    volumes:
+      - pg_auth_data:/var/lib/postgresql/data
+
+  # ============================================================
+  # PHOTO SERVICE
+  # ============================================================
+# ============================================================
+# PHOTO SERVICE (с воркером внутри)
+# ============================================================
+  photoservice:
+    build: ./backend/photoservice
+    container_name: photo-service
+    restart: unless-stopped
+    env_file:
+      - ./backend/photoservice/.env
+    depends_on:
+      - postgres_photo
+      - rabbitmq
+      - minio
+    networks:
+      - appnet
+    ports:
+      - "8200:80"
+    volumes:
+      - ./backend/photoservice:/var/www
+      - ./backend/photoservice/storage:/var/www/storage
+      - ./backend/photoservice/bootstrap/cache:/var/www/bootstrap/cache
+    working_dir: /var/www
+    command: >
+      sh -c "php artisan serve --host=0.0.0.0 --port=80 & 
+            php artisan queue:work rabbitmq --queue=auth --tries=1 --sleep=3 --timeout=60 -vvv"
+
+
+
+  postgres_photo:
+    image: postgres:16
+    container_name: pg-photo
+    environment:
+      POSTGRES_DB: photo
+      POSTGRES_USER: user2
+      POSTGRES_PASSWORD: pass2
+    ports:
+      - "5434:5432"
+    networks:
+      - appnet
+    volumes:
+      - pg_photo_data:/var/lib/postgresql/data
+
+  # ============================================================
+  # COMPRESSION SERVICE
+  # ============================================================
+  compressionservice:
+    build: ./backend/compressionservice
+    container_name: compression-service
+    restart: unless-stopped
+    env_file:
+      - ./backend/compressionservice/.env
+    depends_on:
+      - rabbitmq
+    networks:
+      - appnet
+    ports:
+      - "8300:80"
+    volumes:
+      - ./backend/compressionservice:/var/www
+    working_dir: /var/www
+
+  # ============================================================
+  # FRONTEND
+  # ============================================================
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    networks:
+      - appnet
+    depends_on:
+      - authservice
+      - photoservice
+
+  # ============================================================
+  # RABBITMQ
+  # ============================================================
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: lzpfccqe
+      RABBITMQ_DEFAULT_PASS: rXLW2NNJU9wzWdihkFeLeIXnv1IJDynN
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - appnet
+
+  # ============================================================
+  # MINIO
+  # ============================================================
+  minio:
+    image: minio/minio
+    container_name: minio
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    networks:
+      - appnet
+
+networks:
+  appnet:
+
+volumes:
+  pg_auth_data:
+  pg_photo_data:
+  minio_data:
