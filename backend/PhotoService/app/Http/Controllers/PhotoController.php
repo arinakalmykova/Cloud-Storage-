@@ -29,7 +29,6 @@ class PhotoController extends Controller
         return response()->json([
             'photo_id'     => $photo->getId(),
             'upload_url'   => $photo->getPresignedUrl(),
-            'preview_url'  => $photo->getUrl(),
             'expires_at'   => now()->addMinutes(15),
             'status'       => $photo->getStatus()->value(),
         ], 201);
@@ -47,10 +46,30 @@ class PhotoController extends Controller
             'id'        => $photo->getId(),
             'status'    => $photo->getStatus()->value(),
             'url'       => $photo->getUrl(),
-            'size'      => $photo->getOriginalSize(),
+            'size'      => $photo->getSize(),
             'file_name' => $photo->getFileName(),
         ])->header('Cache-Control', 'no-cache, no-store, must-revalidate')
         ->header('Pragma', 'no-cache')
         ->header('Expires', '0');
     }
+
+    public function markUploaded(Request $request)
+    {
+        $request->validate([
+            'photo_id' => 'required|string',
+            'size' => 'sometimes|integer',
+            'url' => 'required|string',
+        ]);
+
+        $photo = $this->photoService->getById($request->photo_id);
+
+        if (!$photo || !$photo->isOwnedBy($request->user()->getId())) {
+            return response()->json(['error' => 'Not found'], 404);
+        }
+
+        $photo->markUploaded($request->url, $request->size ?? null);
+        $this->photoService->save($photo);
+        return response()->json(['status' => $photo->getStatus()->value()]);
+    }
+
 }

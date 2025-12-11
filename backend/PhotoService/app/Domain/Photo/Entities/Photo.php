@@ -14,7 +14,7 @@ class Photo
     private ?string $key = null;      
     private ?string $url = null;
     private ?string $description = null;
-    private ?string $targetFormat = null; 
+    private ?string $format = null; 
     private ?string $presignedUrl = null; 
 
     private PhotoStatus $status;
@@ -29,7 +29,7 @@ class Photo
 
     public function markPendingUpload(string $key, string $presignedUrl): void
     {
-        $this->key = $key;                    // например: uploads/uuid/original
+        $this->key = $key;                    
         $this->presignedUrl = $presignedUrl;
         $this->status = PhotoStatus::pendingUpload();
     }
@@ -41,11 +41,6 @@ class Photo
             $this->size = $size;
         }
         $this->status = PhotoStatus::uploaded();
-    }
-
-    public function markCompressing(): void
-    {
-        $this->status = PhotoStatus::compressing();
     }
 
     public function markCompressed(string $newUrl, ?int $newSize = null): void
@@ -62,20 +57,14 @@ class Photo
         $this->status = PhotoStatus::failed();
     }
 
-    // ─────── ГЕТТЕРЫ — ВСЁ ЧЕРЕЗ ОДНУ ССЫЛКУ ───────
     public function getId(): string { return $this->id; }
     public function getUserId(): string { return $this->userId; }
     public function getFileName(): string { return $this->fileName->value(); }
     public function getStatus(): PhotoStatus { return $this->status; }
-    public function getOriginalSize(): ?int { return $this->size; }
+    public function getSize(): ?int { return $this->size; }
     public function getKey(): ?string { return $this->key; }               
     public function getPresignedUrl(): ?string { return $this->presignedUrl; }
-
-    // ← ВСЕГДА ОДНА ССЫЛКА — и для оригинала, и для сжатого
     public function getUrl(): ?string { return $this->url; }
-
-    // ← Удобный алиас, чтобы везде использовать один метод
-    public function getPublicUrl(): ?string { return $this->url; }
 
     public function isOwnedBy(string $userId): bool
     {

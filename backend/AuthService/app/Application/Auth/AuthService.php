@@ -6,7 +6,6 @@ use App\Domain\Auth\Repositories\UserRepositoryInterface;
 use App\Domain\Auth\Entities\User;
 use App\Application\Auth\LoginResult;
 use Illuminate\Support\Str;
-use App\Jobs\SendUserCreatedToQueue;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use App\Application\DTOs\RegisterUserDTO;

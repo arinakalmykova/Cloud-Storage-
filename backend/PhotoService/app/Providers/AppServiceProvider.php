@@ -2,20 +2,23 @@
 namespace App\Providers; 
 use Illuminate\Support\ServiceProvider; 
 use App\Events\Publisher\PhotoEventPublisherInterface; 
-use App\Infrastructure\Photo\Events\PhotoEventPublisher; // конкретная реализация 
-use App\Domain\Photo\Repositories\PhotoRepositoryInterface; 
-use App\Infrastructure\Photo\Repositories\EloquentPhotoRepository; // конкретная реализация 
+use App\Infrastructure\Photo\Events\PhotoEventPublisher;
+use App\Domain\Photo\Repositories\PhotoRepositoryInterface;
+use App\Domain\Photo\Repositories\UserRepositoryInterface; 
+use App\Infrastructure\Photo\Repositories\EloquentPhotoRepository;
+use App\Infrastructure\Photo\Repositories\EloquentUserRepository; 
 use App\Domain\Photo\Services\PhotoManagementServiceInterface; 
 use App\Infrastructure\Photo\Services\MinioPhotoManagement;
 
 class AppServiceProvider extends ServiceProvider 
-{ /** * Register any application services. */ 
+{ 
     
     public function register(): void 
     { 
         $this->app->bind(PhotoEventPublisherInterface::class, PhotoEventPublisher::class); 
         $this->app->bind(PhotoRepositoryInterface::class, EloquentPhotoRepository::class); 
         $this->app->bind(PhotoManagementServiceInterface::class, MinioPhotoManagement::class); 
+        $this->app->bind(UserRepositoryInterface::class, EloquentUserRepository::class);  
     } 
         
         

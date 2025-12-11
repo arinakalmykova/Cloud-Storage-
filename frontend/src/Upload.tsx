@@ -11,10 +11,10 @@ export default function Upload() {
   const [status, setStatus] = useState<string>("");
   const [finalUrl, setFinalUrl] = useState<string | null>(null);
   const [photoId, setPhotoId] = useState<string | null>(null);
-  const animationInterval = useRef<number | null>(null); // заменили NodeJS.Timeout на number
+  const animationInterval = useRef<number | null>(null);
 
   const token = localStorage.getItem("token");
-  const userId = localStorage.getItem("user_id"); // если есть — добавь при логине
+  const userId = localStorage.getItem("user_id"); 
   const echoInitialized = useRef<boolean>(false);
 
   useEffect(() => {
@@ -54,8 +54,9 @@ export default function Upload() {
     setPhotoId(null);
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/photos/upload-url", {
+      const res = await fetch("http://localhost/api/photos/upload-url", {
         method: "POST",
+        mode: "cors",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -71,11 +72,13 @@ export default function Upload() {
       const { photo_id, upload_url }: { photo_id: string; upload_url: string } = await res.json();
 
       setPhotoId(photo_id);
+      const currentPhotoId = photo_id;
       setStatus("Загружаем в облако...");
 
       const uploadRes = await fetch(upload_url, {
         method: "PUT",
         body: file,
+        mode: "cors",
         headers: {
           "Content-Type": file.type || "image/jpeg",
         },
@@ -89,7 +92,24 @@ export default function Upload() {
       setStatus("Сжимаем в WebP... (обычно 5–15 сек)");
       startProcessingAnimation();
       setTimeout(() => fallbackCheckStatus(photo_id), 10000);
+      
 
+      await fetch("http://localhost/api/photos/mark-uploaded", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          photo_id: currentPhotoId,
+          url: upload_url.split("?")[0], 
+          size: file.size,
+        }),
+      });
+
+      setStatus("Фото загружено! Сжимаем в WebP...");
+      startProcessingAnimation();
+      
     } catch (err: any) {
       setStatus("Ошибка: " + err.message);
       setUploading(false);
@@ -113,7 +133,7 @@ export default function Upload() {
     if (finalUrl) return;
 
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/photos/${id}`, {
+      const res = await fetch(`http://localhost/api/photos/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data: { status: string; url?: string } = await res.json();

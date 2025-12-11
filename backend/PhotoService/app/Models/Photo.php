@@ -11,9 +11,12 @@ class Photo extends Model
 
     protected $fillable = [
         'id',
-        'user_id',
+        'filename',
+        'description',
+        'format',
+        'size',
         'url',
-        'compressed_url',
+        'user_id',
         'status'
     ];
 }

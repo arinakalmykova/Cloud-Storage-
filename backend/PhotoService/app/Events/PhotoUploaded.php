@@ -1,18 +1,19 @@
 <?php
 namespace App\Events;
 
-use App\Domain\Photo\Entities\Photo;
+use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Queue\SerializesModels;
 
-class PhotoUploaded 
+class PhotoUploaded
 {
-    public Photo $photo;
-    public string $uploadUrl;
-    public \DateTimeImmutable $occurredAt;
-
-    public function __construct(Photo $photo,string $uploadUrl)
+    use Dispatchable, SerializesModels;
+    
+    public string $photoId;
+    public string $url;
+    
+    public function __construct(string $photoId, string $url)
     {
-        $this->photo=$photo;
-        $this->uploadUrl=$uploadUrl;
-        $this->occurredAt= new \DateTimeImmutable();
+        $this->photoId = $photoId;
+        $this->url = $url;
     }
 }

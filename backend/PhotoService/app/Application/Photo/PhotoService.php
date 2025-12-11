@@ -8,6 +8,7 @@ use App\Domain\Photo\Services\PhotoManagementServiceInterface;
 use Illuminate\Support\Str;
 use App\Domain\Photo\ValueObjects\PhotoStatus;
 use App\Application\DTOs\CreatePhotoDTO;
+use App\Events\PhotoUploaded;
 
 class PhotoService
 {
@@ -16,39 +17,30 @@ class PhotoService
         private PhotoManagementServiceInterface $minioService
     ) {}
 
-    /**
-     * Создаёт запись о фото и возвращает presigned URL для прямой загрузки в MinIO
-     */
     public function createUploadIntent(CreatePhotoDTO $dto): Photo {
-        // 1. Генерируем UUID для фото
-        $photoId = Str::uuid()->toString();
-
-        // 2. Создаём доменную сущность (пока без presigned URL)
         $photo = new Photo(
-            id: $photoId,
+            id: Str::uuid()->toString(),
             userId: $dto->userId,
             fileName: $dto->fileName,
         );
 
-        // 3. Используем твой уже готовый и рабочий метод из MinioPhotoManagement
         $presignedUrl = $this->minioService->getUploadUrl($photo);
-
-        // 4. Сохраняем ключ и временный presigned URL в сущность
         $originalKey = "uploads/{$photo->getId()}/original";
-
-       $photo->markPendingUpload($originalKey, $presignedUrl);
-
-        // 5. Сохраняем в БД
+        $photo->markPendingUpload($originalKey, $presignedUrl);
         $this->repository->save($photo);
 
-        // 6. Возвращаем готовый объект
+        event(new PhotoUploaded($photo->getId(), $photo->getPresignedUrl()));
+
         return $photo;
     }
-
-    // App\Application\Photo\PhotoService.php
 
     public function getById(string $id): ?Photo
     {
         return $this->repository->findById($id);
+    }
+    
+     public function save(Photo $photo): void
+    {
+        $this->repository->save($photo);
     }
 }

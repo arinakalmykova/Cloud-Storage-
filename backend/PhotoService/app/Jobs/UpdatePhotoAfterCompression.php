@@ -2,26 +2,35 @@
 namespace App\Jobs;
 
 use Illuminate\Contracts\Queue\ShouldQueue;
-use App\Models\Photo;
+use App\Application\Photo\PhotoService;
 
 class UpdatePhotoAfterCompression implements ShouldQueue
 {
     public $connection = 'rabbitmq';
     public $queue = 'compression';
 
-    public function __construct(public array $payload) {}
+    public function __construct(
+        public array $payload,
+        private PhotoService $photoService
+    ) {}
 
     public function handle()
     {
-        $photo = Photo::find($this->payload['photo_id']);
+        $photoId = $this->payload['photo_id'];
+        $compressedSize = $this->payload['compressed_size'] ?? null;
+        $compressedUrl = $this->payload['compressed_url'] ?? null;
+
+        $photo = $this->photoService->getById($photoId);
 
         if (!$photo) {
-            \Log::error('Photo not found in DB');
+            \Log::error('Photo not found in DB', ['photo_id' => $photoId]);
             return;
         }
 
-        $photo->url = $this->payload['compressed_url'];
-        $photo->status = 'compressed';
-        $photo->save();
+        $photo->markCompressed($compressedUrl, $compressedSize);
+        $this->photoService->save($photo);
+
+        // Отправляем событие
+        event(new \App\Events\PhotoCompressed($photoId, $compressedUrl));
     }
 }

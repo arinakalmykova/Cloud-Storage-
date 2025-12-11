@@ -2,6 +2,7 @@
 namespace App\Jobs;
 
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Facades\Queue;
 
 class SendCompressedResultToPhoto implements ShouldQueue
 {
@@ -10,14 +11,15 @@ class SendCompressedResultToPhoto implements ShouldQueue
 
     public function __construct(
         public string $photoId,
-        public string $compressedUrl
+        public string $compressedUrl,
+        public int $size
     ) {}
 
     public function handle()
     {
         return [
             'photo_id' => $this->photoId,
-            'compressed_url' => $this->compressedUrl
+            'size' => $this->size,
         ];
     }
 }

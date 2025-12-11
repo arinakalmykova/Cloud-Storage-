@@ -16,6 +16,7 @@ class User extends Authenticatable
     protected $table = 'users';
 
     protected $fillable = [
+        'id', 
         'name',
         'email',
         'password',
@@ -28,17 +29,5 @@ class User extends Authenticatable
 
     protected $keyType = 'string';
     public $incrementing = false;
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($model) {
-            if (!$model->getKey()) {
-                $model->id = (string) \Illuminate\Support\Str::uuid();
-            }
-        });
-    }
-
     
 }

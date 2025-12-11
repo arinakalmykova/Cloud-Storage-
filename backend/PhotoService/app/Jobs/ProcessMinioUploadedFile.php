@@ -1,20 +1,21 @@
 <?php
 namespace App\Jobs;
 
+use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
 
 class ProcessMinioUploadedFile implements ShouldQueue
 {
-    public $connection = 'rabbitmq';
-    public $queue = 'photo';
 
-    public function __construct(public array $event) {}
+    use Dispatchable,Queueable, InteractsWithQueue, SerializesModels;
 
-    public function handle()
+
+    public function __construct(public array $payload) {}
+
+    public function handle(): void
     {
-        return [
-            'photo_id' => $this->event['photo_id'],
-            'url' => $this->event['photo_url']
-        ];
     }
 }

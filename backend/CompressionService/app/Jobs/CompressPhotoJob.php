@@ -3,7 +3,6 @@ namespace App\Jobs;
 
 use Illuminate\Contracts\Queue\ShouldQueue;
 use App\Services\CompressionService;
-use App\Jobs\SendCompressedResultToPhoto;
 
 class CompressPhotoJob implements ShouldQueue
 {
@@ -14,14 +13,10 @@ class CompressPhotoJob implements ShouldQueue
 
     public function handle(CompressionService $service)
     {
-        $compressedUrl = $service->compress(
-            $this->payload['photo_id'],
-            $this->payload['url']
-        );
-
-        SendCompressedResultToPhoto::dispatch(
-            $this->payload['photo_id'],
-            $compressedUrl
-        )->onQueue('compression')->onConnection('rabbitmq');
+       $result = $service->compress(['photo_id' => $this->payload['photo_id'], 'source_url' => $this->payload['url']]);
+       dispatch(new SendCompressedResultToPhoto(
+        photoId: $result['photo_id'],
+        size: $result['size']
+       ))->onQueue('compression')->onConnection('rabbitmq');
     }
 }

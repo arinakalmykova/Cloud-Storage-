@@ -23,9 +23,6 @@ COPY . .
 # Устанавливаем зависимости Laravel
 RUN composer install --no-interaction --optimize-autoloader
 
-# Копируем nginx конфиг в контейнер
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
 # Открываем порт 80
 EXPOSE 80
 

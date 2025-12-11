@@ -1,0 +1,112 @@
+2025/12/10 20:01:32 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/10 20:01:34 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/10 20:01:35 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/10 20:01:36 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/10 20:01:37 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/10 20:01:39 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/10 20:01:43 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/10 20:01:49 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/10 20:02:00 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/10 20:02:24 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/10 20:03:13 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/10 20:04:08 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/10 20:05:03 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/10 20:05:59 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/10 20:06:55 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/10 20:07:50 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/10 20:08:47 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/10 20:09:43 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/10 20:10:38 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/10 20:11:34 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/10 23:12:32 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 02:54:53 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 02:55:49 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 02:56:45 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 02:57:41 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 02:58:37 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 02:59:33 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 03:00:29 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 03:01:25 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 03:02:21 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 03:03:17 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 03:04:13 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 03:05:09 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 03:06:04 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 09:50:22 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 11:45:04 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 11:46:00 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 11:46:56 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 11:47:52 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 11:48:48 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 11:49:44 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 11:50:40 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 11:51:35 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 11:52:31 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 11:53:27 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 11:54:23 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 11:55:18 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 11:56:15 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 11:57:11 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 11:58:06 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 11:59:03 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 11:59:58 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 12:00:54 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 12:01:49 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 12:02:45 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 12:03:41 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 12:04:36 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 12:05:33 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 12:06:29 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 12:07:25 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 12:08:21 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 12:09:17 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 12:10:13 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 12:11:09 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 12:12:05 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 12:13:01 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 12:13:57 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 12:14:53 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 12:15:48 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 12:16:44 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 12:17:40 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 12:18:36 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 12:19:32 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 12:20:27 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 12:21:23 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 12:22:19 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 12:23:15 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 12:24:11 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 12:25:07 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 12:26:00 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 12:26:56 [emerg] 1#1: "add_header" directive is not allowed here in /etc/nginx/conf.d/api.conf:18
+2025/12/11 12:27:52 [emerg] 1#1: host not found in upstream "frontend" in /etc/nginx/conf.d/app.conf:18
+2025/12/11 12:28:53 [emerg] 1#1: host not found in upstream "frontend" in /etc/nginx/conf.d/app.conf:18
+2025/12/11 12:29:53 [emerg] 1#1: host not found in upstream "frontend" in /etc/nginx/conf.d/app.conf:18
+2025/12/11 12:30:54 [emerg] 1#1: host not found in upstream "frontend" in /etc/nginx/conf.d/app.conf:18
+2025/12/11 12:31:55 [emerg] 1#1: host not found in upstream "frontend" in /etc/nginx/conf.d/app.conf:18
+2025/12/11 12:32:56 [emerg] 1#1: host not found in upstream "frontend" in /etc/nginx/conf.d/app.conf:18
+2025/12/11 12:33:55 [emerg] 1#1: host not found in upstream "frontend" in /etc/nginx/conf.d/app.conf:18
+2025/12/11 12:34:56 [emerg] 1#1: host not found in upstream "frontend" in /etc/nginx/conf.d/app.conf:18
+2025/12/11 12:35:57 [emerg] 1#1: host not found in upstream "frontend" in /etc/nginx/conf.d/app.conf:18
+2025/12/11 12:36:58 [emerg] 1#1: host not found in upstream "frontend" in /etc/nginx/conf.d/app.conf:18
+2025/12/11 12:37:59 [emerg] 1#1: host not found in upstream "frontend" in /etc/nginx/conf.d/app.conf:18
+2025/12/11 12:38:58 [emerg] 1#1: host not found in upstream "frontend" in /etc/nginx/conf.d/app.conf:18
+2025/12/11 12:39:59 [emerg] 1#1: host not found in upstream "frontend" in /etc/nginx/conf.d/app.conf:18
+2025/12/11 12:40:59 [emerg] 1#1: host not found in upstream "frontend" in /etc/nginx/conf.d/app.conf:18
+2025/12/11 12:42:01 [emerg] 1#1: host not found in upstream "frontend" in /etc/nginx/conf.d/app.conf:18
+2025/12/11 12:43:01 [emerg] 1#1: host not found in upstream "frontend" in /etc/nginx/conf.d/app.conf:18
+2025/12/11 12:44:28 [error] 20#20: *1 connect() failed (111: Connection refused) while connecting to upstream, client: 172.19.0.1, server: localhost, request: "GET / HTTP/1.1", upstream: "http://172.19.0.9:5173/", host: "localhost"
+2025/12/11 12:44:28 [error] 20#20: *1 connect() failed (111: Connection refused) while connecting to upstream, client: 172.19.0.1, server: localhost, request: "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1", upstream: "http://172.19.0.9:5173/.well-known/appspecific/com.chrome.devtools.json", host: "localhost"
+2025/12/11 12:44:28 [error] 20#20: *1 connect() failed (111: Connection refused) while connecting to upstream, client: 172.19.0.1, server: localhost, request: "GET /favicon.ico HTTP/1.1", upstream: "http://172.19.0.9:5173/favicon.ico", host: "localhost", referrer: "http://localhost/"
+2025/12/11 12:44:31 [error] 20#20: *1 connect() failed (111: Connection refused) while connecting to upstream, client: 172.19.0.1, server: localhost, request: "GET / HTTP/1.1", upstream: "http://172.19.0.9:5173/", host: "localhost"
+2025/12/11 12:44:31 [error] 20#20: *1 connect() failed (111: Connection refused) while connecting to upstream, client: 172.19.0.1, server: localhost, request: "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1", upstream: "http://172.19.0.9:5173/.well-known/appspecific/com.chrome.devtools.json", host: "localhost"
+2025/12/11 12:44:31 [error] 20#20: *1 connect() failed (111: Connection refused) while connecting to upstream, client: 172.19.0.1, server: localhost, request: "GET /favicon.ico HTTP/1.1", upstream: "http://172.19.0.9:5173/favicon.ico", host: "localhost", referrer: "http://localhost/"
+2025/12/11 13:34:19 [error] 20#20: *1 connect() failed (111: Connection refused) while connecting to upstream, client: 172.19.0.1, server: localhost, request: "POST /api/auth/register HTTP/1.1", upstream: "http://172.19.0.8:80/api/auth/register", host: "localhost", referrer: "http://localhost/"
+2025/12/11 13:35:44 [error] 20#20: *1 connect() failed (111: Connection refused) while connecting to upstream, client: 172.19.0.1, server: localhost, request: "POST /api/auth/register HTTP/1.1", upstream: "http://172.19.0.7:80/register", host: "localhost", referrer: "http://localhost/"
+2025/12/11 14:18:38 [error] 21#21: *1 connect() failed (111: Connection refused) while connecting to upstream, client: 172.19.0.1, server: localhost, request: "POST /api/photos/upload-url HTTP/1.1", upstream: "http://172.19.0.8:80/api/photos/upload-url", host: "localhost", referrer: "http://localhost/profile"
+2025/12/11 14:47:00 [error] 21#21: *1 connect() failed (111: Connection refused) while connecting to upstream, client: 172.19.0.1, server: localhost, request: "GET /api/auth/me HTTP/1.1", upstream: "http://172.19.0.8:80/api/auth/me", host: "localhost", referrer: "http://localhost/"
+2025/12/11 17:53:36 [error] 21#21: *1 connect() failed (111: Connection refused) while connecting to upstream, client: 172.19.0.1, server: localhost, request: "POST /api/photos/upload-url HTTP/1.1", upstream: "http://172.19.0.8:80/api/photos/upload-url", host: "localhost", referrer: "http://localhost/profile"
+2025/12/11 17:53:37 [error] 21#21: *1 connect() failed (111: Connection refused) while connecting to upstream, client: 172.19.0.1, server: localhost, request: "POST /api/photos/upload-url HTTP/1.1", upstream: "http://172.19.0.8:80/api/photos/upload-url", host: "localhost", referrer: "http://localhost/profile"
+2025/12/11 18:40:48 [error] 21#21: *2 connect() failed (111: Connection refused) while connecting to upstream, client: 172.19.0.1, server: localhost, request: "GET /api/auth/me HTTP/1.1", upstream: "http://172.19.0.7:80/api/auth/me", host: "localhost", referrer: "http://localhost/"
+2025/12/11 19:01:57 [error] 19#19: *1 connect() failed (111: Connection refused) while connecting to upstream, client: 172.19.0.1, server: localhost, request: "GET /api/auth/me HTTP/1.1", upstream: "http://172.19.0.6:80/api/auth/me", host: "localhost", referrer: "http://localhost/"
+2025/12/11 19:21:22 [error] 21#21: *3 connect() failed (111: Connection refused) while connecting to upstream, client: 172.19.0.1, server: localhost, request: "GET /api/auth/me HTTP/1.1", upstream: "http://172.19.0.8:80/api/auth/me", host: "localhost", referrer: "http://localhost/"

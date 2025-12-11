@@ -1,4 +1,4 @@
-const API_URL:string = import.meta.env.VITE_API_BASE || 'http://localhost:8100/api';
+const API_URL:string = import.meta.env.VITE_API_BASE || 'http://localhost/api/auth';
 
 export interface User {
   id: number;

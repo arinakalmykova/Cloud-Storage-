@@ -16,4 +16,16 @@ class PhotoCompressed implements ShouldBroadcast
         public string $photoId,
         public string $url
     ) {}
+
+    public function broadcastOn(): array
+    {
+        return [
+            new PrivateChannel('user.' . auth()->id()),
+        ];
+    }
+
+    public function broadcastAs(): string
+    {
+        return 'photo.compressed';
+    }
 }
