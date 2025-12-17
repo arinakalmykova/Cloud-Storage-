@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import type {FC} from "react";
-import type {User} from '../api.tsx';
+import type {User} from '../AuthFunctions.tsx';
 
 interface UserProps {
   user: User;
@@ -14,7 +14,7 @@ const MePage: FC<UserProps> = ({ user }) => {
         <p><strong>Email:</strong> {user.email}</p>
         <p><strong>ID:</strong> {user.id}</p>
       </div>
-      <Link to="/profile" style={{ color: "#4a76fd", fontSize: "1.2rem" }}>
+      <Link to="/profile" style={{ color: "#000000ff", fontSize: "1.2rem" }}>
         Назад к загрузке фото
       </Link>
     </div>

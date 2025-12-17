@@ -17,13 +17,24 @@ class PhotoController extends Controller
         $userId = $request->user()->getId();
 
         $request->validate([
-            'fileName' => 'sometimes|string|max:255',
-            'mimeType' => 'sometimes|string|in:image/jpeg,image/jpg,image/png,image/gif,image/webp',
+            'fileName' => 'required|string|max:255',
+            'description' => 'nullable|string|max:500',
+            'tags' => 'nullable|array',
+            'tags.*' => 'string|max:50'
         ]);
 
-        $fileName = $request->input('fileName', 'photo_' . now()->timestamp . '.jpg');
-        $mimeType = $request->input('mimeType', 'image/jpeg');
-        $dto= new CreatePhotoDTO($userId,$request->fileName, $request->mimeType);
+         $originalFileName = $request->input('fileName'); 
+    
+        $nameWithoutExtension = pathinfo($originalFileName, PATHINFO_FILENAME); 
+        $extension = pathinfo($originalFileName, PATHINFO_EXTENSION);
+
+        $dto = new CreatePhotoDTO(
+            userId: $userId,
+            fileName: $nameWithoutExtension,
+            description: $request->description ?? null,
+            tags: $request->tags ?? []
+        );
+
         $photo = $this->photoService->createUploadIntent($dto);
 
         return response()->json([
@@ -36,6 +47,7 @@ class PhotoController extends Controller
 
     public function show(Request $request, string $id): JsonResponse
     {
+
         $photo = $this->photoService->getById($id);
 
         if (!$photo || !$photo->isOwnedBy($request->user()->getId())) {
@@ -67,7 +79,7 @@ class PhotoController extends Controller
             return response()->json(['error' => 'Not found'], 404);
         }
 
-        $photo->markUploaded($request->url, $request->size ?? null);
+        $photo->markUploaded($request->url, $request->size);
         $this->photoService->save($photo);
         return response()->json(['status' => $photo->getStatus()->value()]);
     }

@@ -2,8 +2,8 @@
 import { useState, useEffect} from "react";
 import type {FC} from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { fetchMe } from "./api.tsx";
-import type {User} from './api.tsx';
+import { fetchMe } from "./AuthFunctions.tsx";
+import type {User} from './AuthFunctions.tsx';
 import Auth from "./auth/Auth.tsx";
 import Profile from "./profile/Profile.tsx";
 import MePage from "./profile/MePage.tsx"; 

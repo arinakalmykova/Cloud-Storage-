@@ -6,6 +6,7 @@ class CreatePhotoDTO
     public function __construct(
         public string $userId,
         public string $fileName,
-        public string $mimeType = 'image/jpeg'
+        public ?string $description = null,
+        public array $tags = []
     ) {}
 }

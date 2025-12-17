@@ -9,7 +9,7 @@ final class PhotoStatus
     public const COMPRESSED       = 'compressed';
     public const FAILED           = 'failed';
 
-    private function __construct(private string $value) {
+    public function __construct(private string $value) {
         if (!in_array($value, [
             self::PENDING_UPLOAD,
             self::UPLOADED,

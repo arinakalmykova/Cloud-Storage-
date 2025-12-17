@@ -22,6 +22,8 @@ class PhotoService
             id: Str::uuid()->toString(),
             userId: $dto->userId,
             fileName: $dto->fileName,
+            description: $dto->description,
+            tags: $dto->tags
         );
 
         $presignedUrl = $this->minioService->getUploadUrl($photo);
@@ -29,7 +31,7 @@ class PhotoService
         $photo->markPendingUpload($originalKey, $presignedUrl);
         $this->repository->save($photo);
 
-        event(new PhotoUploaded($photo->getId(), $photo->getPresignedUrl()));
+        event(new PhotoUploaded($photo->getId(), $photo->getKey()));
 
         return $photo;
     }

@@ -11,7 +11,7 @@ class CompressionQuality
 
     public int $value;
 
-    private function __construct(int $value)
+    public function __construct(int $value)
     {
         if ($value < 0 || $value > 100) {
             throw new \InvalidArgumentException('Compression quality must be between 0 and 100');

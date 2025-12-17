@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { loginUser, fetchMe } from "../api.tsx";
+import { loginUser, fetchMe } from "../AuthFunctions.tsx";
 import { useNavigate } from "react-router-dom";
 import type {FC} from "react";
 import type {AuthProps} from './Auth.tsx'
@@ -23,9 +23,7 @@ const Login:FC<AuthProps> = ({ setToken, setUser }) => {
         setUser(userData);
 
         navigate("/profile");
-      } else {
-        alert(data.error || "Ошибка входа");
-      }
+      } 
     } catch(err:any) {
       alert(err.message || "Произошла ошибка");
     }

@@ -22,20 +22,20 @@ class EloquentPhotoRepository implements PhotoRepositoryInterface
         );
     }
 
-   public function findById(string $photoId): Photo
+   public function findById(string $photoId): ?Photo
     {
         $model = PhotoModel::find($photoId);
-
         if (!$model) {
             return null;
         }
 
-        $photo = new Photo(
-            id: $model->id,
-            userId: $model->user_id,
-            fileName: 'photo',
-        );
-
-        return $photo;
+        return new Photo(
+        id: $model->id,
+        userId: $model->user_id,
+        fileName: $model->file_name ?? 'photo',
+        url: $model->url,
+        size: $model->size,
+        status: new PhotoStatus($model->status)
+    );
     }
 }

@@ -19,6 +19,9 @@ class ImageMagickCompressor implements CompressorServiceInterface
     try {
         $originalContent = Storage::disk('s3')->get($sourceKey);
 
+        // Логирование
+        \Log::info('Trying to compress file', ['sourceKey' => $sourceKey]);
+
         if ($originalContent === null) {
             throw new RuntimeException("File not found: {$sourceKey}");
         }

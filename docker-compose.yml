@@ -60,10 +60,7 @@ services:
     working_dir: /var/www
     command: >
       sh -c "php artisan serve --host=0.0.0.0 --port=80 & 
-            php artisan queue:work rabbitmq --queue=auth --tries=1 --sleep=3 --timeout=60 -vvv & 
-            php artisan serve --host=0.0.0.0 --port=80 &
-            php artisan queue:work rabbitmq --queue=compression --tries=1 --sleep=3 --timeout=60 -vvv"
-
+            php artisan queue:work rabbitmq --queue=auth,compression --tries=1 --sleep=3 --timeout=60 -vvv"
 
   postgres_photo:
     image: postgres:16
@@ -98,7 +95,21 @@ services:
     command:  >
       sh -c "php artisan serve --host=0.0.0.0 --port=80 & 
             php artisan queue:work rabbitmq --queue=photo --tries=1 --sleep=3 --timeout=60 -vvv"
-    
+
+  postgres_compress:
+    image: postgres:16
+    container_name: pg-compress
+    environment:
+      POSTGRES_DB: compress
+      POSTGRES_USER: user3
+      POSTGRES_PASSWORD: pass3
+    ports:
+      - "5435:5432"
+    networks:
+      - appnet
+    volumes:
+      - pg_compress_data:/var/lib/postgresql/data
+
   nginx:
     image: nginx:alpine
     container_name: nginx-proxy
@@ -131,6 +142,7 @@ services:
     depends_on:
       - authservice
       - photoservice
+    
 
   # ============================================================
   # RABBITMQ
@@ -172,3 +184,4 @@ volumes:
   pg_auth_data:
   pg_photo_data:
   minio_data:
+  pg_compress_data:

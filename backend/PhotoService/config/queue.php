@@ -34,6 +34,19 @@ return [
             'driver' => 'sync',
         ],
 
+        'reverb' => [
+        'driver' => 'reverb',
+        'key' => env('REVERB_APP_KEY'),
+        'secret' => env('REVERB_APP_SECRET'),
+        'app_id' => env('REVERB_APP_ID'),
+        'options' => [
+            'host' => env('REVERB_HOST', '127.0.0.1'),
+            'port' => env('REVERB_PORT', 8080),
+            'scheme' => env('REVERB_SCHEME', 'http'),
+            'useTLS' => env('REVERB_SCHEME', 'http') === 'https',
+        ],
+    ],
+
         'database' => [
             'driver' => 'database',
             'connection' => env('DB_QUEUE_CONNECTION'),
@@ -72,27 +85,42 @@ return [
             'after_commit' => false,
         ],
 
-        'rabbitmq' => [
-        'driver' => 'rabbitmq',
-        'queue' => env('RABBITMQ_QUEUE', 'default'),
-        'connection' => PhpAmqpLib\Connection\AMQPStreamConnection::class,
-        'hosts' => [
-            [
-                'host' => env('RABBITMQ_HOST', '127.0.0.1'),
-                'port' => env('RABBITMQ_PORT', 5672),
-                'user' => env('RABBITMQ_USER', 'guest'),
-                'password' => env('RABBITMQ_PASSWORD', 'guest'),
-                'vhost' => env('RABBITMQ_VHOST', '/'),
-            ],
-        ],
-        'options' => [
-            'exchange' => [
-                'name' => env('RABBITMQ_EXCHANGE_NAME', 'photo'),
-                'type' => env('RABBITMQ_EXCHANGE_TYPE', 'direct'),
-                'declare' => true,
-            ],
+       'rabbitmq' => [
+    'driver' => 'rabbitmq',
+    
+    'queue' => env('RABBITMQ_QUEUE', 'default'),
+    'connection' => PhpAmqpLib\Connection\AMQPStreamConnection::class,
+    'hosts' => [
+        [
+            'host' => env('RABBITMQ_HOST', '127.0.0.1'),
+            'port' => env('RABBITMQ_PORT', 5672),
+            'user' => env('RABBITMQ_USER', 'guest'),
+            'password' => env('RABBITMQ_PASSWORD', 'guest'),
+            'vhost' => env('RABBITMQ_VHOST', '/'),
+            'heartbeat' => 30,        // <- проверка соединения каждые 30 секунд
+            'timeout' => 3,           // <- таймаут соединения
         ],
     ],
+    'options' => [
+        'exchange' => [
+            'name' => env('RABBITMQ_EXCHANGE_NAME', 'photo'),
+            'type' => env('RABBITMQ_EXCHANGE_TYPE', 'direct'),
+            'declare' => true,
+        ],
+        'queue' => [
+            'declare' => true,
+            'durable' => true,
+        ],
+        'ssl_options' => [
+            'cafile' => null,
+            'local_cert' => null,
+            'local_key' => null,
+            'verify_peer' => true,
+            'passphrase' => null,
+        ],
+    ],
+    'sleep_on_error' => 5,
+],
 
 
     ],

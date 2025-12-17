@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Login from "./Login.tsx";
 import Register from "./Register.tsx";
-import type {User} from '../api.tsx';
+import type {User} from '../AuthFunctions.tsx';
 import type {FC} from "react";
 
 export interface AuthProps {

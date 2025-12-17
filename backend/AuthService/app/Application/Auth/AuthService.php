@@ -33,7 +33,7 @@ class AuthService
         );
         $this->userRepository->save($user);
 
-      UserCreated::dispatch($user->getId());
+       UserCreated::dispatch($user->getId());
 
         return $user;
     }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { registerUser,fetchMe } from "../api.tsx";
+import { registerUser,fetchMe } from "../AuthFunctions.tsx";
 import { useNavigate } from "react-router-dom";
 import type {AuthProps} from './Auth.tsx';
 import type { FC } from "react";

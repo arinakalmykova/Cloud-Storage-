@@ -12,16 +12,20 @@ class PhotoCompressed implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets;
 
-    public function __construct(
-        public string $photoId,
-        public string $url
-    ) {}
+    public $photoId;
+    public $url;
+    public $userId;
 
-    public function broadcastOn(): array
+    public function __construct(string $photoId, string $url, string $userId)
     {
-        return [
-            new PrivateChannel('user.' . auth()->id()),
-        ];
+        $this->photoId = $photoId;
+        $this->url = $url;
+        $this->userId = $userId;
+    }
+
+    public function broadcastOn(): Channel
+    {
+        return new PrivateChannel('user.' . $this->userId);
     }
 
     public function broadcastAs(): string

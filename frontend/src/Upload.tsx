@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from "react";
+import { initEcho } from "./echo"; 
+import { API_UPLOAD_URL } from "./api.tsx";
 
 interface PhotoEvent {
   photoId: string;
@@ -10,37 +12,35 @@ export default function Upload() {
   const [uploading, setUploading] = useState<boolean>(false);
   const [status, setStatus] = useState<string>("");
   const [finalUrl, setFinalUrl] = useState<string | null>(null);
-  const [photoId, setPhotoId] = useState<string | null>(null);
   const animationInterval = useRef<number | null>(null);
+  const photoIdRef = useRef<string | null>(null);
 
   const token = localStorage.getItem("token");
   const userId = localStorage.getItem("user_id"); 
-  const echoInitialized = useRef<boolean>(false);
-
+  
   useEffect(() => {
-    if (echoInitialized.current || !window.Echo) return;
-    if (userId && token) {
-      window.Echo.private(`user.${userId}`)
-        .listen('.photo.compressed', (e: PhotoEvent) => {
-          if (e.photoId === photoId) {
-            if (animationInterval.current) {
-              clearInterval(animationInterval.current);
-            }
-            setFinalUrl(e.url);
-            setStatus("Готово! Фото сжато в WebP за секунды");
-            setUploading(false);
-          }
-        });
-    }
+    if (!userId || !token) return;
 
-    echoInitialized.current = true;
+    const echo = initEcho(token);
+
+    const channel = echo.private(`user.${userId}`);
+
+    channel.listen("photo.compressed", (e: PhotoEvent) => {
+      if (e.photoId === photoIdRef.current) {
+        if (animationInterval.current) {
+          clearInterval(animationInterval.current);
+        }
+        setFinalUrl(e.url);
+        setStatus("Готово! Фото сжато в WebP");
+        setUploading(false);
+      }
+    });
 
     return () => {
-      if (userId) {
-        window.Echo.leave(`user.${userId}`);
-      }
+      echo.leave(`user.${userId}`);
     };
-  }, [userId, photoId, token]);
+  }, [userId, token]);
+
 
   const handleUpload = async () => {
     if (!file || !token) {
@@ -51,12 +51,10 @@ export default function Upload() {
     setUploading(true);
     setStatus("Получаем безопасную ссылку...");
     setFinalUrl(null);
-    setPhotoId(null);
 
     try {
-      const res = await fetch("http://localhost/api/photos/upload-url", {
+      const res = await fetch(`${API_UPLOAD_URL}/photos/upload-url`, {
         method: "POST",
-        mode: "cors",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -71,14 +69,14 @@ export default function Upload() {
 
       const { photo_id, upload_url }: { photo_id: string; upload_url: string } = await res.json();
 
-      setPhotoId(photo_id);
+      photoIdRef.current = photo_id;
+
       const currentPhotoId = photo_id;
       setStatus("Загружаем в облако...");
 
       const uploadRes = await fetch(upload_url, {
         method: "PUT",
         body: file,
-        mode: "cors",
         headers: {
           "Content-Type": file.type || "image/jpeg",
         },
@@ -91,10 +89,9 @@ export default function Upload() {
 
       setStatus("Сжимаем в WebP... (обычно 5–15 сек)");
       startProcessingAnimation();
-      setTimeout(() => fallbackCheckStatus(photo_id), 10000);
       
 
-      await fetch("http://localhost/api/photos/mark-uploaded", {
+      await fetch(`${API_UPLOAD_URL}/photos/mark-uploaded`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -109,6 +106,7 @@ export default function Upload() {
 
       setStatus("Фото загружено! Сжимаем в WebP...");
       startProcessingAnimation();
+      setTimeout(() => fallbackCheckStatus(photo_id), 10000);
       
     } catch (err: any) {
       setStatus("Ошибка: " + err.message);
@@ -133,7 +131,7 @@ export default function Upload() {
     if (finalUrl) return;
 
     try {
-      const res = await fetch(`http://localhost/api/photos/${id}`, {
+      const res = await fetch(`${API_UPLOAD_URL}/photos/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data: { status: string; url?: string } = await res.json();
@@ -143,7 +141,7 @@ export default function Upload() {
           clearInterval(animationInterval.current);
         }
         setFinalUrl(data.url);
-        setStatus("Готово! Фото сжато в WebP");
+        setStatus("Готово! Фото сжато в WebP. ");
         setUploading(false);
       }
     } catch {
@@ -152,27 +150,37 @@ export default function Upload() {
   };
 
   return (
-    <div style={{ textAlign: "center", padding: "40px", background: "#fff", borderRadius: "16px", boxShadow: "0 10px 30px rgba(0,0,0,0.1)" }}>
-      <h2 style={{ marginBottom: "30px", fontSize: "28px", color: "#333" }}>Загрузить фото</h2>
+    <div className="loaded">
+      <h2 style={{ fontSize: "34px", color: "#000000ff"}}>Загрузить фото</h2>
       <input
         type="file"
+        className="loaded_file-input"
         accept="image/*"
         onChange={(e) => setFile(e.target.files?.[0] || null)}
         disabled={uploading}
-        style={{ marginBottom: "20px", fontSize: "16px" }}
       />
-      <br />
+      <form className ="loaded_form" method="post" action="#">
+        <div className="form-group">
+          <label htmlFor="Quality">Качество</label>
+          <input type="text" />
+        </div>
+        <div className="form-group">
+          <label htmlFor="Resize">Изменение размера</label>
+          <input type="text" />
+        </div>
+        
+      </form>
       <button
         onClick={handleUpload}
         disabled={!file || uploading}
         style={{
-          padding: "16px 48px",
+          padding: "15px 35px",
           fontSize: "19px",
           fontWeight: "600",
-          background: uploading ? "#999" : "#4a76fd",
+          background: uploading ? "#ffffffff" : "#000000ff",
           color: "white",
           border: "none",
-          borderRadius: "12px",
+          borderRadius: "5px",
           cursor: uploading ? "not-allowed" : "pointer",
           transition: "all 0.3s",
         }}

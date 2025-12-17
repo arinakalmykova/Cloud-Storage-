@@ -1,19 +1,19 @@
 <?php
-
 namespace App\Events;
 
-use Illuminate\Broadcasting\Channel;
-use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Queue\SerializesModels;
 
-class PhotoCompressed implements ShouldBroadcast
+class PhotoCompressed
 {
-    use Dispatchable, InteractsWithSockets;
+    use Dispatchable, SerializesModels;
 
-    public function __construct(
-        public string $photoId,
-        public string $url
-    ) {}
+    public string $photoId;
+    public int $size;  
+
+    public function __construct(string $photoId, int $size)
+    {
+        $this->photoId = $photoId;
+        $this->size = $size;  
+    }
 }

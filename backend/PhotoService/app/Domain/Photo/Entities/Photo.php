@@ -9,22 +9,27 @@ class Photo
 {
     private string $id;
     private string $userId;
-    private FileName $fileName;
     private ?int $size = null;
     private ?string $key = null;      
-    private ?string $url = null;
+    private ?string $url = null; 
+    private FileName $fileName;
     private ?string $description = null;
-    private ?string $format = null; 
+    private ?string $format = null;
+    private array $tags = [];
+    private ?string $dominantColor = null;
     private ?string $presignedUrl = null; 
-
     private PhotoStatus $status;
 
-    public function __construct(string $id, string $userId, string $fileName)
+    public function __construct(string $id, string $userId,  string $fileName,?string $description,array $tags, ?int $size = null)
     {
         $this->id = $id;
         $this->userId = $userId;
         $this->fileName = new FileName($fileName);
         $this->status = PhotoStatus::pendingUpload();
+        $this->size = $size;
+        $this->description = $description;
+        $this->tags = $tags;
+        
     }
 
     public function markPendingUpload(string $key, string $presignedUrl): void
@@ -34,27 +39,33 @@ class Photo
         $this->status = PhotoStatus::pendingUpload();
     }
 
-    public function markUploaded(string $url, ?int $size = null): void  
+    public function markUploaded(string $url, int $size): void  
     {
         $this->url = $url;
-        if ($size !== null) {
-            $this->size = $size;
-        }
+        $this->size = $size;
         $this->status = PhotoStatus::uploaded();
     }
 
-    public function markCompressed(string $newUrl, ?int $newSize = null): void
+    public function markCompressed(string $url,int $newSize): void
     {
-        $this->url = $newUrl;
-        if ($newSize !== null) {
-            $this->size = $newSize;
-        }
+        $this->url = $url;
+        $this->size = $newSize;
         $this->status = PhotoStatus::compressed();
     }
 
     public function markFailed(): void
     {
         $this->status = PhotoStatus::failed();
+    }
+
+    public function setDominantColor(string $color): void
+    {
+        $this->dominantColor = $color;
+    }
+
+    public function setFormat(string $format): void
+    {
+        $this->format = $format;
     }
 
     public function getId(): string { return $this->id; }
@@ -65,6 +76,7 @@ class Photo
     public function getKey(): ?string { return $this->key; }               
     public function getPresignedUrl(): ?string { return $this->presignedUrl; }
     public function getUrl(): ?string { return $this->url; }
+    
 
     public function isOwnedBy(string $userId): bool
     {
