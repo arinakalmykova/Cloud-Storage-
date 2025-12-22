@@ -3,7 +3,6 @@
 namespace App\Domain\Photo\Entities;
 
 use App\Domain\Photo\ValueObjects\PhotoStatus;
-use App\Domain\Photo\ValueObjects\FileName;
 
 class Photo
 {
@@ -12,7 +11,7 @@ class Photo
     private ?int $size = null;
     private ?string $key = null;      
     private ?string $url = null; 
-    private FileName $fileName;
+    private string $fileName;
     private ?string $description = null;
     private ?string $format = null;
     private array $tags = [];
@@ -20,15 +19,16 @@ class Photo
     private ?string $presignedUrl = null; 
     private PhotoStatus $status;
 
-    public function __construct(string $id, string $userId,  string $fileName,?string $description,array $tags, ?int $size = null)
+    public function __construct(string $id, string $userId,  string $fileName,?string $description,array $tags, ?int $size = null, ?string $url, PhotoStatus $status)
     {
         $this->id = $id;
         $this->userId = $userId;
-        $this->fileName = new FileName($fileName);
-        $this->status = PhotoStatus::pendingUpload();
+        $this->fileName =  $fileName;
+        $this->status = $status;
         $this->size = $size;
         $this->description = $description;
         $this->tags = $tags;
+        $this->url = $url;
         
     }
 
@@ -68,9 +68,16 @@ class Photo
         $this->format = $format;
     }
 
+    public function setTags(array $tags): void
+    {
+        $this->tags = $tags;
+    }
+
     public function getId(): string { return $this->id; }
     public function getUserId(): string { return $this->userId; }
-    public function getFileName(): string { return $this->fileName->value(); }
+    public function getFileName(): string { return $this->fileName; }
+    public function getDescription(): ?string { return $this->description; }
+    public function getTags(): array { return $this->tags; }
     public function getStatus(): PhotoStatus { return $this->status; }
     public function getSize(): ?int { return $this->size; }
     public function getKey(): ?string { return $this->key; }               

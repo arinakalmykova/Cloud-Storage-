@@ -9,12 +9,14 @@ use Illuminate\Support\Str;
 use App\Domain\Photo\ValueObjects\PhotoStatus;
 use App\Application\DTOs\CreatePhotoDTO;
 use App\Events\PhotoUploaded;
+use App\Application\Tag\TagService;
 
 class PhotoService
 {
     public function __construct(
         private PhotoRepositoryInterface $repository,
-        private PhotoManagementServiceInterface $minioService
+        private PhotoManagementServiceInterface $minioService,
+        private TagService $tagService
     ) {}
 
     public function createUploadIntent(CreatePhotoDTO $dto): Photo {
@@ -23,7 +25,10 @@ class PhotoService
             userId: $dto->userId,
             fileName: $dto->fileName,
             description: $dto->description,
-            tags: $dto->tags
+            tags: $dto->tags,
+            url: null,
+            size: null,
+            status: PhotoStatus::pendingUpload()
         );
 
         $presignedUrl = $this->minioService->getUploadUrl($photo);
@@ -44,5 +49,23 @@ class PhotoService
      public function save(Photo $photo): void
     {
         $this->repository->save($photo);
+    }
+
+    public function updateTags(string $photoId, string $userId, array $tagNames): void
+    {
+        $photo = $this->repository->findById($photoId);
+
+        if (!$photo || !$photo->isOwnedBy($userId)) {
+            throw new \Exception('Not found');
+        }
+
+        $tagIds = [];
+
+        foreach ($tagNames as $name) {
+            $tag = $this->tagService->getOrCreate($name);
+            $tagIds[] = $tag->getId();
+        }
+
+        $this->repository->syncTags($photo, $tagIds);
     }
 }

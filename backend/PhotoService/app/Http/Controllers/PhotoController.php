@@ -23,14 +23,10 @@ class PhotoController extends Controller
             'tags.*' => 'string|max:50'
         ]);
 
-         $originalFileName = $request->input('fileName'); 
-    
-        $nameWithoutExtension = pathinfo($originalFileName, PATHINFO_FILENAME); 
-        $extension = pathinfo($originalFileName, PATHINFO_EXTENSION);
 
         $dto = new CreatePhotoDTO(
             userId: $userId,
-            fileName: $nameWithoutExtension,
+            fileName: $request->fileName,
             description: $request->description ?? null,
             tags: $request->tags ?? []
         );
@@ -82,6 +78,22 @@ class PhotoController extends Controller
         $photo->markUploaded($request->url, $request->size);
         $this->photoService->save($photo);
         return response()->json(['status' => $photo->getStatus()->value()]);
+    }
+
+    public function updateTags(Request $request, string $id): JsonResponse
+    {
+        $request->validate([
+            'tags' => 'required|array',
+            'tags.*' => 'string|max:50',
+        ]);
+
+        $this->photoService->updateTags(
+            photoId: $id,
+            userId: $request->user()->getId(),
+            tagNames: $request->tags
+        );
+
+        return response()->json(['status' => 'ok']);
     }
 
 }

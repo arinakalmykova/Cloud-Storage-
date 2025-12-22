@@ -5,16 +5,19 @@ FROM node:20-alpine AS build
 
 WORKDIR /app
 
-# Копируем package.json и package-lock.json (или yarn.lock)
+# 1. Копируем ТОЛЬКО package файлы
 COPY package*.json ./
 
-# Устанавливаем зависимости
-RUN npm install
-RUN npm install --save-dev @types/node
-# Копируем остальной код
+# 2. Устанавливаем ВСЕ зависимости (включая dev)
+RUN npm ci --include=dev
+
+# 3. Копируем ВСЕ файлы (включая конфиги линтеров)
 COPY . .
 
-# Собираем проект — создастся папка dist
+# 4. Запускаем линтинг (опционально, можно пропустить в билде)
+# RUN npm run lint:check
+
+# 5. Собираем проект
 RUN npm run build
 
 # ==========================
@@ -25,8 +28,6 @@ FROM nginx:alpine
 # Копируем собранные файлы из dist
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/app.conf
-# Открываем порт 80
-EXPOSE 80
 
-# Запускаем nginx
+EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]

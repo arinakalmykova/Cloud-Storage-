@@ -7,6 +7,7 @@ interface PhotoRepositoryInterface
 {
     public function save(Photo $photo):void;
     public function findById(string $photoId): ?Photo;
+    public function syncTags(Photo $photo, array $tagIds): void;
 }
 
 

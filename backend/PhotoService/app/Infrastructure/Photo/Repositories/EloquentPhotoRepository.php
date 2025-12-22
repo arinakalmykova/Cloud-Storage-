@@ -17,7 +17,9 @@ class EloquentPhotoRepository implements PhotoRepositoryInterface
                 'user_id' => $photo->getUserId(),
                 'status' => $photo->getStatus()->value(),
                 'url'    => $photo->getUrl(),     
-                'size'   => $photo->getSize()
+                'size'   => $photo->getSize(),
+                'file_name' => $photo->getFileName(),
+                'description' => $photo->getDescription(),
             ]
         );
     }
@@ -32,10 +34,19 @@ class EloquentPhotoRepository implements PhotoRepositoryInterface
         return new Photo(
         id: $model->id,
         userId: $model->user_id,
-        fileName: $model->file_name ?? 'photo',
+        fileName: $model->file_name,
+        description: $model->description,
+        tags: $model->tags ?? [],
         url: $model->url,
         size: $model->size,
         status: new PhotoStatus($model->status)
     );
+    }
+
+    public function syncTags(Photo $photo, array $tagIds): void
+    {
+        PhotoModel::find($photo->getId())
+            ->tags()
+            ->sync($tagIds);
     }
 }

@@ -9,6 +9,10 @@ use App\Infrastructure\Photo\Repositories\EloquentPhotoRepository;
 use App\Infrastructure\Photo\Repositories\EloquentUserRepository; 
 use App\Domain\Photo\Services\PhotoManagementServiceInterface; 
 use App\Infrastructure\Photo\Services\MinioPhotoManagement;
+use App\Infrastructure\Tag\Repositories\EloquentTagRepository;
+use App\Domain\Tag\Repositories\TagRepositoryInterface;
+
+
 
 class AppServiceProvider extends ServiceProvider 
 { 
@@ -18,7 +22,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PhotoEventPublisherInterface::class, PhotoEventPublisher::class); 
         $this->app->bind(PhotoRepositoryInterface::class, EloquentPhotoRepository::class); 
         $this->app->bind(PhotoManagementServiceInterface::class, MinioPhotoManagement::class); 
-        $this->app->bind(UserRepositoryInterface::class, EloquentUserRepository::class);  
+        $this->app->bind(UserRepositoryInterface::class, EloquentUserRepository::class); 
+        $this->app->bind(TagRepositoryInterface::class, EloquentTagRepository::class);
     } 
         
         
