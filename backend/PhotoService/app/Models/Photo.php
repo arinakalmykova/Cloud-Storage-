@@ -17,6 +17,12 @@ class Photo extends Model
         'size',
         'url',
         'user_id',
-        'status'
+        'status',
+        'dominant_color'
     ];
+
+   public function tags(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class, 'photo_tag', 'photo_id', 'tag_id');
+    }
 }

@@ -17,10 +17,9 @@ class PhotoController extends Controller
         $userId = $request->user()->getId();
 
         $request->validate([
-            'fileName' => 'required|string|max:255',
-            'description' => 'nullable|string|max:500',
-            'tags' => 'nullable|array',
-            'tags.*' => 'string|max:50'
+        'fileName' => 'required|string|max:255',
+        'mimeType' => 'required|string',
+        'description' => 'nullable|string|max:500'
         ]);
 
 
@@ -28,7 +27,7 @@ class PhotoController extends Controller
             userId: $userId,
             fileName: $request->fileName,
             description: $request->description ?? null,
-            tags: $request->tags ?? []
+            mimeType: $request->mimeType
         );
 
         $photo = $this->photoService->createUploadIntent($dto);
@@ -53,6 +52,7 @@ class PhotoController extends Controller
         return response()->json([
             'id'        => $photo->getId(),
             'status'    => $photo->getStatus()->value(),
+            'dominant_color' => $photo->getDominantColor(),
             'url'       => $photo->getUrl(),
             'size'      => $photo->getSize(),
             'file_name' => $photo->getFileName(),
@@ -77,6 +77,8 @@ class PhotoController extends Controller
 
         $photo->markUploaded($request->url, $request->size);
         $this->photoService->save($photo);
+        $result = $this->photoService->processUploadedPhoto($photo);
+
         return response()->json(['status' => $photo->getStatus()->value()]);
     }
 

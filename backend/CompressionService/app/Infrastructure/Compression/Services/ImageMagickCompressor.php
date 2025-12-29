@@ -41,7 +41,7 @@ class ImageMagickCompressor implements CompressorServiceInterface
         Storage::disk('s3')->put($sourceKey, $webpBlob, [
             'ContentType' => 'image/webp',
             'Metadata' => [
-                'compressed' => 'true'  // ← ЭТО СПАСЁТ ТЕБЯ ОТ ЦИКЛА
+                'compressed' => 'true' 
             ]
         ]);
 

@@ -13,6 +13,7 @@ class Tag extends Model
     protected $fillable = ['id', 'name'];
     public $incrementing = false;
     protected $keyType = 'string';
+    public $timestamps = false;
 
     public function photos()
     {

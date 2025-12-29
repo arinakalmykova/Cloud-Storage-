@@ -8,9 +8,10 @@ export async function getUploadUrl(token: string, file: File, title: string, des
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
+      file: file,
       mimeType: file.type || 'image/jpeg',
       fileName: title,
-      description: description,
+      description: description
     }),
   });
 
@@ -36,13 +37,22 @@ export async function checkPhotoStatus(token: string, id: string) {
   return res.json();
 }
 
-export async function updateTags(token: string, tags: string[]): Promise<void> {
-  await fetch(`${API_UPLOAD_URL}/tags`, {
+export async function updateTags(
+  token: string,
+  photoId: string,
+  tags: string[]
+): Promise<void> {
+  const res = await fetch(`${API_UPLOAD_URL}/${photoId}/tags`, {
     method: 'POST',
     headers: {
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
       Accept: 'application/json',
     },
     body: JSON.stringify({ tags }),
   });
+
+  if (!res.ok) {
+    throw new Error('Ошибка обновления тегов');
+  }
 }

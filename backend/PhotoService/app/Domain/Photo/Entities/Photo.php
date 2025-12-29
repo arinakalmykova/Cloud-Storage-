@@ -19,17 +19,24 @@ class Photo
     private ?string $presignedUrl = null; 
     private PhotoStatus $status;
 
-    public function __construct(string $id, string $userId,  string $fileName,?string $description,array $tags, ?int $size = null, ?string $url, PhotoStatus $status)
-    {
+    public function __construct(
+    string $id, 
+    string $userId,  
+    string $fileName,
+    ?string $description, 
+    ?string $url, 
+    PhotoStatus $status,
+    ?int $size = null,
+    ?string $dominantColor = null
+    ) {
         $this->id = $id;
         $this->userId = $userId;
-        $this->fileName =  $fileName;
+        $this->fileName = $fileName;
+        $this->description = $description;
+        $this->url = $url;
         $this->status = $status;
         $this->size = $size;
-        $this->description = $description;
-        $this->tags = $tags;
-        $this->url = $url;
-        
+        $this->dominantColor = $dominantColor;
     }
 
     public function markPendingUpload(string $key, string $presignedUrl): void
@@ -83,7 +90,7 @@ class Photo
     public function getKey(): ?string { return $this->key; }               
     public function getPresignedUrl(): ?string { return $this->presignedUrl; }
     public function getUrl(): ?string { return $this->url; }
-    
+    public function getDominantColor(): ?string { return $this->dominantColor; }
 
     public function isOwnedBy(string $userId): bool
     {

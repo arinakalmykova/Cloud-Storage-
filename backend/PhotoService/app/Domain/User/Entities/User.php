@@ -1,6 +1,6 @@
 <?php 
 
-namespace App\Domain\Photo\Entities;
+namespace App\Domain\User\Entities;
 
 class User
 {

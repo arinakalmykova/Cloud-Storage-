@@ -13,7 +13,7 @@ class MinioPhotoManagement implements PhotoManagementServiceInterface
 
     public function __construct()
     {
-        $this->disk = Storage::disk('s3');
+        $this->disk = Storage::disk('s3_public');
         $this->bucket = env('AWS_BUCKET');
     }
 

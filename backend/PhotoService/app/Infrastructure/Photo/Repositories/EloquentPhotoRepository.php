@@ -20,6 +20,7 @@ class EloquentPhotoRepository implements PhotoRepositoryInterface
                 'size'   => $photo->getSize(),
                 'file_name' => $photo->getFileName(),
                 'description' => $photo->getDescription(),
+                'dominant_color' => $photo->getDominantColor()
             ]
         );
     }
@@ -36,10 +37,10 @@ class EloquentPhotoRepository implements PhotoRepositoryInterface
         userId: $model->user_id,
         fileName: $model->file_name,
         description: $model->description,
-        tags: $model->tags ?? [],
         url: $model->url,
         size: $model->size,
-        status: new PhotoStatus($model->status)
+        status: new PhotoStatus($model->status),
+        dominantColor: $model->dominant_color
     );
     }
 

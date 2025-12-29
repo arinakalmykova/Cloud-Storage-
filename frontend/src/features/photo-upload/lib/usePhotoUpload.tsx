@@ -63,15 +63,15 @@ export function usePhotoUpload(token: string | null, title: string, description:
             setStatus('Фото успешно сжато и загружено!');
             setFinalUrl(data.url);
 
-            if (tagList.length > 0) {
-              try {
-                await updateTags(token, tagList);
-                console.log('Теги успешно обновлены');
-              } catch (err) {
-                console.error('Ошибка при обновлении тегов', err);
-              }
+          if (tagList.length > 0 && photoIdRef.current) {
+            try {
+              await updateTags(token, photoIdRef.current, tagList);
+              console.log('Теги успешно обновлены');
+            } catch (err) {
+              console.error('Ошибка при обновлении тегов', err);
             }
-            
+          }
+
             setUploading(false);
           } else {
             setStatus('Обработка всё ещё идёт...');

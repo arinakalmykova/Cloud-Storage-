@@ -13,6 +13,7 @@
         "enqueue/amqp-lib": "^0.10.26",
         "enqueue/enqueue": "^0.10.26",
         "firebase/php-jwt": "^6.11",
+        "ksubileau/color-thief-php": "^2.0",
         "laravel/framework": "^12.0",
         "laravel/reverb": "^1.6",
         "laravel/sanctum": "*",

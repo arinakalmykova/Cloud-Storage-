@@ -7,6 +7,6 @@ class CreatePhotoDTO
         public string $userId,
         public string $fileName,
         public ?string $description = null,
-        public array $tags = []
+        public string $mimeType = 'image/jpeg',
     ) {}
 }

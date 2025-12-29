@@ -1,5 +1,5 @@
 <?php
-namespace App\Infrastructure\Tag;
+namespace App\Infrastructure\Tag\Repositories;
 use App\Domain\Tag\Entities\Tag;
 use App\Domain\Tag\Repositories\TagRepositoryInterface;
 use App\Models\Tag as TagModel;

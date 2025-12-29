@@ -3,8 +3,10 @@ FROM php:8.3-fpm
 
 # Установите системные зависимости
 RUN apt-get update && apt-get install -y \
-    git zip unzip libpq-dev \
+    git zip unzip libpq-dev libmagickwand-dev \
     && docker-php-ext-install pdo pdo_pgsql sockets pcntl \
+    && pecl install imagick \
+    && docker-php-ext-enable imagick \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

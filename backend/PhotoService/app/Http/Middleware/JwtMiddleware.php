@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
-use App\Domain\Photo\Repositories\UserRepositoryInterface;
+use App\Domain\User\Repositories\UserRepositoryInterface;
 
 class JwtMiddleware
 {
