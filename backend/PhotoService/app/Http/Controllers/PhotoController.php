@@ -67,6 +67,8 @@ class PhotoController extends Controller
             'photo_id' => 'required|string',
             'size' => 'sometimes|integer',
             'url' => 'required|string',
+            'quality' => 'sometimes|integer',
+            'format' => 'sometimes|string',
         ]);
 
         $photo = $this->photoService->getById($request->photo_id);

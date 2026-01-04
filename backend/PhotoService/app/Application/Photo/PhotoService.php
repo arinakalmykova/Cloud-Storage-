@@ -119,7 +119,7 @@ class PhotoService
             }
             
             $this->save($photo);
-            event(new PhotoUploaded($photo->getId(), $key));
+            event(new PhotoUploaded($photo->getId(), $key, $photo->getQuality(), $photo->getFormat()));
             return true;
         } 
         else {

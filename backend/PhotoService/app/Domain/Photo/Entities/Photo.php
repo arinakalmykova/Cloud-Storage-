@@ -18,6 +18,7 @@ class Photo
     private ?string $dominantColor = null;
     private ?string $presignedUrl = null; 
     private PhotoStatus $status;
+    private ?int $quality = null;
 
     public function __construct(
     string $id, 
@@ -46,10 +47,12 @@ class Photo
         $this->status = PhotoStatus::pendingUpload();
     }
 
-    public function markUploaded(string $url, int $size): void  
+    public function markUploaded(string $url, int $size, ?int $quality = null, ?string $format = null): void  
     {
         $this->url = $url;
         $this->size = $size;
+        $this->quality = $quality;
+        $this->format = $format;
         $this->status = PhotoStatus::uploaded();
     }
 
@@ -91,6 +94,8 @@ class Photo
     public function getPresignedUrl(): ?string { return $this->presignedUrl; }
     public function getUrl(): ?string { return $this->url; }
     public function getDominantColor(): ?string { return $this->dominantColor; }
+    public function getQuality(): ?int { return $this->quality; }
+    public function getFormat(): ?string { return $this->format; }
 
     public function isOwnedBy(string $userId): bool
     {

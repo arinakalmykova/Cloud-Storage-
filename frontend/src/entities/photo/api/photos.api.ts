@@ -19,14 +19,14 @@ export async function getUploadUrl(token: string, file: File, title: string, des
   return res.json();
 }
 
-export async function markUploaded(token: string, photoId: string, url: string, size: number) {
+export async function markUploaded(token: string, photoId: string, url: string, size: number, quality: number, format: string) {
   await fetch(`${API_UPLOAD_URL}/mark-uploaded`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ photo_id: photoId, url, size }),
+    body: JSON.stringify({ photo_id: photoId, url, size, quality, format }),
   });
 }
 

@@ -10,8 +10,8 @@ export default function Upload() {
   const [description, setDescription] = useState<string>('');
   const [tags, setTags] = useState<string>('');
   const [tagList, setTagList] = useState<string[]>([]);
-  // const [quality, setQuality] = useState<string>("");
-  // const [resize, setResize] = useState<string>("");
+  const [quality, setQuality] = useState<number>(85);
+  const [format, setFormat] = useState<string>("webp");
   const { uploading, status, finalUrl, upload, photoIdRef, setFinalUrl, setUploading } =
     usePhotoUpload(token, title, description, tagList);
 
@@ -96,6 +96,26 @@ export default function Upload() {
         </div>
       </form>
 
+      <div className="form-group">
+      <label htmlFor="Quality">Качество (рекомендовано ML)</label>
+      <input
+        type="number"
+        name="quality"
+        value={quality}
+        onChange={(e) => setQuality(Number(e.target.value))}
+        placeholder="85"
+      />
+    </div>
+    <div className="form-group">
+      <label htmlFor="Format">Формат (рекомендовано ML)</label>
+      <select name="format" value={format} onChange={(e) => setFormat(e.target.value)}>
+        <option value="webp">WebP</option>
+        <option value="png">PNG</option>
+        <option value="avif">AVIF</option>
+      </select>
+    </div>
+
+
       <button
         style={{
           padding: '15px 35px',
@@ -109,7 +129,7 @@ export default function Upload() {
           transition: 'all 0.3s',
         }}
         disabled={!file || uploading}
-        onClick={() => file && upload(file)}
+        onClick={() => file && upload(file,  quality, format)}
       >
         {uploading ? 'Загрузка...' : 'Загрузить'}
       </button>

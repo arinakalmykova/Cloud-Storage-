@@ -6,6 +6,7 @@ interface CompressorServiceInterface
 {
    public function compressAndUpload(
         string $sourceKey,
-        CompressionQuality $quality
+        CompressionQuality $quality,
+        string $format
     ): string;
 }

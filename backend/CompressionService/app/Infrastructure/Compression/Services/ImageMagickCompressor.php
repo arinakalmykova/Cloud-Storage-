@@ -12,47 +12,32 @@ class ImageMagickCompressor implements CompressorServiceInterface
 {
     private ?string $lastCompressedBlob = null;
     
-    public function compressAndUpload(
+public function compressAndUpload(
     string $sourceKey,
-    CompressionQuality $quality
+    CompressionQuality $quality,
+    string $format // добавили параметр формата
 ): string {
-    try {
-        $originalContent = Storage::disk('s3')->get($sourceKey);
+    $originalContent = Storage::disk('s3')->get($sourceKey);
 
-        // Логирование
-        \Log::info('Trying to compress file', ['sourceKey' => $sourceKey]);
+    $image = new \Imagick();
+    $image->readImageBlob($originalContent);
+    $image->setImageFormat($format);
+    $image->setImageCompressionQuality($quality->value());
+    $image->stripImage();
 
-        if ($originalContent === null) {
-            throw new RuntimeException("File not found: {$sourceKey}");
-        }
+    $blob = $image->getImageBlob();
+    $this->lastCompressedBlob = $blob;
 
-        $image = new Imagick();
-        $image->readImageBlob($originalContent);
-        $image->setImageFormat('webp');
-        $image->setOption('webp:lossless', 'false');
-        $image->setOption('webp:method', '6');
-        $image->setImageCompressionQuality($quality->value());
-        $image->stripImage();
+    Storage::disk('s3')->put($sourceKey, $blob, [
+        'ContentType' => "image/{$format}",
+        'Metadata' => ['compressed' => 'true']
+    ]);
 
-        $webpBlob = $image->getImageBlob();
-        $this->lastCompressedBlob = $webpBlob;
-        $image->clear(); $image->destroy();
+    $image->clear(); $image->destroy();
 
-        Storage::disk('s3')->put($sourceKey, $webpBlob, [
-            'ContentType' => 'image/webp',
-            'Metadata' => [
-                'compressed' => 'true' 
-            ]
-        ]);
-
-        return 'http://127.0.0.1:9000/photo/' . $sourceKey;
-
-    } catch (\Throwable $e) {
-        throw new RuntimeException(
-            "Compression failed: {$e->getMessage()} (key: {$sourceKey})"
-        );
-    }
+    return 'http://127.0.0.1:9000/photo/' . $sourceKey;
 }
+
 
 
     public function getLastCompressedBlob(): ?string

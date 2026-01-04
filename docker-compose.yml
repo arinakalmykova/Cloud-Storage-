@@ -176,6 +176,17 @@ services:
       - "9001:9001"
     networks:
       - appnet
+    
+
+  mlservice:
+    build: ./backend/mlservice
+    container_name: mlservice
+    restart: unless-stopped
+    networks:
+      - appnet
+    ports:
+      - "5000:5000"
+
 
 networks:
   appnet:

@@ -30,7 +30,7 @@ export function usePhotoUpload(token: string | null, title: string, description:
     }
   };
 
-  const upload = async (file: File) => {
+  const upload = async (file: File, quality: number, format: string) => {
     if (!token) return;
 
     setUploading(true);
@@ -52,7 +52,7 @@ export function usePhotoUpload(token: string | null, title: string, description:
 
       stopAnimationRef.current = startDotsAnimation(setStatus);
 
-      await markUploaded(token, photo_id, upload_url.split('?')[0], file.size);
+      await markUploaded(token, photo_id, upload_url.split('?')[0], file.size, quality, format);
 
       setTimeout(async () => {
         try {

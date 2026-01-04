@@ -21,6 +21,8 @@ class ProcessMinioUploadedFile implements ShouldQueue
         $result = $service->compress([
             'photo_id'   => $this->payload['photo_id'],
             'source_url' => $this->payload['photo_url'],
+            'quality'    => $this->payload['quality'],
+            'format'     => $this->payload['format']
         ]);
 
        event(new PhotoCompressed($result['photo_id'], $result['size']));
