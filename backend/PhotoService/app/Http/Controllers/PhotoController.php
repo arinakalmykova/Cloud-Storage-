@@ -5,6 +5,7 @@ use App\Application\DTOs\CreatePhotoDTO;
 use Illuminate\Http\Request;
 use App\Application\Photo\PhotoService;
 use Illuminate\Http\JsonResponse;
+use App\Application\Photo\MLServiceClient;
 
 class PhotoController extends Controller
 {
@@ -77,11 +78,52 @@ class PhotoController extends Controller
             return response()->json(['error' => 'Not found'], 404);
         }
 
-        $photo->markUploaded($request->url, $request->size);
+        $photo->markUploaded($request->url, $request->size,$request->quality,$request->format);
         $this->photoService->save($photo);
         $result = $this->photoService->processUploadedPhoto($photo);
 
         return response()->json(['status' => $photo->getStatus()->value()]);
+    }
+
+    public function recommend(Request $request): JsonResponse
+    {
+        $request->validate([
+            'file' => 'required|file|image|mimes:jpg,jpeg,png,gif,webp,avif|max:10240',
+        ]);
+
+        $tmp = $request->file('file')->getPathname();
+
+        $mlClient = new MLServiceClient();
+        $result = $mlClient->classify($tmp);
+
+        switch ($result['content_type']) {
+            case 'photo':
+                $mlFormat = 'webp';
+                $mlQuality = 85;
+                break;
+            case 'text_graphics':
+                $mlFormat = 'png';
+                $mlQuality = 100;
+                break;
+            case 'illustration':
+                $mlFormat = 'avif';
+                $mlQuality = 80;
+                break;
+            case 'ui_screenshot':
+                $mlFormat = 'png';
+                $mlQuality = 95;
+                break;
+            case 'mixed':
+            default:
+                $mlFormat = 'webp';
+                $mlQuality = 80;
+        }
+
+        return response()->json([
+            'format' => $mlFormat,
+            'quality' => $mlQuality,
+            'content_type' => $result['content_type']
+        ]);
     }
 
     public function updateTags(Request $request, string $id): JsonResponse

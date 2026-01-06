@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Application\Compression;
+namespace App\Application\Photo;
 
 use GuzzleHttp\Client;
 

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { usePhotoUpload } from '../../features/photo-upload/lib/usePhotoUpload.tsx';
 import { usePhotoCompressionEcho } from '../../features/photo-upload/lib/usePhotoCompressionEcho.tsx';
+import { recommendML } from '../../entities/photo/api/photos.api.ts';
 
 export default function Upload() {
   const [file, setFile] = useState<File | null>(null);
@@ -11,10 +12,11 @@ export default function Upload() {
   const [tags, setTags] = useState<string>('');
   const [tagList, setTagList] = useState<string[]>([]);
   const [quality, setQuality] = useState<number>(85);
-  const [format, setFormat] = useState<string>("webp");
+  const [format, setFormat] = useState<string>("");
   const { uploading, status, finalUrl, upload, photoIdRef, setFinalUrl, setUploading } =
-    usePhotoUpload(token, title, description, tagList);
+  usePhotoUpload(token, title, description, tagList);
 
+  
   usePhotoCompressionEcho({
     userId,
     token,
@@ -35,15 +37,24 @@ export default function Upload() {
     setTagList(tagsArray);
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0] || null;
-    setFile(selectedFile);
+ const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const selectedFile = e.target.files?.[0] || null;
+  setFile(selectedFile);
 
-    if (selectedFile) {
-      const nameWithoutExt = selectedFile.name.replace(/\.[^/.]+$/, '');
-      setTitle(nameWithoutExt);
-    }
-  };
+  if (!selectedFile || !token) return;
+
+  const nameWithoutExt = selectedFile.name.replace(/\.[^/.]+$/, '');
+  setTitle(nameWithoutExt);
+
+  try {
+    const mlResult = await recommendML(token, selectedFile);
+
+    if (mlResult.quality) setQuality(mlResult.quality);
+    if (mlResult.format) setFormat(mlResult.format);
+  } catch (e) {
+    console.error(e);
+  }
+};
 
   return (
     <div className="loaded">
@@ -103,7 +114,6 @@ export default function Upload() {
         name="quality"
         value={quality}
         onChange={(e) => setQuality(Number(e.target.value))}
-        placeholder="85"
       />
     </div>
     <div className="form-group">

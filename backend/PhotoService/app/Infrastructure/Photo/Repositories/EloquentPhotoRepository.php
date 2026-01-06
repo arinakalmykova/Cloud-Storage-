@@ -20,7 +20,8 @@ class EloquentPhotoRepository implements PhotoRepositoryInterface
                 'size'   => $photo->getSize(),
                 'file_name' => $photo->getFileName(),
                 'description' => $photo->getDescription(),
-                'dominant_color' => $photo->getDominantColor()
+                'dominant_color' => $photo->getDominantColor(),
+                'format' => $photo->getFormat()
             ]
         );
     }

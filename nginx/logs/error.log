@@ -827,3 +827,22 @@
 2026/01/04 21:35:09 [emerg] 1#1: host not found in upstream "minio" in /etc/nginx/conf.d/app.conf:57
 2026/01/04 21:36:10 [emerg] 1#1: host not found in upstream "minio" in /etc/nginx/conf.d/app.conf:57
 2026/01/04 21:37:08 [emerg] 1#1: host not found in upstream "minio" in /etc/nginx/conf.d/app.conf:57
+2026/01/05 17:19:16 [emerg] 1#1: host not found in upstream "minio" in /etc/nginx/conf.d/app.conf:57
+2026/01/05 17:19:24 [emerg] 1#1: host not found in upstream "minio" in /etc/nginx/conf.d/app.conf:57
+2026/01/05 17:19:33 [emerg] 1#1: host not found in upstream "minio" in /etc/nginx/conf.d/app.conf:57
+2026/01/05 17:19:41 [emerg] 1#1: host not found in upstream "minio" in /etc/nginx/conf.d/app.conf:57
+2026/01/05 17:19:48 [emerg] 1#1: host not found in upstream "minio" in /etc/nginx/conf.d/app.conf:57
+2026/01/05 17:19:55 [emerg] 1#1: host not found in upstream "minio" in /etc/nginx/conf.d/app.conf:57
+2026/01/05 17:20:03 [emerg] 1#1: host not found in upstream "minio" in /etc/nginx/conf.d/app.conf:57
+2026/01/05 17:43:53 [error] 22#22: *22 client intended to send too large body: 1886529 bytes, client: 172.19.0.1, server: localhost, request: "POST /api/photos/recommend HTTP/1.1", host: "localhost", referrer: "http://localhost:5173/"
+2026/01/05 17:44:19 [error] 26#26: *30 client intended to send too large body: 1886529 bytes, client: 172.19.0.1, server: localhost, request: "POST /api/photos/recommend HTTP/1.1", host: "localhost", referrer: "http://localhost:5173/"
+2026/01/05 18:13:39 [error] 22#22: *1 connect() failed (111: Connection refused) while connecting to upstream, client: 172.19.0.1, server: localhost, request: "OPTIONS /api/auth/me HTTP/1.1", upstream: "http://172.19.0.11:80/api/auth/me", host: "localhost", referrer: "http://localhost:5173/"
+2026/01/05 18:13:39 [error] 21#21: *3 connect() failed (111: Connection refused) while connecting to upstream, client: 172.19.0.1, server: localhost, request: "OPTIONS /api/auth/me HTTP/1.1", upstream: "http://172.19.0.11:80/api/auth/me", host: "localhost", referrer: "http://localhost:5173/"
+2026/01/05 18:14:38 [error] 22#22: *1 client intended to send too large body: 1886529 bytes, client: 172.19.0.1, server: localhost, request: "POST /api/photos/recommend HTTP/1.1", host: "localhost", referrer: "http://localhost:5173/"
+2026/01/05 18:33:23 [error] 20#20: *1 connect() failed (111: Connection refused) while connecting to upstream, client: 172.19.0.1, server: localhost, request: "OPTIONS /api/auth/me HTTP/1.1", upstream: "http://172.19.0.11:80/api/auth/me", host: "localhost", referrer: "http://localhost:5173/"
+2026/01/05 18:33:23 [error] 21#21: *3 connect() failed (111: Connection refused) while connecting to upstream, client: 172.19.0.1, server: localhost, request: "OPTIONS /api/auth/me HTTP/1.1", upstream: "http://172.19.0.11:80/api/auth/me", host: "localhost", referrer: "http://localhost:5173/"
+2026/01/05 19:22:54 [error] 20#20: *1 connect() failed (111: Connection refused) while connecting to upstream, client: 172.19.0.1, server: localhost, request: "OPTIONS /api/auth/me HTTP/1.1", upstream: "http://172.19.0.10:80/api/auth/me", host: "localhost", referrer: "http://localhost:5173/"
+2026/01/05 19:22:54 [error] 21#21: *3 connect() failed (111: Connection refused) while connecting to upstream, client: 172.19.0.1, server: localhost, request: "OPTIONS /api/auth/me HTTP/1.1", upstream: "http://172.19.0.10:80/api/auth/me", host: "localhost", referrer: "http://localhost:5173/"
+2026/01/05 19:22:58 [error] 22#22: *5 connect() failed (111: Connection refused) while connecting to upstream, client: 172.19.0.1, server: localhost, request: "OPTIONS /api/auth/login HTTP/1.1", upstream: "http://172.19.0.10:80/api/auth/login", host: "localhost", referrer: "http://localhost:5173/"
+2026/01/05 20:07:47 [error] 20#20: *1 connect() failed (111: Connection refused) while connecting to upstream, client: 172.19.0.1, server: localhost, request: "OPTIONS /api/auth/me HTTP/1.1", upstream: "http://172.19.0.2:80/api/auth/me", host: "localhost", referrer: "http://localhost:5173/"
+2026/01/05 20:07:47 [error] 21#21: *2 connect() failed (111: Connection refused) while connecting to upstream, client: 172.19.0.1, server: localhost, request: "OPTIONS /api/auth/me HTTP/1.1", upstream: "http://172.19.0.2:80/api/auth/me", host: "localhost", referrer: "http://localhost:5173/"

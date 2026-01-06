@@ -37,6 +37,7 @@ export async function checkPhotoStatus(token: string, id: string) {
   return res.json();
 }
 
+
 export async function updateTags(
   token: string,
   photoId: string,
@@ -54,5 +55,51 @@ export async function updateTags(
 
   if (!res.ok) {
     throw new Error('Ошибка обновления тегов');
+  }
+
+
+
+}
+
+
+export async function recommendML(token: string, file: File) {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  // Проверяем формат файла
+  const fileName = file.name.toLowerCase();
+  const supportedFormats = ['.jpg', '.jpeg', '.png', '.webp', '.avif'];
+  const isValidFormat = supportedFormats.some(format => fileName.endsWith(format));
+  
+  if (!isValidFormat) {
+    throw new Error(`Неподдерживаемый формат файла: ${file.name}. Поддерживаются: ${supportedFormats.join(', ')}`);
+  }
+
+  try {
+    const res = await fetch(`${API_UPLOAD_URL}/recommend`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        // Не добавляем Content-Type для FormData, браузер сделает это сам
+      },
+      body: formData,
+      credentials: 'include', // Для CORS с credentials
+    });
+
+    if (res.status === 302) {
+      // Если редирект, получаем конечный URL
+      const redirectUrl = res.headers.get('Location');
+      throw new Error(`Редирект на: ${redirectUrl}`);
+    }
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`Ошибка ML-рекомендации: ${res.status} - ${errorText}`);
+    }
+
+    return res.json();
+  } catch (error) {
+    console.error('Ошибка запроса:', error);
+    throw error;
   }
 }

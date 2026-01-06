@@ -81,7 +81,7 @@ export function usePhotoUpload(token: string | null, title: string, description:
           setStatus('Ошибка при проверке статуса');
           setUploading(false);
         }
-      }, 20000);
+      }, 30000);
     } catch (e: any) {
       stopAnimation();
       setStatus('Ошибка: ' + (e.message || 'Неизвестная ошибка'));
@@ -99,3 +99,4 @@ export function usePhotoUpload(token: string | null, title: string, description:
     setUploading,
   };
 }
+2

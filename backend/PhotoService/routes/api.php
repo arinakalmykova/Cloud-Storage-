@@ -9,6 +9,7 @@ Route::middleware('jwt')->group(function () {
     Route::get('/photos/{id}', [PhotoController::class, 'show']);
     Route::post('/photos/mark-uploaded', [PhotoController::class, 'markUploaded']);
     Route::post('/photos/{id}/tags', [PhotoController::class, 'updateTags']);
+    Route::post('/photos/recommend',[PhotoController::class, 'recommend']);
 });
 
 
