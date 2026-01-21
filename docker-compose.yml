@@ -276,6 +276,14 @@ services:
       - authservice
       - photoservice
 
+  reverb:
+    build: ./backend/PhotoService
+    command: php artisan reverb:start --debug --verbose
+    ports:
+      - "8081:8081"
+    networks:
+      - appnet
+
 networks:
   appnet:
     driver: bridge

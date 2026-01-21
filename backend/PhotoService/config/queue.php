@@ -45,6 +45,7 @@ return [
             'scheme' => env('REVERB_SCHEME', 'http'),
             'useTLS' => env('REVERB_SCHEME', 'http') === 'https',
         ],
+        
     ],
 
         'database' => [
@@ -84,7 +85,6 @@ return [
             'block_for' => null,
             'after_commit' => false,
         ],
-
 
     ],
 
