@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Broadcast;
 
-Broadcast::channel('user.{userId}', function ($user, $userId) {
-    return (string) $user->id === (string) $userId;
+Broadcast::channel('user.{id}', function ($user, $id) {
+    return (int) $user->id === (int) $id;
+    // или return $user->id === $id; если id — строка/uuid
 });

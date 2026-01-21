@@ -13,20 +13,17 @@ export default function Upload() {
   const [tagList, setTagList] = useState<string[]>([]);
   const [quality, setQuality] = useState<number>(85);
   const [format, setFormat] = useState<string>("");
-  const { uploading, status, finalUrl, upload, photoIdRef, setFinalUrl, setUploading } =
+  const { uploading, status, finalUrl, upload, photoIdRef, onCompressionDone} =
   usePhotoUpload(token, title, description, tagList);
 
   
-  usePhotoCompressionEcho({
-    userId,
-    token,
-    photoIdRef,
-    onDone: (url) => {
-      setFinalUrl(url);
-      setUploading(false);
-    },
+usePhotoCompressionEcho({
+    userId,                      // string | null
+    token,                       // string | null
+    photoIdRef,                  // ref с текущим photo_id
+    onDone: onCompressionDone,   // функция, которая покажет результат
   });
-
+  
   const handleTagsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target.value;
     setTags(input);

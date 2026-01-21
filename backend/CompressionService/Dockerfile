@@ -10,15 +10,20 @@ RUN apt-get update && apt-get install -y \
     curl \
     libpq-dev \
     sqlite3 \
+    librdkafka-dev \ 
     && pecl install imagick \
     && docker-php-ext-enable imagick \
     && docker-php-ext-install pdo pdo_pgsql sockets \
     && apt-get clean \
+    && pecl install rdkafka \
+    && docker-php-ext-enable rdkafka \
     && rm -rf /var/lib/apt/lists/*
+    
 
 # Устанавливаем Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
+RUN pecl install redis && docker-php-ext-enable redis
 # Рабочая директория
 WORKDIR /var/www
 

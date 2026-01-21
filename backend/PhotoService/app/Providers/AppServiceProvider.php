@@ -11,6 +11,7 @@ use App\Domain\Photo\Services\PhotoManagementServiceInterface;
 use App\Infrastructure\Photo\Services\MinioPhotoManagement;
 use App\Infrastructure\Tag\Repositories\EloquentTagRepository;
 use App\Domain\Tag\Repositories\TagRepositoryInterface;
+use Illuminate\Support\Facades\Queue;
 
 
 
@@ -29,9 +30,6 @@ class AppServiceProvider extends ServiceProvider
         
         public function boot(): void 
         { 
-            $this->app['queue']->addConnector('amqp', function () 
-            { 
-                return new \App\Queue\Connectors\AmqpConnector(); 
-            }); 
+
         } 
     }

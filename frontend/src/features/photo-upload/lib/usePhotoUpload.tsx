@@ -2,7 +2,6 @@ import { useRef, useState, useEffect } from 'react';
 import {
   getUploadUrl,
   markUploaded,
-  checkPhotoStatus,
   updateTags
 } from '../../../entities/photo/api/photos.api.ts';
 import { startDotsAnimation } from './processingAnimation.tsx';
@@ -14,9 +13,11 @@ export function usePhotoUpload(token: string | null, title: string, description:
 
   const stopAnimationRef = useRef<(() => void) | null>(null);
   const photoIdRef = useRef<string | null>(null);
+  const isMountedRef = useRef(true); // чтобы не обновлять состояние после unmount
 
   useEffect(() => {
     return () => {
+      isMountedRef.current = false;
       if (stopAnimationRef.current) {
         stopAnimationRef.current();
       }
@@ -48,45 +49,41 @@ export function usePhotoUpload(token: string | null, title: string, description:
         headers: { 'Content-Type': file.type },
       });
 
-      setStatus('Сжимаем в WebP');
+      setStatus('Сжимаем в WebP...');
 
+      // Запускаем анимацию точек — она будет идти, пока не придёт событие
       stopAnimationRef.current = startDotsAnimation(setStatus);
 
       await markUploaded(token, photo_id, upload_url.split('?')[0], file.size, quality, format);
 
-      setTimeout(async () => {
-        try {
-          const data = await checkPhotoStatus(token, photo_id);
+      setStatus('Фото отправлено на сжатие. Ожидаем подтверждения...');
 
-          if (data.status === 'compressed') {
-            stopAnimation();
-            setStatus('Фото успешно сжато и загружено!');
-            setFinalUrl(data.url);
+      // Больше НЕ используем setTimeout и checkPhotoStatus!
+      // Дальше за обновление отвечает usePhotoCompressionEcho → onDone
 
-          if (tagList.length > 0 && photoIdRef.current) {
-            try {
-              await updateTags(token, photoIdRef.current, tagList);
-              console.log('Теги успешно обновлены');
-            } catch (err) {
-              console.error('Ошибка при обновлении тегов', err);
-            }
-          }
-
-            setUploading(false);
-          } else {
-            setStatus('Обработка всё ещё идёт...');
-          }
-        } catch (err) {
-          stopAnimation();
-          setStatus('Ошибка при проверке статуса');
-          setUploading(false);
-        }
-      }, 30000);
     } catch (e: any) {
       stopAnimation();
       setStatus('Ошибка: ' + (e.message || 'Неизвестная ошибка'));
       setUploading(false);
     }
+  };
+
+  // Функция, которую вызовет usePhotoCompressionEcho когда событие придёт
+  const handleCompressionDone = (compressedUrl: string) => {
+    if (!isMountedRef.current) return;
+
+    stopAnimation();
+    setStatus('Фото успешно сжато и загружено!');
+    setFinalUrl(compressedUrl);
+
+    // Обновляем теги, если они есть
+    if (tagList.length > 0 && photoIdRef.current) {
+      updateTags(token!, photoIdRef.current, tagList)
+        .then(() => console.log('Теги успешно обновлены'))
+        .catch(err => console.error('Ошибка при обновлении тегов', err));
+    }
+
+    setUploading(false);
   };
 
   return {
@@ -97,6 +94,7 @@ export function usePhotoUpload(token: string | null, title: string, description:
     photoIdRef,
     setFinalUrl,
     setUploading,
+    // ← Добавляем эту функцию, чтобы передать в usePhotoCompressionEcho как onDone
+    onCompressionDone: handleCompressionDone,
   };
 }
-2

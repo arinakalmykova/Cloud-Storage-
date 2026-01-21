@@ -27,7 +27,7 @@ class AuthController extends Controller
         $user = $this->authService->register($dto);
 
         return response()->json([
-            'id' => $user->getId(),
+            'userId' => $user->getId(),
             'name' => $user->getName(), 
             'email' => $user->getEmail(),
         ]);
@@ -43,7 +43,7 @@ class AuthController extends Controller
         $loginResult = $this->authService->login($dto);
 
         return response()->json([
-            'user_id' => $loginResult->userId,
+            'userId' => $loginResult->userId,
             'token' => $loginResult->token,
         ]);
     }

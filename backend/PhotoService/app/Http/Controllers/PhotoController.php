@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Application\Photo\PhotoService;
 use Illuminate\Http\JsonResponse;
 use App\Application\Photo\MLServiceClient;
+use App\Console\Commands\ConsumePhotoCompressed;
 
 class PhotoController extends Controller
 {

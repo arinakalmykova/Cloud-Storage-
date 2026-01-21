@@ -1,7 +1,6 @@
 # Используем PHP 8.3 с FPM
 FROM php:8.3-fpm
 
-# Устанавливаем зависимости и nginx
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
@@ -9,11 +8,15 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     curl \
     nginx \
-    && docker-php-ext-install pdo pdo_pgsql sockets
+    librdkafka-dev \ 
+    && docker-php-ext-install pdo pdo_pgsql sockets \
+    && pecl install rdkafka \
+    && docker-php-ext-enable rdkafka \
+    && rm -rf /var/lib/apt/lists/*
 
 # Устанавливаем Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
+RUN pecl install redis && docker-php-ext-enable redis
 # Рабочая директория
 WORKDIR /var/www
 

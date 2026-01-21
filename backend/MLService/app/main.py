@@ -10,7 +10,7 @@ app = FastAPI(title="ML Image Analyzer")
 # Добавить CORS для FastAPI
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Ваш фронтенд
+    allow_origins=["http://localhost"],  # Ваш фронтенд
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

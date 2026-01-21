@@ -5,6 +5,7 @@ export async function getUploadUrl(token: string, file: File, title: string, des
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'Accept': 'application/json',
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
@@ -24,6 +25,7 @@ export async function markUploaded(token: string, photoId: string, url: string, 
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'Accept': 'application/json',
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({ photo_id: photoId, url, size, quality, format }),
@@ -79,8 +81,7 @@ export async function recommendML(token: string, file: File) {
     const res = await fetch(`${API_UPLOAD_URL}/recommend`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`,
-        // Не добавляем Content-Type для FormData, браузер сделает это сам
+        'Authorization': `Bearer ${token}`
       },
       body: formData,
       credentials: 'include', // Для CORS с credentials

@@ -13,6 +13,7 @@ use App\Application\Tag\TagService;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use ColorThief\ColorThief;
+use App\Domain\PhotoProcessResult;
 use Imagick;
 
 class PhotoService
@@ -71,7 +72,8 @@ class PhotoService
         $this->repository->syncTags($photo, $tagIds);
     }
 
-   public function processUploadedPhoto(Photo $photo): bool
+    
+ public function processUploadedPhoto(Photo $photo): bool
 {
     $key = 'uploads/' . $photo->getId() . '/original';
 
@@ -136,6 +138,5 @@ class PhotoService
         return false;
     }
 }
-
 
 }

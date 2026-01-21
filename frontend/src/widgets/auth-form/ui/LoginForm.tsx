@@ -15,8 +15,9 @@ const Login: FC<AuthProps> = ({ setToken, setUser }) => {
     try {
       const data = await loginUser(email, password);
 
-      if (data.token) {
+      if (data.token && data.userId) {
         localStorage.setItem('token', data.token);
+        localStorage.setItem('user_id', data.userId);
         setToken(data.token);
 
         const userData = await fetchMe(data.token);
