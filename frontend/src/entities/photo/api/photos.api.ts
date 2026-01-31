@@ -5,14 +5,14 @@ export async function getUploadUrl(token: string, file: File, title: string, des
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      Accept: 'application/json',
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
       file: file,
       mimeType: file.type || 'image/jpeg',
       fileName: title,
-      description: description
+      description: description,
     }),
   });
 
@@ -20,12 +20,19 @@ export async function getUploadUrl(token: string, file: File, title: string, des
   return res.json();
 }
 
-export async function markUploaded(token: string, photoId: string, url: string, size: number, quality: number, format: string) {
+export async function markUploaded(
+  token: string,
+  photoId: string,
+  url: string,
+  size: number,
+  quality: number,
+  format: string
+) {
   await fetch(`${API_UPLOAD_URL}/mark-uploaded`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Accept': 'application/json',
+      Accept: 'application/json',
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({ photo_id: photoId, url, size, quality, format }),
@@ -39,12 +46,7 @@ export async function checkPhotoStatus(token: string, id: string) {
   return res.json();
 }
 
-
-export async function updateTags(
-  token: string,
-  photoId: string,
-  tags: string[]
-): Promise<void> {
+export async function updateTags(token: string, photoId: string, tags: string[]): Promise<void> {
   const res = await fetch(`${API_UPLOAD_URL}/${photoId}/tags`, {
     method: 'POST',
     headers: {
@@ -58,11 +60,7 @@ export async function updateTags(
   if (!res.ok) {
     throw new Error('Ошибка обновления тегов');
   }
-
-
-
 }
-
 
 export async function recommendML(token: string, file: File) {
   const formData = new FormData();
@@ -71,17 +69,19 @@ export async function recommendML(token: string, file: File) {
   // Проверяем формат файла
   const fileName = file.name.toLowerCase();
   const supportedFormats = ['.jpg', '.jpeg', '.png', '.webp', '.avif'];
-  const isValidFormat = supportedFormats.some(format => fileName.endsWith(format));
-  
+  const isValidFormat = supportedFormats.some((format) => fileName.endsWith(format));
+
   if (!isValidFormat) {
-    throw new Error(`Неподдерживаемый формат файла: ${file.name}. Поддерживаются: ${supportedFormats.join(', ')}`);
+    throw new Error(
+      `Неподдерживаемый формат файла: ${file.name}. Поддерживаются: ${supportedFormats.join(', ')}`
+    );
   }
 
   try {
     const res = await fetch(`${API_UPLOAD_URL}/recommend`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
       },
       body: formData,
       credentials: 'include', // Для CORS с credentials

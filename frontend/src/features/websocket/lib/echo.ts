@@ -24,7 +24,7 @@ export function initEcho(token: string) {
     forceTLS: false,
     enabledTransports: ['ws'],
     authEndpoint: '/api/broadcasting/auth',
-    authTransport: 'ajax',  // ← явно укажи ajax для авторизации
+    authTransport: 'ajax', // ← явно укажи ajax для авторизации
     auth: {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -42,7 +42,10 @@ export function initEcho(token: string) {
     console.log('[Echo Debug] connector существует?', !!echo.connector);
     console.log('[Echo Debug] pusher существует?', !!echo.connector?.pusher);
     console.log('[Echo Debug] connection существует?', !!echo.connector?.pusher?.connection);
-    console.log('[Echo Debug] текущее состояние:', echo.connector?.pusher?.connection?.state || 'нет состояния');
+    console.log(
+      '[Echo Debug] текущее состояние:',
+      echo.connector?.pusher?.connection?.state || 'нет состояния'
+    );
   }, 1000);
 
   // Подписка на глобальные события Pusher

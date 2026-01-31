@@ -5,19 +5,20 @@ FROM node:20-alpine AS build
 
 WORKDIR /app
 
-# 1. Копируем ТОЛЬКО package файлы
+# 1. Копируем package файлы
 COPY package*.json ./
 
 # 2. Устанавливаем ВСЕ зависимости (включая dev)
 RUN npm ci --include=dev
 
-# 3. Копируем ВСЕ файлы (включая конфиги линтеров)
+# 3. Копируем ВСЕ файлы проекта
 COPY . .
 
-# 4. Запускаем линтинг (опционально, можно пропустить в билде)
-# RUN npm run lint:check
+# 3.1. Явно проверим tsconfig.json
+RUN ls -la /app/tsconfig.app.json /app/src
 
-# 5. Собираем проект
+# 4. Собираем проект (tsc + vite)
+RUN npx tsc --noEmit  # проверка TypeScript
 RUN npm run build
 
 # ==========================

@@ -1,19 +1,20 @@
 import { useRef, useState, useEffect } from 'react';
-import {
-  getUploadUrl,
-  markUploaded,
-  updateTags
-} from '../../../entities/photo/api/photos.api.ts';
+import { getUploadUrl, markUploaded, updateTags } from '../../../entities/photo/api/photos.api.ts';
 import { startDotsAnimation } from './processingAnimation.tsx';
 
-export function usePhotoUpload(token: string | null, title: string, description: string, tagList: string[] = []) {
+export function usePhotoUpload(
+  token: string | null,
+  title: string,
+  description: string,
+  tagList: string[] = []
+) {
   const [uploading, setUploading] = useState(false);
   const [status, setStatus] = useState('');
   const [finalUrl, setFinalUrl] = useState<string | null>(null);
-
+  const [compressed_size, setCompressedSize] = useState(0);
   const stopAnimationRef = useRef<(() => void) | null>(null);
-  const photoIdRef = useRef<string | null>(null);
-  const isMountedRef = useRef(true); // чтобы не обновлять состояние после unmount
+  const [photoId, setPhotoId] = useState<string | null>(null);
+  const isMountedRef = useRef(true); 
 
   useEffect(() => {
     return () => {
@@ -32,6 +33,7 @@ export function usePhotoUpload(token: string | null, title: string, description:
   };
 
   const upload = async (file: File, quality: number, format: string) => {
+     console.log('upload вызван с:', { file, quality, format });
     if (!token) return;
 
     setUploading(true);
@@ -41,7 +43,7 @@ export function usePhotoUpload(token: string | null, title: string, description:
 
     try {
       const { photo_id, upload_url } = await getUploadUrl(token, file, title, description);
-      photoIdRef.current = photo_id;
+      setPhotoId(photo_id);
 
       await fetch(upload_url, {
         method: 'PUT',
@@ -49,18 +51,12 @@ export function usePhotoUpload(token: string | null, title: string, description:
         headers: { 'Content-Type': file.type },
       });
 
-      setStatus('Сжимаем в WebP...');
-
-      // Запускаем анимацию точек — она будет идти, пока не придёт событие
+      setStatus('Сжимаем...');
       stopAnimationRef.current = startDotsAnimation(setStatus);
 
       await markUploaded(token, photo_id, upload_url.split('?')[0], file.size, quality, format);
 
       setStatus('Фото отправлено на сжатие. Ожидаем подтверждения...');
-
-      // Больше НЕ используем setTimeout и checkPhotoStatus!
-      // Дальше за обновление отвечает usePhotoCompressionEcho → onDone
-
     } catch (e: any) {
       stopAnimation();
       setStatus('Ошибка: ' + (e.message || 'Неизвестная ошибка'));
@@ -68,21 +64,21 @@ export function usePhotoUpload(token: string | null, title: string, description:
     }
   };
 
-  // Функция, которую вызовет usePhotoCompressionEcho когда событие придёт
-  const handleCompressionDone = (compressedUrl: string) => {
+  
+  const handleCompressionDone = (compressedUrl: string, compressedSize: number) => {
     if (!isMountedRef.current) return;
 
     stopAnimation();
     setStatus('Фото успешно сжато и загружено!');
     setFinalUrl(compressedUrl);
 
-    // Обновляем теги, если они есть
-    if (tagList.length > 0 && photoIdRef.current) {
-      updateTags(token!, photoIdRef.current, tagList)
+    if (tagList.length > 0 && photoId) {
+      updateTags(token!, photoId, tagList)
         .then(() => console.log('Теги успешно обновлены'))
-        .catch(err => console.error('Ошибка при обновлении тегов', err));
+        .catch((err) => console.error('Ошибка при обновлении тегов', err));
     }
 
+    setCompressedSize(compressedSize);
     setUploading(false);
   };
 
@@ -91,10 +87,12 @@ export function usePhotoUpload(token: string | null, title: string, description:
     status,
     finalUrl,
     upload,
-    photoIdRef,
+    photoId,
+    compressed_size,
+    setStatus,
     setFinalUrl,
+    setCompressedSize,
     setUploading,
-    // ← Добавляем эту функцию, чтобы передать в usePhotoCompressionEcho как onDone
     onCompressionDone: handleCompressionDone,
   };
 }

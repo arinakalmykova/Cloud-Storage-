@@ -1,0 +1,14 @@
+.layout {
+  height: 100%;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  background: var(--background-color-main);
+  height: 100%;
+}
+
+.main {
+  grid-column: 2;
+}

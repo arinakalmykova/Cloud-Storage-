@@ -1,5 +1,5 @@
 export interface User {
-  id: number;
+  id: string;
   name: string;
   email: string;
 }
@@ -9,6 +9,8 @@ export interface AuthResponse {
   user: User;
   error?: string;
   userId?: string;
+  name?: string;
+  email?: string;
 }
 
 export interface ErrorResponse {

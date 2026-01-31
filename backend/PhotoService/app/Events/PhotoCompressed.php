@@ -16,12 +16,14 @@ class PhotoCompressed implements ShouldBroadcastNow
     public $photoId;
     public $compressedUrl;
     public $userId;
+    public $compressedSize;
 
-    public function __construct(string $photoId, string $compressedUrl, string $userId)
+    public function __construct(string $photoId, string $compressedUrl, string $userId, int $compressedSize)
     {
         $this->photoId      = $photoId;
         $this->compressedUrl = $compressedUrl;
         $this->userId       = $userId;
+        $this->compressedSize = $compressedSize;
     }
 
     public function broadcastOn(): Channel
@@ -40,6 +42,8 @@ class PhotoCompressed implements ShouldBroadcastNow
         return [
             'photo_id'       => $this->photoId,
             'compressed_url' => $this->compressedUrl,
+            'user_id'        => $this->userId,
+            'compressed_size' => $this->compressedSize
         ];
     }
 }

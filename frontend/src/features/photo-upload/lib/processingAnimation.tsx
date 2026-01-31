@@ -3,7 +3,7 @@ export function startDotsAnimation(setStatus: (s: string) => void) {
 
   const intervalId = window.setInterval(() => {
     dots = (dots + 1) % 4;
-    setStatus('Сжимаем в WebP' + '.'.repeat(dots));
+    setStatus('Сжимаем' + '.'.repeat(dots));
   }, 800);
 
   return () => {

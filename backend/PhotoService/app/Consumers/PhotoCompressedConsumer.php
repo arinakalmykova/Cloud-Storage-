@@ -73,7 +73,7 @@ class PhotoCompressedConsumer
             $photo->markCompressed($compressedUrl, $compressedSize);
 
             $this->photoService->save($photo);
-            broadcast(new PhotoCompressed($photoId,$compressedUrl,$photo->getUserId())); 
+            broadcast(new PhotoCompressed($photoId,$compressedUrl,$photo->getUserId(),$compressedSize)); 
             $this->forcedLog('Photo successfully marked as compressed and saved', [
                 'photo_id'       => $photoId,
                 'compressed_url' => $compressedUrl,
