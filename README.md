@@ -194,8 +194,8 @@ docker compose up -d --build
 ---
 
 ## Результат интерфейса 
-![Dashboard](/public/imges/dashboard.png)
+![Dashboard](/public/images/dashboard.png)
 ---
-![Upload](/public/imges/upload.png)
+![Upload](/public/images/upload.png)
 
 Автор: *студентка направления «Информатика и вычислительная техника»*
