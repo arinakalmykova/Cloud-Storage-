@@ -2,8 +2,8 @@
   --background-color-white: linear-gradient(to bottom right, #f8fafc, #eff6ff, #eef2ff);
   --background-color-black: linear-gradient(to bottom right, #0f172a, #1e3a8a, #312e81);
   --background-logo: linear-gradient(to right, #0891b2, #2563eb);
-  --color-white:#ffffff;
-  --color-black:#000000;
+  --color-white: #ffffff;
+  --color-black: #000000;
   --color-grey-text: #242424;
   font-family: Google Sans;
   --font-family: 'Google Sans';
@@ -13,8 +13,8 @@
   --color-grey: #313644;
   --color-input: #161616;
   --color-blue: #0891b2;
-  --color-border-grey:#6b7280;
-  --color-red:#ff6b6b;
+  --color-border-grey: #6b7280;
+  --color-red: #ff6b6b;
 }
 
 body {
@@ -22,6 +22,7 @@ body {
   padding: 0;
   min-width: 100%;
   box-sizing: border-box;
+  height: 100%;
 }
 
 h1 {

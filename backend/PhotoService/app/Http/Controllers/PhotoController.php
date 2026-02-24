@@ -71,6 +71,7 @@ class PhotoController extends Controller
             'url' => 'required|string',
             'quality' => 'sometimes|integer',
             'format' => 'sometimes|string',
+            'folder_id' => 'sometimes|string|nullable'
         ]);
 
         $photo = $this->photoService->getById($request->photo_id);
@@ -79,7 +80,7 @@ class PhotoController extends Controller
             return response()->json(['error' => 'Not found'], 404);
         }
 
-        $photo->markUploaded($request->url, $request->size,$request->quality,$request->format);
+        $photo->markUploaded($request->url, $request->size,$request->quality,$request->format, $request->folder_id);
         $this->photoService->save($photo);
         $result = $this->photoService->processUploadedPhoto($photo);
 
@@ -143,4 +144,41 @@ class PhotoController extends Controller
         return response()->json(['status' => 'ok']);
     }
 
+    public function getRecentPhotos(Request $request): JsonResponse
+    {
+        
+        $photos = $this->photoService->getRecentPhotos($request->user()->getId());
+        return response()->json($photos);
+    }
+
+    public function movePhotoToFolder(Request $request): JsonResponse
+    {
+        $request->validate(['photo_id' => 'required|string']);
+        $request->validate(['folder_id' => 'required|string|nullable']);
+        $id = $request->string('photo_id')->toString();
+        $userId = $request->user()->getId();
+        $folderId = $request->string('folder_id')->toString();
+
+        $this->photoService->movePhotoToFolder($userId, $id, $folderId);
+
+        return response()->json(['status' => 'ok']);
+    }
+
+    public function deletePhoto(Request $request, string $id): JsonResponse
+    {
+        $this->photoService->deletePhoto($id, $request->user()->getId());
+        return response()->json(['status' => 'ok']);
+    }
+
+
+    public function renamePhoto(Request $request, string $id): JsonResponse
+    {
+        $request->validate(['title' => 'required|string|max:255']);
+        $userId = $request->user()->getId();
+        $title = $request->string('title')->toString();
+
+        $this->photoService->renamePhoto($userId, $id, $title);
+
+        return response()->json(['status' => 'ok']);
+    }
 }

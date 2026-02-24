@@ -6,7 +6,8 @@ export function usePhotoUpload(
   token: string | null,
   title: string,
   description: string,
-  tagList: string[] = []
+  tagList: string[] = [],
+  folderId: string | null
 ) {
   const [uploading, setUploading] = useState(false);
   const [status, setStatus] = useState('');
@@ -14,7 +15,7 @@ export function usePhotoUpload(
   const [compressed_size, setCompressedSize] = useState(0);
   const stopAnimationRef = useRef<(() => void) | null>(null);
   const [photoId, setPhotoId] = useState<string | null>(null);
-  const isMountedRef = useRef(true); 
+  const isMountedRef = useRef(true);
 
   useEffect(() => {
     return () => {
@@ -33,7 +34,7 @@ export function usePhotoUpload(
   };
 
   const upload = async (file: File, quality: number, format: string) => {
-     console.log('upload вызван с:', { file, quality, format });
+    console.log('upload вызван с:', { file, quality, format });
     if (!token) return;
 
     setUploading(true);
@@ -54,7 +55,15 @@ export function usePhotoUpload(
       setStatus('Сжимаем...');
       stopAnimationRef.current = startDotsAnimation(setStatus);
 
-      await markUploaded(token, photo_id, upload_url.split('?')[0], file.size, quality, format);
+      await markUploaded(
+        token,
+        photo_id,
+        upload_url.split('?')[0],
+        file.size,
+        quality,
+        format,
+        folderId
+      );
 
       setStatus('Фото отправлено на сжатие. Ожидаем подтверждения...');
     } catch (e: any) {
@@ -64,7 +73,6 @@ export function usePhotoUpload(
     }
   };
 
-  
   const handleCompressionDone = (compressedUrl: string, compressedSize: number) => {
     if (!isMountedRef.current) return;
 

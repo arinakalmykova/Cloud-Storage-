@@ -1,0 +1,26 @@
+.photo-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.photo-modal__content {
+  background: #111;
+  padding: 2rem;
+  border-radius: 20px;
+  max-width: 600px;
+  width: 90%;
+  color: white;
+  text-align: left;
+}
+
+.photo-modal__content img {
+  width: 100%;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}

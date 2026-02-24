@@ -26,7 +26,8 @@ export async function markUploaded(
   url: string,
   size: number,
   quality: number,
-  format: string
+  format: string,
+  folderId: string | null
 ) {
   await fetch(`${API_UPLOAD_URL}/mark-uploaded`, {
     method: 'POST',
@@ -35,7 +36,7 @@ export async function markUploaded(
       Accept: 'application/json',
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ photo_id: photoId, url, size, quality, format }),
+    body: JSON.stringify({ photo_id: photoId, url, size, quality, format, folder_id: folderId }),
   });
 }
 
@@ -66,7 +67,6 @@ export async function recommendML(token: string, file: File) {
   const formData = new FormData();
   formData.append('file', file);
 
-  // Проверяем формат файла
   const fileName = file.name.toLowerCase();
   const supportedFormats = ['.jpg', '.jpeg', '.png', '.webp', '.avif'];
   const isValidFormat = supportedFormats.some((format) => fileName.endsWith(format));
@@ -84,11 +84,10 @@ export async function recommendML(token: string, file: File) {
         Authorization: `Bearer ${token}`,
       },
       body: formData,
-      credentials: 'include', // Для CORS с credentials
+      credentials: 'include',
     });
 
     if (res.status === 302) {
-      // Если редирект, получаем конечный URL
       const redirectUrl = res.headers.get('Location');
       throw new Error(`Редирект на: ${redirectUrl}`);
     }
@@ -103,4 +102,40 @@ export async function recommendML(token: string, file: File) {
     console.error('Ошибка запроса:', error);
     throw error;
   }
+}
+
+export async function deletePhoto(token: string, photoId: string) {
+  const res = await fetch(`${API_UPLOAD_URL}/${photoId}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  if (!res.ok) {
+    throw new Error('Ошибка удаления фото');
+  }
+}
+
+export async function renamePhoto(token: string, photoId: string, newTitle: string) {
+  const res = await fetch(`${API_UPLOAD_URL}/${photoId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json',
+    },
+    body: JSON.stringify({ title: newTitle }),
+  });
+
+  if (!res.ok) {
+    throw new Error('Ошибка переименования фото');
+  }
+}
+
+export async function recentAddPhotos(token: string) {
+  const res = await fetch(`${API_UPLOAD_URL}/recent`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return res.json();
 }

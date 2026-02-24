@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import '../../../app/styles/Slider.css';
-import {Input} from '../../../widgets';
+import { Input } from '../../../widgets';
 
 type Props = {
   originalSrc: string;
@@ -12,21 +12,17 @@ export function Slider({ originalSrc, compressedSrc }: Props) {
 
   return (
     <div className="container">
-      <div
-        className="image after"
-        style={{ backgroundImage: `url(${compressedSrc})` }}
-      />
+      <div className="image after" style={{ backgroundImage: `url(${compressedSrc})` }} />
 
       <div className="image before">
-      <div
-        className="inner"
-        style={{
-          backgroundImage: `url(${originalSrc})`,
-          clipPath: `inset(0 ${100 - value}% 0 0)`, 
-        }}
-      />
-    </div>
-
+        <div
+          className="inner"
+          style={{
+            backgroundImage: `url(${originalSrc})`,
+            clipPath: `inset(0 ${100 - value}% 0 0)`,
+          }}
+        />
+      </div>
 
       <Input
         type="range"
@@ -37,10 +33,7 @@ export function Slider({ originalSrc, compressedSrc }: Props) {
         onChange={(e) => setValue(Number(e.target.value))}
       />
 
-      <div
-        className="slider-button"
-        style={{ left: `calc(${value}% - 15px)` }}
-      />
+      <div className="slider-button" style={{ left: `calc(${value}% - 15px)` }} />
     </div>
   );
 }

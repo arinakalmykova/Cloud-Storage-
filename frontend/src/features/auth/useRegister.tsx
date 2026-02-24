@@ -3,12 +3,10 @@ import { registerThunk } from '../../app';
 
 export function useRegister() {
   const dispatch = useAppDispatch();
-  const { loading, error } = useAppSelector(state => state.auth);
+  const { loading, error } = useAppSelector((state) => state.auth);
 
   const register = async (name: string, email: string, password: string) => {
-    const result = await dispatch(
-      registerThunk({ name, email, password })
-    );
+    const result = await dispatch(registerThunk({ name, email, password }));
 
     if (registerThunk.fulfilled.match(result)) {
       return true;

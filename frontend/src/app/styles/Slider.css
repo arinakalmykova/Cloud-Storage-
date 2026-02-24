@@ -16,19 +16,17 @@
   background-size: contain;
 }
 
-/* ===== Оригинал (после сжатия) ===== */
 .image.after {
   width: 100%;
   z-index: 1;
 }
 
-/* ===== Исходное изображение (обрезаемое) ===== */
 .image.before {
   position: absolute;
   top: 0;
   left: 0;
   height: 100%;
-  width: 100%; /* всегда 100% */
+  width: 100%;
   z-index: 2;
   overflow: hidden;
 }
@@ -42,11 +40,9 @@
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
-  clip-path: inset(0 50% 0 0); 
+  clip-path: inset(0 50% 0 0);
 }
 
-
-/* ===== Range input (ловит drag) ===== */
 input.slider {
   position: absolute;
   top: 0;
@@ -63,7 +59,6 @@ input.slider {
   z-index: 4;
 }
 
-/* ===== Убираем стандартный трек ===== */
 input.slider::-webkit-slider-runnable-track {
   background: transparent;
 }
@@ -72,7 +67,6 @@ input.slider::-moz-range-track {
   background: transparent;
 }
 
-/* ===== Вертикальная линия (ползунок) ===== */
 input.slider::-webkit-slider-thumb {
   width: 4px;
   height: 100%;
@@ -90,7 +84,6 @@ input.slider::-moz-range-thumb {
   border: none;
 }
 
-/* ===== Круглая кнопка по центру ===== */
 .slider-button {
   position: absolute;
   top: 50%;
@@ -100,7 +93,7 @@ input.slider::-moz-range-thumb {
   background: #ffffff;
   border-radius: 50%;
   z-index: 3;
-  pointer-events: none; /* чтобы drag работал через range */
+  pointer-events: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -108,7 +101,6 @@ input.slider::-moz-range-thumb {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
-/* ===== Стрелки ===== */
 .slider-button::before,
 .slider-button::after {
   font-size: 14px;
@@ -116,9 +108,9 @@ input.slider::-moz-range-thumb {
 }
 
 .slider-button::before {
-  content: "‹";
+  content: '‹';
 }
 
 .slider-button::after {
-  content: "›";
+  content: '›';
 }

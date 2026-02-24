@@ -6,6 +6,7 @@ use App\Domain\Photo\Repositories\PhotoRepositoryInterface;
 use App\Domain\Photo\Entities\Photo;
 use App\Domain\Photo\ValueObjects\PhotoStatus;
 use App\Models\Photo as PhotoModel;
+use App\Models\Folder as FolderModel;
 
 class EloquentPhotoRepository implements PhotoRepositoryInterface
 {
@@ -21,7 +22,8 @@ class EloquentPhotoRepository implements PhotoRepositoryInterface
                 'file_name' => $photo->getFileName(),
                 'description' => $photo->getDescription(),
                 'dominant_color' => $photo->getDominantColor(),
-                'format' => $photo->getFormat()
+                'format' => $photo->getFormat(),
+                'folder_id' => $photo->getFolderId()
             ]
         );
     }
@@ -40,8 +42,10 @@ class EloquentPhotoRepository implements PhotoRepositoryInterface
         description: $model->description,
         url: $model->url,
         size: $model->size,
+        format: $model->format,
         status: new PhotoStatus($model->status),
-        dominantColor: $model->dominant_color
+        dominantColor: $model->dominant_color,
+        folderId: $model->folder_id
     );
     }
 
@@ -51,4 +55,37 @@ class EloquentPhotoRepository implements PhotoRepositoryInterface
             ->tags()
             ->sync($tagIds);
     }
+
+    public function delete(Photo $photo): void
+    {
+        PhotoModel::destroy($photo->getId());
+    }
+
+    public function findRecentByUserId(string $userId, int $limit = 10): array
+{
+    return PhotoModel::where('user_id', $userId)
+        ->latest()
+        ->limit($limit)
+        ->get()
+        ->map(function (PhotoModel $model) {
+            $photo = new Photo(
+                id: $model->id,
+                userId: $model->user_id,
+                fileName: $model->file_name,
+                description: $model->description,
+                url: $model->url,
+                size: $model->size,
+                format: $model->format,
+                status: new PhotoStatus($model->status),
+                dominantColor: $model->dominant_color,
+                createdAt: $model->created_at,
+                folderId: FolderModel::find($model->folder_id)->name ?? null
+            );
+            
+            return $photo->toArray(); 
+        })
+        ->values() 
+        ->toArray(); 
+}
+
 }

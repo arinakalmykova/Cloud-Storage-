@@ -22,7 +22,7 @@
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
-  gap:10px;
+  gap: 10px;
   align-self: flex-start;
 }
 
@@ -37,8 +37,8 @@
   gap: 10px;
 }
 
-.upload__bottom-panel-status{
-  color:var(--color-white);
+.upload__bottom-panel-status {
+  color: var(--color-white);
   font-family: var(--font-family);
 }
 
@@ -74,4 +74,3 @@
   width: 0;
   transition: width 0.3s ease;
 }
-

@@ -44,4 +44,9 @@ class MinioPhotoManagement implements PhotoManagementServiceInterface
     {
         return $this->disk->temporaryUrl($key, now()->addSeconds($expires));
     }
+
+    public function deleteFile(string $key): void
+    {
+        $this->disk->delete($key);
+    }
 }

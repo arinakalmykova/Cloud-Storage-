@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useLogin } from '../../../features';
 import '../../../app/styles/AuthPage.css';
-import {Input, Button} from '../../../widgets';
+import { Input, Button } from '../../../widgets';
 
 export function Login() {
   const { signIn, loading, error } = useLogin();
@@ -16,13 +16,27 @@ export function Login() {
   return (
     <form onSubmit={handleSubmit} className="login-form">
       <label htmlFor="email">Email</label>
-      <Input value={email} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)} placeholder="Email" id="email" />
+      <Input
+        value={email}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+        placeholder="Email"
+        id="email"
+      />
       <label htmlFor="password">Пароль</label>
-      <Input value={password} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)} placeholder="Пароль" id="password" type="password" />
+      <Input
+        value={password}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+        placeholder="Пароль"
+        id="password"
+        type="password"
+      />
 
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
-      <Button type="submit" loading={loading} > Войти </Button>
+      <Button type="submit" loading={loading}>
+        {' '}
+        Войти{' '}
+      </Button>
     </form>
   );
 }

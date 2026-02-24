@@ -17,9 +17,7 @@ export function AuthPage() {
         <div className="auth-content-container">
           <Logo />
           <div className="text-content">
-            <h2 className="text-title">
-              Современное облачное хранилище ваших фотографий
-            </h2>
+            <h2 className="text-title">Современное облачное хранилище ваших фотографий</h2>
 
             <p className="text-description">
               Безопасное, интеллектуальное и красиво организованное. Храните и оптимизируйте свои

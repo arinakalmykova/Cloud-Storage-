@@ -19,6 +19,8 @@ class Photo
     private ?string $presignedUrl = null; 
     private PhotoStatus $status;
     private ?int $quality = null;
+    private ?string $folderId = null;
+    private ?string $createdAt = null;
 
     public function __construct(
     string $id, 
@@ -28,7 +30,10 @@ class Photo
     ?string $url, 
     PhotoStatus $status,
     ?int $size = null,
-    ?string $dominantColor = null
+    ?string $format = null,
+    ?string $dominantColor = null,
+    ?string $folderId = null,
+    ?string $createdAt = null
     ) {
         $this->id = $id;
         $this->userId = $userId;
@@ -38,6 +43,9 @@ class Photo
         $this->status = $status;
         $this->size = $size;
         $this->dominantColor = $dominantColor;
+        $this->folderId = $folderId;
+        $this->format = $format;
+        $this->createdAt = $createdAt;
     }
 
     public function markPendingUpload(string $key, string $presignedUrl): void
@@ -47,12 +55,13 @@ class Photo
         $this->status = PhotoStatus::pendingUpload();
     }
 
-    public function markUploaded(string $url, int $size, ?int $quality = null, ?string $format = null): void  
+    public function markUploaded(string $url, int $size, ?int $quality = null, ?string $format = null, ?string $folder_id = null): void  
     {
         $this->url = $url;
         $this->size = $size;
         $this->quality = $quality;
         $this->format = $format;
+        $this->folderId = $folder_id;
         $this->status = PhotoStatus::uploaded();
     }
 
@@ -83,6 +92,16 @@ class Photo
         $this->tags = $tags;
     }
 
+    public function setFileName(string $fileName): void
+    {
+        $this->fileName = $fileName;
+    }
+
+    public function setFolderId(?string $folderId): void
+    {
+        $this->folderId = $folderId;
+    }
+    
     public function getId(): string { return $this->id; }
     public function getUserId(): string { return $this->userId; }
     public function getFileName(): string { return $this->fileName; }
@@ -96,9 +115,24 @@ class Photo
     public function getDominantColor(): ?string { return $this->dominantColor; }
     public function getQuality(): ?int { return $this->quality; }
     public function getFormat(): ?string { return $this->format; }
+    public function getFolderId(): ?string { return $this->folderId; }
 
     public function isOwnedBy(string $userId): bool
     {
         return $this->userId === $userId;
+    }
+
+     public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'title' => $this->fileName,
+            'description' => $this->description,
+            'url' => $this->url,
+            'size' => $this->size,
+            'format' => $this->format,
+            'folder' => $this->folderId,
+            'createdAt' => $this->createdAt,
+        ];
     }
 }

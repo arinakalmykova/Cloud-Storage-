@@ -21,7 +21,8 @@ class PhotoService
     public function __construct(
         private PhotoRepositoryInterface $repository,
         private PhotoManagementServiceInterface $minioService,
-        private TagService $tagService
+        private TagService $tagService,
+        
     ) {}
 
     public function createUploadIntent(CreatePhotoDTO $dto): Photo 
@@ -73,70 +74,115 @@ class PhotoService
     }
 
     
- public function processUploadedPhoto(Photo $photo): bool
-{
-    $key = 'uploads/' . $photo->getId() . '/original';
+    public function processUploadedPhoto(Photo $photo): bool
+    {
+        $key = 'uploads/' . $photo->getId() . '/original';
 
-    try {
-        // 1. Получаем файл из хранилища
-        $content = Storage::disk('s3_backend')->get($key);
-        if (!$content || strlen($content) === 0) {
-            Log::error('File is empty or not found', ['key' => $key]);
-            $photo->markFailed();
-            $this->save($photo);
-            return false;
-        }
+        try {
+            // 1. Получаем файл из хранилища
+            $content = Storage::disk('s3_backend')->get($key);
+            if (!$content || strlen($content) === 0) {
+                Log::error('File is empty or not found', ['key' => $key]);
+                $photo->markFailed();
+                $this->save($photo);
+                return false;
+            }
 
-        $hexColor = null;
-        
-        // 2. Пробуем через Imagick (если доступен) - более эффективно
-        if (extension_loaded('imagick') && class_exists('Imagick')) {
-            try {
-                $imagick = new Imagick();
-                $imagick->readImageBlob($content);
-                
-                $dominantColor = ColorThief::getColor($imagick);
-                
-                if ($dominantColor && is_array($dominantColor) && count($dominantColor) === 3) {
-                    $hexColor = sprintf("#%02x%02x%02x", 
-                        $dominantColor[0], $dominantColor[1], $dominantColor[2]);
+            $hexColor = null;
+            
+            // 2. Пробуем через Imagick (если доступен) - более эффективно
+            if (extension_loaded('imagick') && class_exists('Imagick')) {
+                try {
+                    $imagick = new Imagick();
+                    $imagick->readImageBlob($content);
                     
+                    $dominantColor = ColorThief::getColor($imagick);
+                    
+                    if ($dominantColor && is_array($dominantColor) && count($dominantColor) === 3) {
+                        $hexColor = sprintf("#%02x%02x%02x", 
+                            $dominantColor[0], $dominantColor[1], $dominantColor[2]);
+                        
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('Imagick method failed, trying fallback', [
+                        'photo_id' => $photo->getId(),
+                        'error' => $e->getMessage()
+                    ]);
                 }
-            } catch (\Exception $e) {
-                Log::warning('Imagick method failed, trying fallback', [
-                    'photo_id' => $photo->getId(),
-                    'error' => $e->getMessage()
-                ]);
-            }
-        }
-        
-        
-        // 4. Сохраняем результат
-        if ($hexColor) {
-            $photo->setDominantColor($hexColor);
-            
-            // Обновляем статус на uploaded (если еще не установлен)
-            if ($photo->getStatus()->value() === 'pending_upload') {
-                $photo->markUploaded($photo->getUrl(), strlen($content));
             }
             
-            $this->save($photo);
-            event(new PhotoUploaded($photo->getId(), $key, $photo->getQuality(), $photo->getFormat()));
-            return true;
-        } 
-        else {
+            
+            // 4. Сохраняем результат
+            if ($hexColor) {
+                $photo->setDominantColor($hexColor);
+                
+                // Обновляем статус на uploaded (если еще не установлен)
+                if ($photo->getStatus()->value() === 'pending_upload') {
+                    $photo->markUploaded($photo->getUrl(), strlen($content));
+                }
+                
+                $this->save($photo);
+                event(new PhotoUploaded($photo->getId(), $key, $photo->getQuality(), $photo->getFormat()));
+                return true;
+            } 
+            else {
+                $photo->markFailed();
+                $this->save($photo);
+                return false;
+            }
+
+        } catch (\Throwable $e) {
+
             $photo->markFailed();
             $this->save($photo);
+            
             return false;
         }
-
-    } catch (\Throwable $e) {
-
-        $photo->markFailed();
-        $this->save($photo);
-        
-        return false;
     }
-}
+
+
+    public function movePhotoToFolder( string $userId,string $photoId, string $folderId): void
+    {
+        $photo = $this->repository->findById($photoId);
+
+        if (!$photo || !$photo->isOwnedBy($userId)) {
+            throw new \Exception('Not found');
+        }
+
+        $photo->setFolderId($folderId);
+        $this->repository->save($photo);
+    }
+
+    public function getRecentPhotos(string $userId, int $limit = 10): array
+    {
+        return $this->repository->findRecentByUserId($userId, $limit);
+    }
+
+    public function deletePhoto(string $photoId, string $userId): void
+    {
+        $photo = $this->repository->findById($photoId);
+
+        if (!$photo || !$photo->isOwnedBy($userId)) {
+            throw new \Exception('Not found');
+        }
+
+        if ($photo->getKey()) {
+            $this->minioService->deleteFile($photo->getKey());
+        }
+
+        $this->repository->delete($photo);
+    }
+
+    public function renamePhoto(string $userId, string $photoId, string $newName): void
+    {
+        $photo = $this->repository->findById($photoId);
+
+        if (!$photo || !$photo->isOwnedBy($userId)) {
+            throw new \Exception('Not found');
+        }
+
+        $photo->setFileName($newName);
+        $this->repository->save($photo);
+    }
 
 }

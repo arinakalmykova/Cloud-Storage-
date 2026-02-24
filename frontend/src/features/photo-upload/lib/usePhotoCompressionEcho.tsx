@@ -25,19 +25,27 @@ export function usePhotoCompressionEcho({ userId, token, photoId, onDone }: Prop
 
     const channel = echo
       .private(channelName)
-      .listen('.photo.compressed', (event: { photo_id: string; compressed_url: string, compressed_size: number }) => {
-        console.log('[Echo] Получено событие photo.compressed', event);
+      .listen(
+        '.photo.compressed',
+        (event: { photo_id: string; compressed_url: string; compressed_size: number }) => {
+          console.log('[Echo] Получено событие photo.compressed', event);
 
-        if (photoId && event.photo_id === photoId && event.compressed_url && event.compressed_size > 0) {
-          console.log(`[Echo] Совпадение photo_id → устанавливаем URL: ${event.compressed_url}`);
-          onDone(event.compressed_url, event.compressed_size);
-        } else {
-          console.log('[Echo] photo_id не совпадает или ref пустой → игнорируем', {
-            current: photoId,
-            received: event.photo_id,
-          });
+          if (
+            photoId &&
+            event.photo_id === photoId &&
+            event.compressed_url &&
+            event.compressed_size > 0
+          ) {
+            console.log(`[Echo] Совпадение photo_id → устанавливаем URL: ${event.compressed_url}`);
+            onDone(event.compressed_url, event.compressed_size);
+          } else {
+            console.log('[Echo] photo_id не совпадает или ref пустой → игнорируем', {
+              current: photoId,
+              received: event.photo_id,
+            });
+          }
         }
-      });
+      );
 
     channel.subscribed(() => {
       console.log(`[Echo] Успешно subscribed на ${channelName}`);
@@ -48,5 +56,5 @@ export function usePhotoCompressionEcho({ userId, token, photoId, onDone }: Prop
       channel.stopListening('.photo.compressed');
       echo.leave(channelName);
     };
-  }, [userId, token, photoId, onDone])
+  }, [userId, token, photoId, onDone]);
 }

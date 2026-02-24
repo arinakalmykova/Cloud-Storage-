@@ -9,7 +9,14 @@ type ButtonProps = {
   type?: 'button' | 'submit' | 'reset';
 };
 
-export function Button({ children, onClick, loading = false, disabled = false, className = '', type = 'button' }: ButtonProps) {
+export function Button({
+  children,
+  onClick,
+  loading = false,
+  disabled = false,
+  className = '',
+  type = 'button',
+}: ButtonProps) {
   return (
     <button
       type={type}

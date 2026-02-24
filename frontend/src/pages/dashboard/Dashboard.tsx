@@ -14,8 +14,7 @@ import {
   Tooltip,
 } from 'recharts';
 
-export function DashboardPage() {        
-
+export function DashboardPage() {
   const navigation = [
     { name: 'Загрузка', path: '/upload', icon: <Upload /> },
     { name: 'Архив', path: '/files', icon: <FolderOpen /> },
