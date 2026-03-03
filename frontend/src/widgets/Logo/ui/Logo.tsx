@@ -1,6 +1,7 @@
 import { Cloud } from 'lucide-react';
-import '../../../app/styles/Logo.css';
 import { Link } from 'react-router-dom';
+import '../../../app/styles/Logo.css';
+
 export function Logo() {
   return (
     <Link to={'/'} className="logo-link">

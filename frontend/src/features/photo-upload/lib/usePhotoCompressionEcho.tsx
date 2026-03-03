@@ -1,6 +1,5 @@
-// features/photo-upload/lib/usePhotoCompressionEcho.tsx
 import { useEffect } from 'react';
-import { initEcho } from '../../websocket/lib/echo'; // или откуда у тебя путь
+import { initEcho } from '../../websocket/lib/echo';
 
 type Props = {
   userId: string | null;

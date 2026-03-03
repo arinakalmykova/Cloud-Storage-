@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router-dom';
-import { Header, Footer, SideBar } from '../../widgets';
+import { Header, SideBar } from '../../widgets';
 import '../styles/MainLayout.css';
 export function MainLayout() {
   return (
@@ -11,7 +11,6 @@ export function MainLayout() {
           <Outlet />
         </main>
       </div>
-      <Footer />
     </div>
   );
 }

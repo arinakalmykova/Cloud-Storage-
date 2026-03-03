@@ -1,5 +1,4 @@
-import { useAppDispatch, useAppSelector } from '../../app';
-import { registerThunk } from '../../app';
+import { useAppDispatch, useAppSelector, registerThunk } from '../../app';
 
 export function useRegister() {
   const dispatch = useAppDispatch();

@@ -1,17 +1,24 @@
-import type { Photo } from '../model/types';
+import type { Photo } from '../../../entities';
+import { Button } from '../../../shared';
 import '../../../app/styles/PhotoCard.css';
-import type { Folder } from '../../folder/model/types';
 
 type PhotoCardProps = {
   photo: Photo;
-  folders: Folder[];
-  onClick: () => void;
-  onDelete: (photo: Photo) => void;
-  onRename: (photo: Photo) => void;
-  onMove: (photo: Photo) => void;
+  onClick?: () => void;
+  onDelete?: (photo: Photo) => void;
+  onRename?: (photo: Photo) => void;
+  onMove?: (photo: Photo) => void;
+  onDownload?: (photo: Photo) => void;
 };
 
-export function PhotoCard({ photo, onClick, onDelete, onRename, onMove }: PhotoCardProps) {
+export function PhotoCard({
+  photo,
+  onClick,
+  onDelete,
+  onRename,
+  onMove,
+  onDownload,
+}: PhotoCardProps) {
   return (
     <div className="photo-card" onClick={onClick}>
       <img src={photo.url} alt={photo.title} />
@@ -20,38 +27,48 @@ export function PhotoCard({ photo, onClick, onDelete, onRename, onMove }: PhotoC
         <p>{photo.title}</p>
         <p>Размер: {photo.size} байт</p>
         <p>Формат: {photo.format}</p>
-        <p>Описание: {photo.description}</p>
         <p>Дата добавления: {photo.createdAt}</p>
-        <p>Папка: {photo.folder ?? 'Нет'}</p>
       </div>
 
       <div className="photo-card__actions">
-        <button
-          onClick={(e) => {
+        {onDelete && (
+          <Button
+            onClick={(e: React.MouseEvent) => {
+              e.stopPropagation();
+              onDelete?.(photo);
+            }}
+          >
+            Удалить
+          </Button>
+        )}
+        {onRename && (
+          <Button
+            onClick={(e: React.MouseEvent) => {
+              e.stopPropagation();
+              onRename?.(photo);
+            }}
+          >
+            Переименовать
+          </Button>
+        )}
+        {onMove && (
+          <Button
+            onClick={(e: React.MouseEvent) => {
+              e.stopPropagation();
+              onMove?.(photo);
+            }}
+          >
+            Переместить
+          </Button>
+        )}
+        <Button
+          onClick={(e: React.MouseEvent) => {
             e.stopPropagation();
-            onDelete(photo);
+            onDownload?.(photo);
           }}
         >
-          Удалить
-        </button>
-
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onRename(photo);
-          }}
-        >
-          Переименовать
-        </button>
-
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onMove(photo);
-          }}
-        >
-          Переместить
-        </button>
+          Скачать
+        </Button>
       </div>
     </div>
   );

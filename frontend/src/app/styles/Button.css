@@ -1,0 +1,9 @@
+.custom-button {
+  background-color: var(--color-white);
+  color: var(--color-grey-text);
+  font-size: 0.7rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  border: none;
+}

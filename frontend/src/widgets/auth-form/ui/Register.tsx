@@ -1,7 +1,7 @@
 import { useRegister } from '../../../features';
 import { useState } from 'react';
+import { Input, Button } from '../../../shared';
 import '../../../app/styles/AuthPage.css';
-import { Input, Button } from '../../../widgets';
 
 export function Register() {
   const [name, setName] = useState<string>('');
@@ -21,22 +21,22 @@ export function Register() {
   return (
     <>
       <form onSubmit={handleSubmit} className="register-form">
-        <label htmlFor="name">Имя</label>
         <Input
+          label="Имя:"
           value={name}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
           placeholder="Имя"
           id="name"
         />
-        <label htmlFor="email">Email</label>
         <Input
+          label="Email:"
           value={email}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
           placeholder="Email"
           id="email"
         />
-        <label htmlFor="password">Пароль</label>
         <Input
+          label="Пароль:"
           value={password}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
           placeholder="Пароль"

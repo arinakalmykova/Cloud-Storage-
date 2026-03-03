@@ -1,6 +1,6 @@
 import { useState } from 'react';
+import { Input } from '../../../shared';
 import '../../../app/styles/Slider.css';
-import { Input } from '../../../widgets';
 
 type Props = {
   originalSrc: string;

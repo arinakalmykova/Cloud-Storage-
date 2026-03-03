@@ -1,5 +1,6 @@
+import { Button } from '../../../../shared';
 import '../../../../app/styles/BottomUploadPanel.css';
-import { Button } from '../../../../widgets';
+
 type Props = {
   file: File;
   uploading: boolean;

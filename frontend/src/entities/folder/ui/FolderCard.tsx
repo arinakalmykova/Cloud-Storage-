@@ -1,4 +1,5 @@
-import type { Folder } from '../model/types';
+import type { Folder } from '../../../entities';
+import { Button } from '../../../shared';
 import '../../../app/styles/FolderCard.css';
 
 type Props = {
@@ -15,23 +16,23 @@ export function FolderCard({ folder, onClick, onDelete, onRename }: Props) {
       <p>{folder.photos?.length ?? 0} фото</p>
 
       <div className="folder-card__actions">
-        <button
+        <Button
           onClick={(e) => {
             e.stopPropagation();
             onDelete(folder);
           }}
         >
           Удалить
-        </button>
+        </Button>
 
-        <button
+        <Button
           onClick={(e) => {
             e.stopPropagation();
             onRename(folder);
           }}
         >
           Переименовать
-        </button>
+        </Button>
       </div>
     </div>
   );

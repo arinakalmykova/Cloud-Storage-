@@ -1,14 +1,12 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useFolders } from '../../features/folder/useFolder';
+import { useFolders, useFolderPhoto } from '../../features';
 import { useAppSelector } from '../../app';
+import { PhotoCard, FolderCard } from '../../entities';
+import type { Photo } from '../../entities';
+import { ModalWindow, ModalWindowPhoto } from '../../widgets';
+import { Button, Input } from '../../shared';
 import '../../app/styles/Archive.css';
-import { PhotoCard } from '../../entities/photo/ui/PhotoCard';
-import { useFolderPhoto } from '../../features/folder/UseFolderPhoto';
-import { FolderCard } from '../../entities/folder/ui/FolderCard';
-import type { Photo } from '../../entities/photo/model/types';
-import { ModalWindow } from '../../widgets/modalWindow/modalWindow';
-import { ModalWindowPhoto } from '../../widgets/modalWindowPhoto/modalWindowPhoto';
 
 export function ArchivePage() {
   const token = useAppSelector((state) => state.auth.token);
@@ -16,9 +14,13 @@ export function ArchivePage() {
   const { folders, loading, error, createFolderHook, deleteFolderHook, renameFolderHook } =
     useFolders(token ?? '');
 
-  const { recentPhotos, deletePhotoHook, renamePhotoHook, movePhotoToFolderHook } = useFolderPhoto(
-    token ?? ''
-  );
+  const {
+    recentPhotos,
+    deletePhotoHook,
+    renamePhotoHook,
+    movePhotoToFolderHook,
+    downloadPhotoHook,
+  } = useFolderPhoto(token ?? '');
 
   const [currentFolder, setCurrentFolder] = useState<string | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
@@ -83,7 +85,6 @@ export function ArchivePage() {
                       <PhotoCard
                         key={photo.id}
                         photo={photo}
-                        folders={folders}
                         onClick={() => setSelectedPhoto(photo)}
                         onDelete={(photo) => deletePhotoHook(photo.id)}
                         onRename={(photo) => {
@@ -92,6 +93,9 @@ export function ArchivePage() {
                         }}
                         onMove={(photo) => {
                           setMovePhoto(photo);
+                        }}
+                        onDownload={(photo) => {
+                          downloadPhotoHook(photo.url, photo.title);
                         }}
                       />
                     ))}
@@ -102,7 +106,7 @@ export function ArchivePage() {
             {currentFolder && (
               <div className="archive-grid">
                 <div className="folder-page-header">
-                  <h2>{folders.find((f) => f.id === currentFolder)?.name}</h2>
+                  <h3>{folders.find((f) => f.id === currentFolder)?.name}</h3>
                   <p>{folders.find((f) => f.id === currentFolder)?.photos.length} фото</p>
                 </div>
                 <button className="back-button" onClick={() => setCurrentFolder(null)}>
@@ -115,7 +119,6 @@ export function ArchivePage() {
                       <PhotoCard
                         key={photo.id}
                         photo={photo}
-                        folders={folders}
                         onClick={() => setSelectedPhoto(photo)}
                         onDelete={(photo) => deletePhotoHook(photo.id)}
                         onRename={(photo) => {
@@ -124,6 +127,9 @@ export function ArchivePage() {
                         }}
                         onMove={(photo) => {
                           setMovePhoto(photo);
+                        }}
+                        onDownload={(photo) => {
+                          downloadPhotoHook(photo.url, photo.title);
                         }}
                       />
                     ))}{' '}
@@ -141,8 +147,8 @@ export function ArchivePage() {
       {renamePhoto && (
         <ModalWindow onClose={() => setRenamePhoto(null)}>
           <h3>Переименовать фото</h3>
-          <input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} />
-          <button
+          <Input label="Название:" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} />
+          <Button
             className="modal-button"
             onClick={() => {
               renamePhotoHook(renamePhoto.id, newTitle);
@@ -150,7 +156,7 @@ export function ArchivePage() {
             }}
           >
             Сохранить
-          </button>
+          </Button>
         </ModalWindow>
       )}
 
@@ -165,7 +171,7 @@ export function ArchivePage() {
               </option>
             ))}
           </select>
-          <button
+          <Button
             className="modal-button"
             onClick={() => {
               movePhotoToFolderHook(movePhoto.id, targetFolder);
@@ -173,7 +179,7 @@ export function ArchivePage() {
             }}
           >
             Переместить
-          </button>
+          </Button>
         </ModalWindow>
       )}
 
@@ -181,9 +187,13 @@ export function ArchivePage() {
         <ModalWindow onClose={() => setCreateFolderOpen(false)}>
           <h3>Создать новую папку</h3>
 
-          <input value={newFolderName} onChange={(e) => setNewFolderName(e.target.value)} />
+          <Input
+            label="Название:"
+            value={newFolderName}
+            onChange={(e) => setNewFolderName(e.target.value)}
+          />
 
-          <button
+          <Button
             className="modal-button"
             onClick={() => {
               createFolderHook(newFolderName);
@@ -192,7 +202,7 @@ export function ArchivePage() {
             }}
           >
             Создать
-          </button>
+          </Button>
         </ModalWindow>
       )}
 
@@ -200,7 +210,8 @@ export function ArchivePage() {
         <ModalWindow onClose={() => setRenameFolderData(null)}>
           <h3>Переименовать папку</h3>
 
-          <input
+          <Input
+            label="Название:"
             value={renameFolderData.name}
             onChange={(e) =>
               setRenameFolderData({
@@ -210,7 +221,7 @@ export function ArchivePage() {
             }
           />
 
-          <button
+          <Button
             className="modal-button"
             onClick={() => {
               renameFolderHook(renameFolderData.id, renameFolderData.name);
@@ -218,7 +229,7 @@ export function ArchivePage() {
             }}
           >
             Сохранить
-          </button>
+          </Button>
         </ModalWindow>
       )}
     </>

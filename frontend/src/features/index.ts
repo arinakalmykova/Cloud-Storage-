@@ -5,3 +5,7 @@ export { usePhotoCompressionEcho } from './photo-upload/lib/usePhotoCompressionE
 export { useMLRecommendation } from './photo-upload/lib/useMLRecommendation';
 export { useAuth } from './auth/useAuth';
 export { useFolders } from './folder/useFolder';
+export { useFolderPhoto } from './folder/useFolderPhoto';
+export { usePhotoFilters } from './filters/usePhotoFilters';
+export { startDotsAnimation } from './photo-upload/lib/processingAnimation';
+export { useSearchPhotos } from './search/useSearchPhoto';

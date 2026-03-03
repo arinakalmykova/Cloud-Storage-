@@ -1,7 +1,11 @@
 import { useState } from 'react';
-import { usePhotoUpload, usePhotoCompressionEcho, useMLRecommendation } from '../../features';
-import '../../app/styles/Upload.css';
-import { motion } from 'framer-motion';
+import {
+  usePhotoUpload,
+  usePhotoCompressionEcho,
+  useMLRecommendation,
+  useAuth,
+  useFolders,
+} from '../../features';
 import {
   UploadFileBlock,
   CompressionSettingsForm,
@@ -9,8 +13,8 @@ import {
   MLFeaturesPanel,
   BottomUploadPanel,
 } from '../../widgets';
-import { useAuth } from '../../features';
-import { useFolders } from '../../features';
+import '../../app/styles/Upload.css';
+import { motion } from 'framer-motion';
 
 export function UploadPage() {
   const [file, setFile] = useState<File | null>(null);

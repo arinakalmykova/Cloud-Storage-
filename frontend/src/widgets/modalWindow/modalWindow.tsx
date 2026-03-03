@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Button } from '../../shared';
 import '../../app/styles/ModalWindow.css';
 
 type ModalWindowProps = {
@@ -13,9 +14,9 @@ export function ModalWindow({ onClose, children, title }: ModalWindowProps) {
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         {title && <h2 className="modal-title">{title}</h2>}
         <div className="modal-body">{children}</div>
-        <button className="modal-close" onClick={onClose}>
+        <Button className="modal-close" onClick={onClose}>
           Закрыть
-        </button>
+        </Button>
       </div>
     </div>
   );

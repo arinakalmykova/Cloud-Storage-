@@ -1,7 +1,5 @@
-import { API_AUTH_URL } from '../../../shared/api/api.ts';
-import type { User } from '../model/types.ts';
-import type { ErrorResponse } from '../model/types.ts';
-import type { AuthResponse } from '../model/types.ts';
+import { API_AUTH_URL } from '../../../shared';
+import type { User, ErrorResponse, AuthResponse } from '../../../entities';
 
 export async function registerUser(
   name: string,
@@ -48,6 +46,30 @@ export async function fetchMe(token: string): Promise<User> {
       Authorization: `Bearer ${token}`,
       Accept: 'application/json',
     },
+  });
+  return res.json();
+}
+
+export async function deleteUser(token: string) {
+  const res = await fetch(`${API_AUTH_URL}/`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json',
+    },
+  });
+  return res.json();
+}
+
+export async function updateUser(token: string, name: string, email: string) {
+  const res = await fetch(`${API_AUTH_URL}/`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify({ name, email }),
   });
   return res.json();
 }

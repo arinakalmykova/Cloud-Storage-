@@ -1,4 +1,4 @@
-import { API_FOLDER_URL } from '../../../shared/api/api';
+import { API_FOLDER_URL } from '../../../shared';
 
 export async function getFolders(token: string | null) {
   const res = await fetch(`${API_FOLDER_URL}`, {

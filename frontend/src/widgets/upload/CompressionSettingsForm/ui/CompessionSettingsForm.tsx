@@ -1,7 +1,8 @@
 import { Settings } from 'lucide-react';
-import '../../../../app/styles/CompressionSettingsForm.css';
-import { Input } from '../../../../widgets';
+import { Input } from '../../../../shared';
 import type { Folder } from '../../../../entities/folder/model/types';
+import '../../../../app/styles/CompressionSettingsForm.css';
+
 type Props = {
   title: string;
   setTitle: (v: string) => void;

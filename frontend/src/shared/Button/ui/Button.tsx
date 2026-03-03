@@ -1,8 +1,9 @@
 import React from 'react';
+import '../../../app/styles/Button.css';
 
 type ButtonProps = {
   children: React.ReactNode;
-  onClick?: () => void;
+  onClick?: (e: React.MouseEvent) => void;
   loading?: boolean;
   disabled?: boolean;
   className?: string;

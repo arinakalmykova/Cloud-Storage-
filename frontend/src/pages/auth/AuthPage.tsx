@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { Login, Register } from '../../widgets';
-import '../../app/styles/AuthPage.css';
+import { Login, Register, Logo } from '../../widgets';
 import { motion } from 'framer-motion';
-import { Logo } from '../../widgets';
+import '../../app/styles/AuthPage.css';
 
 export function AuthPage() {
   const [tab, setTab] = useState<'login' | 'register'>('login');

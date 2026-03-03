@@ -10,11 +10,10 @@ interface AuthState {
   user: User | null;
 }
 
+const savedUser = localStorage.getItem('user_data');
 const initialState: AuthState = {
   token: localStorage.getItem('token'),
-  user: localStorage.getItem('user_id')
-    ? { id: String(localStorage.getItem('user_id')), name: '', email: '' }
-    : null,
+  user: savedUser ? JSON.parse(savedUser) : null,
   loading: false,
   error: null,
 };
@@ -25,29 +24,30 @@ export const loginThunk = createAsyncThunk<
   { rejectValue: string }
 >('auth/login', async ({ email, password }, { rejectWithValue }) => {
   try {
-    console.log('💡 loginThunk: вызываем loginUser', { email });
     const response = await loginUser(email, password);
-    console.log('💡 loginThunk: ответ loginUser', response);
-
     const userId = String(response.userId);
     localStorage.setItem('token', response.token);
-    localStorage.setItem('user_id', userId);
-    console.log('💡 loginThunk: userId сохранён в localStorage', userId);
-
     const user = await fetchMe(response.token);
-    console.log('💡 loginThunk: ответ fetchMe', user);
-
+    localStorage.setItem(
+      'user_data',
+      JSON.stringify({
+        id: userId,
+        name: user.name,
+        email: user.email,
+        createdAt: user.createdAt,
+      })
+    );
     return {
       token: response.token,
       userId,
       user: {
-        id: userId, // string
+        id: userId,
         name: user.name,
         email: user.email,
+        createdAt: user.createdAt,
       },
     };
   } catch (err: any) {
-    console.error('❌ loginThunk: ошибка', err);
     return rejectWithValue(err.message || 'Произошла ошибка');
   }
 });
@@ -65,6 +65,7 @@ export const registerThunk = createAsyncThunk<
         id: response.userId || '',
         name: response.name || '',
         email: response.email || '',
+        createdAt: response.createdAt || new Date().toISOString(),
       },
     };
   } catch (err: any) {
@@ -80,7 +81,11 @@ export const authSlice = createSlice({
       state.token = null;
       state.user = null;
       localStorage.removeItem('token');
-      localStorage.removeItem('user_id');
+      localStorage.removeItem('user_data');
+    },
+    update(state, action) {
+      state.user = action.payload;
+      localStorage.setItem('user_data', JSON.stringify(action.payload));
     },
   },
   extraReducers: (builder) => {
@@ -113,6 +118,6 @@ export const authSlice = createSlice({
   },
 });
 
-export const { logout } = authSlice.actions;
+export const { logout, update } = authSlice.actions;
 
 export default authSlice.reducer;

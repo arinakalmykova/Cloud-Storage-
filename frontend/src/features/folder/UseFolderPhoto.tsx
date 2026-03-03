@@ -1,6 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { movePhotoToFolder } from '../../entities/folder/api/folder.api';
-import { renamePhoto, deletePhoto, recentAddPhotos } from '../../entities/photo/api/photos.api';
+import { movePhotoToFolder, renamePhoto, deletePhoto, recentAddPhotos } from '../../entities';
 
 export function useFolderPhoto(token: string) {
   const [loading, setLoading] = useState<boolean>(true);
@@ -56,5 +55,22 @@ export function useFolderPhoto(token: string) {
     }
   };
 
-  return { loading, error, movePhotoToFolderHook, recentPhotos, renamePhotoHook, deletePhotoHook };
+  const downloadPhotoHook = (url: string, title?: string) => {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = title || 'photo';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  return {
+    loading,
+    error,
+    movePhotoToFolderHook,
+    recentPhotos,
+    renamePhotoHook,
+    deletePhotoHook,
+    downloadPhotoHook,
+  };
 }

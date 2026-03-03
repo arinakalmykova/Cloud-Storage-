@@ -1,9 +1,9 @@
-import { Logo } from '../../../widgets';
-import '../../../app/styles/Header.css';
+import { useState } from 'react';
 import { LogOut, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { Logo } from '../../../widgets';
 import { useAuth } from '../../../features';
-import { useState } from 'react';
+import '../../../app/styles/Header.css';
 
 export function Header() {
   const { logout } = useAuth();

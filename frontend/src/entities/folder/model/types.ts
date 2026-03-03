@@ -1,4 +1,4 @@
-import type { Photo } from '../../photo/model/types';
+import type { Photo } from '../../../entities';
 
 export interface Folder {
   id: string;

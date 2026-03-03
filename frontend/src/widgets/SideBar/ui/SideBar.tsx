@@ -1,6 +1,6 @@
-import '../../../app/styles/SideBar.css';
 import { LayoutDashboard, Upload, FolderOpen, Search, Cloud } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import '../../../app/styles/SideBar.css';
 
 export function SideBar() {
   const navigation = [

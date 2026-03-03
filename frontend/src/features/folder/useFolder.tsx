@@ -1,11 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
-import {
-  getFolders,
-  createFolder,
-  deleteFolder,
-  renameFolder,
-} from '../../entities/folder/api/folder.api';
-import type { Folder } from '../../entities/folder/model/types';
+import { getFolders, createFolder, deleteFolder, renameFolder } from '../../entities';
+import type { Folder } from '../../entities';
 
 export function useFolders(token: string) {
   const [folders, setFolders] = useState<Folder[]>([]);

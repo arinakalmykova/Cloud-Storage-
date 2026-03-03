@@ -1,6 +1,7 @@
 import { Upload } from 'lucide-react';
+import { Input } from '../../../../shared';
 import '../../../../app/styles/UploadFileBlock.css';
-import { Input } from '../../../../widgets';
+
 type Props = {
   uploading: boolean;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;

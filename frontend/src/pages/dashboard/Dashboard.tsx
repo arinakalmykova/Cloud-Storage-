@@ -1,4 +1,3 @@
-import '../../app/styles/Dashboard.css';
 import { Upload, FolderOpen, Search, Image, HardDrive, Clock, Award } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -13,6 +12,7 @@ import {
   YAxis,
   Tooltip,
 } from 'recharts';
+import '../../app/styles/Dashboard.css';
 
 export function DashboardPage() {
   const navigation = [

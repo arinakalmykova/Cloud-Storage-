@@ -1,4 +1,4 @@
-import { API_UPLOAD_URL } from '../../../shared/api/api';
+import { API_UPLOAD_URL } from '../../../shared';
 
 export async function getUploadUrl(token: string, file: File, title: string, description: string) {
   const res = await fetch(`${API_UPLOAD_URL}/upload-url`, {
@@ -47,7 +47,7 @@ export async function checkPhotoStatus(token: string, id: string) {
   return res.json();
 }
 
-export async function updateTags(token: string, photoId: string, tags: string[]): Promise<void> {
+export async function updateTags(token: string, photoId: string, tags: string[]) {
   const res = await fetch(`${API_UPLOAD_URL}/${photoId}/tags`, {
     method: 'POST',
     headers: {
@@ -61,6 +61,7 @@ export async function updateTags(token: string, photoId: string, tags: string[])
   if (!res.ok) {
     throw new Error('Ошибка обновления тегов');
   }
+  return res.json();
 }
 
 export async function recommendML(token: string, file: File) {
@@ -133,6 +134,25 @@ export async function renamePhoto(token: string, photoId: string, newTitle: stri
 
 export async function recentAddPhotos(token: string) {
   const res = await fetch(`${API_UPLOAD_URL}/recent`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return res.json();
+}
+
+export async function searchPhotos(token: string, params: string) {
+  const urlParams = new URLSearchParams(params);
+  const res = await fetch(`${API_UPLOAD_URL}/search?${urlParams.toString()}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return res.json();
+}
+
+export async function getFilters(token: string) {
+  const res = await fetch(`${API_UPLOAD_URL}/filters`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

@@ -107,7 +107,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 1rem;
-  grid-column: span 12;
+  grid-column: span 11;
   grid-row: span 2;
 }
 
@@ -135,7 +135,6 @@
   background: var(--color-white);
   border: none;
   color: var(--color-grey-text);
-  font-size: clamp(0.9rem, 2vw, 1rem);
   padding: 0.6rem 1rem;
   border-radius: 10px;
   cursor: pointer;

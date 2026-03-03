@@ -1,7 +1,6 @@
 export { Header } from './Header/ui/Header.tsx';
-export { Footer } from './Footer/ui/Footer.tsx';
-export { Login } from './auth-form/ui/Login.tsx';
-export { Register } from './auth-form/ui/Register.tsx';
+export { Login } from './Auth-form/ui/Login.tsx';
+export { Register } from './Auth-form/ui/Register.tsx';
 export { Logo } from './Logo/ui/Logo.tsx';
 export { SideBar } from './SideBar/ui/SideBar.tsx';
 export { Slider } from './Slider/ui/Slider.tsx';
@@ -10,5 +9,6 @@ export { MLFeaturesPanel } from './upload/MLFeaturesPanel/ui/MLFeaturesPanel.tsx
 export { UploadResultPreview } from './upload/UploadResultPreview/ui/UploadResultPreview.tsx';
 export { BottomUploadPanel } from './upload/BottomUploadPanel/ui/BottomUploadPanel.tsx';
 export { CompressionSettingsForm } from './upload/CompressionSettingsForm/ui/CompessionSettingsForm.tsx';
-export { Button } from './Button/ui/Button.tsx';
-export { Input } from './Input/ui/Input.tsx';
+export { FilterPanel } from './filter/FilterPanel.tsx';
+export { ModalWindow } from './ModalWindow/ModalWindow.tsx';
+export { ModalWindowPhoto } from './ModalWindowPhoto/ModalWindowPhoto.tsx';
