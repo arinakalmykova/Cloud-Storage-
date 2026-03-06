@@ -9,3 +9,4 @@ export { useFolderPhoto } from './folder/useFolderPhoto';
 export { usePhotoFilters } from './filters/usePhotoFilters';
 export { startDotsAnimation } from './photo-upload/lib/processingAnimation';
 export { useSearchPhotos } from './search/useSearchPhoto';
+export {useStorageAnalytics} from './storage/useStorageAnalitics';

@@ -1,6 +1,7 @@
 <?php
 use App\Http\Controllers\PhotoController;
 use App\Http\Controllers\FolderController;
+use App\Http\Controllers\StorageController;
 use App\Http\Middleware\JwtMiddleware;
 use Illuminate\Http\Request;
 use App\Jobs\ProcessMinioUploadedFile;
@@ -10,6 +11,8 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('jwt')->group(function () {
     Route::post('/photos/upload-url', [PhotoController::class, 'createUploadUrl']);    
     Route::get('/photos/recent', [PhotoController::class, 'getRecentPhotos']);
+    Route::get('/photos/search',[PhotoController::class, 'search']);
+    Route::get('/photos/filters', [PhotoController::class, 'getFilters']);
     Route::get('/photos/{id}', [PhotoController::class, 'show']);
     Route::post('/photos/mark-uploaded', [PhotoController::class, 'markUploaded']);
     Route::post('/photos/{id}/tags', [PhotoController::class, 'updateTags']);
@@ -21,6 +24,7 @@ Route::middleware('jwt')->group(function () {
     Route::put('/folders/{id}',[FolderController::class, 'renameFolder']);
     Route::delete('/folders/{id}',[FolderController::class, 'deleteFolder']);
     Route::post('/folders/move-photo',[PhotoController::class, 'movePhotoToFolder']);
+    Route::get('/storage-stats', [StorageController::class, 'stats']);
     Route::post('/broadcasting/auth', function (Request $request) {
         $logFile = storage_path('logs/broadcast_auth.log');
 

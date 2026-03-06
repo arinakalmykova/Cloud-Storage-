@@ -112,28 +112,26 @@ export function ArchivePage() {
                 <button className="back-button" onClick={() => setCurrentFolder(null)}>
                   Назад к папкам
                 </button>
-                <div className="archive-folder-grid">
-                  {folders
-                    .find((f) => f.id === currentFolder)
-                    ?.photos.map((photo) => (
-                      <PhotoCard
-                        key={photo.id}
-                        photo={photo}
-                        onClick={() => setSelectedPhoto(photo)}
-                        onDelete={(photo) => deletePhotoHook(photo.id)}
-                        onRename={(photo) => {
-                          setRenamePhoto(photo);
-                          setNewTitle(photo.title);
-                        }}
-                        onMove={(photo) => {
-                          setMovePhoto(photo);
-                        }}
-                        onDownload={(photo) => {
-                          downloadPhotoHook(photo.url, photo.title);
-                        }}
-                      />
-                    ))}{' '}
-                </div>{' '}
+                {folders
+                  .find((f) => f.id === currentFolder)
+                  ?.photos.map((photo) => (
+                    <PhotoCard
+                      key={photo.id}
+                      photo={photo}
+                      onClick={() => setSelectedPhoto(photo)}
+                      onDelete={(photo) => deletePhotoHook(photo.id)}
+                      onRename={(photo) => {
+                        setRenamePhoto(photo);
+                        setNewTitle(photo.title);
+                      }}
+                      onMove={(photo) => {
+                        setMovePhoto(photo);
+                      }}
+                      onDownload={(photo) => {
+                        downloadPhotoHook(photo.url, photo.title);
+                      }}
+                    />
+                  ))}
               </div>
             )}
           </div>

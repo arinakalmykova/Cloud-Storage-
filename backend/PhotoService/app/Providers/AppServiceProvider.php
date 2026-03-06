@@ -13,6 +13,8 @@ use App\Domain\Photo\Services\PhotoManagementServiceInterface;
 use App\Infrastructure\Photo\Services\MinioPhotoManagement;
 use App\Infrastructure\Tag\Repositories\EloquentTagRepository;
 use App\Domain\Tag\Repositories\TagRepositoryInterface;
+use App\Domain\Color\Repositories\ColorRepositoryInterface;
+use App\Infrastructure\Color\Repositories\EloquentColorRepository;
 use Illuminate\Support\Facades\Queue;
 
 
@@ -28,6 +30,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(UserRepositoryInterface::class, EloquentUserRepository::class); 
         $this->app->bind(TagRepositoryInterface::class, EloquentTagRepository::class);
         $this->app->bind(FolderRepositoryInterface::class, EloquentFolderRepository::class);
+        $this->app->bind(ColorRepositoryInterface::class, EloquentColorRepository::class);
     } 
         
         

@@ -15,7 +15,6 @@ class Photo
     private ?string $description = null;
     private ?string $format = null;
     private array $tags = [];
-    private ?string $dominantColor = null;
     private ?string $presignedUrl = null; 
     private PhotoStatus $status;
     private ?int $quality = null;
@@ -31,9 +30,10 @@ class Photo
     PhotoStatus $status,
     ?int $size = null,
     ?string $format = null,
-    ?string $dominantColor = null,
+    ?string $createdAt = null,
     ?string $folderId = null,
-    ?string $createdAt = null
+    ?array $tags,
+    
     ) {
         $this->id = $id;
         $this->userId = $userId;
@@ -42,10 +42,10 @@ class Photo
         $this->url = $url;
         $this->status = $status;
         $this->size = $size;
-        $this->dominantColor = $dominantColor;
         $this->folderId = $folderId;
         $this->format = $format;
         $this->createdAt = $createdAt;
+        $this->tags = $tags;
     }
 
     public function markPendingUpload(string $key, string $presignedUrl): void
@@ -87,11 +87,6 @@ class Photo
         $this->format = $format;
     }
 
-    public function setTags(array $tags): void
-    {
-        $this->tags = $tags;
-    }
-
     public function setFileName(string $fileName): void
     {
         $this->fileName = $fileName;
@@ -106,7 +101,6 @@ class Photo
     public function getUserId(): string { return $this->userId; }
     public function getFileName(): string { return $this->fileName; }
     public function getDescription(): ?string { return $this->description; }
-    public function getTags(): array { return $this->tags; }
     public function getStatus(): PhotoStatus { return $this->status; }
     public function getSize(): ?int { return $this->size; }
     public function getKey(): ?string { return $this->key; }               
@@ -116,6 +110,8 @@ class Photo
     public function getQuality(): ?int { return $this->quality; }
     public function getFormat(): ?string { return $this->format; }
     public function getFolderId(): ?string { return $this->folderId; }
+    public function getCreatedAt(): ?string { return $this->createdAt; }
+    public function getTags(): ?array { return $this->tags; }
 
     public function isOwnedBy(string $userId): bool
     {
@@ -133,6 +129,7 @@ class Photo
             'format' => $this->format,
             'folder' => $this->folderId,
             'createdAt' => $this->createdAt,
+            'tags' => $this->tags
         ];
     }
 }

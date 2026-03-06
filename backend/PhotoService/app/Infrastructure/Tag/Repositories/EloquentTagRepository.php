@@ -31,4 +31,11 @@ class EloquentTagRepository implements TagRepositoryInterface
         }
         return $tags;
     }
+
+     public function getTags(): array
+    {
+        return TagModel::all()->map(function (TagModel $model) {
+            return $model->name;
+        })->toArray();
+    }
 }

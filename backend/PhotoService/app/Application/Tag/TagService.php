@@ -28,4 +28,9 @@ class TagService
 
         return $tag;
     }
+
+    public function getTags(): array
+    {
+        return $this->tags->getTags();
+    }
 }

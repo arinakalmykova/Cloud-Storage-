@@ -13,4 +13,6 @@ interface PhotoManagementServiceInterface
     public function uploadFile(string $key, string $filePath): void;
     
     public function getTemporaryUrl(string $key, int $expires = 3600): string;
+
+    public function listContents(string $prefix = ''): array;
 }

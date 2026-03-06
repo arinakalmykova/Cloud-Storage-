@@ -8,5 +8,6 @@ interface TagRepositoryInterface
     public function findByName(string $name): ?Tag;
     public function save(Tag $tag): void;
     public function findById(array $id): array;
+    public function getTags(): array;
 }
 

@@ -10,6 +10,7 @@ use App\Domain\Photo\ValueObjects\PhotoStatus;
 use App\Application\DTOs\CreatePhotoDTO;
 use App\Events\PhotoUploaded;
 use App\Application\Tag\TagService;
+use App\Application\Color\ColorService;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use ColorThief\ColorThief;
@@ -22,6 +23,7 @@ class PhotoService
         private PhotoRepositoryInterface $repository,
         private PhotoManagementServiceInterface $minioService,
         private TagService $tagService,
+        private ColorService $colorService
         
     ) {}
 
@@ -32,9 +34,13 @@ class PhotoService
             userId: $dto->userId,
             fileName: $dto->fileName,
             description: $dto->description,
-            url: null,
+            url: null, 
+            status: PhotoStatus::pendingUpload(),
             size: null,
-            status: PhotoStatus::pendingUpload()
+            folderId: null,  
+            format: null,      
+            createdAt: null,   
+            tags: [] 
         );
 
         $presignedUrl = $this->minioService->getUploadUrl($photo);
@@ -79,7 +85,7 @@ class PhotoService
         $key = 'uploads/' . $photo->getId() . '/original';
 
         try {
-            // 1. Получаем файл из хранилища
+
             $content = Storage::disk('s3_backend')->get($key);
             if (!$content || strlen($content) === 0) {
                 Log::error('File is empty or not found', ['key' => $key]);
@@ -90,7 +96,6 @@ class PhotoService
 
             $hexColor = null;
             
-            // 2. Пробуем через Imagick (если доступен) - более эффективно
             if (extension_loaded('imagick') && class_exists('Imagick')) {
                 try {
                     $imagick = new Imagick();
@@ -112,19 +117,25 @@ class PhotoService
             }
             
             
-            // 4. Сохраняем результат
             if ($hexColor) {
-                $photo->setDominantColor($hexColor);
+                 $existingColors = $this->colorService->getColors(); 
+                if (in_array($hexColor, $existingColors)) {
+                    $color = $this->colorService->findByHex($hexColor);
+                    $colorId = $color->getId();
+                } else {
+                    $color = $this->colorService->createColor($hexColor);
+                    $colorId = $color->getId();
+                }
+
                 
-                // Обновляем статус на uploaded (если еще не установлен)
                 if ($photo->getStatus()->value() === 'pending_upload') {
                     $photo->markUploaded($photo->getUrl(), strlen($content));
                 }
-                
-                $this->save($photo);
+                $this->repository->syncColors($photo,  [$colorId]);
                 event(new PhotoUploaded($photo->getId(), $key, $photo->getQuality(), $photo->getFormat()));
                 return true;
             } 
+
             else {
                 $photo->markFailed();
                 $this->save($photo);
@@ -135,8 +146,7 @@ class PhotoService
 
             $photo->markFailed();
             $this->save($photo);
-            
-            return false;
+            throw new \Exception($e->getMessage());
         }
     }
 
@@ -185,4 +195,65 @@ class PhotoService
         $this->repository->save($photo);
     }
 
+    public function searchPhotos(string $userId, ?string $query, array $filters): array
+    {
+        return $this->repository->search($userId, $query, $filters);
+    }
+
+
+    public function getStorageStats(): array
+    {
+        $objects = $this->minioService->listContents('uploads/');
+
+        $totalSize = 0;
+        $photoCount = 0;
+        $timeline = [];
+
+        foreach ($objects as $object) {
+            $size = $object->fileSize();
+            $totalSize += $size;
+            $photoCount++;
+
+            $timestamp = $object->lastModified();
+            $month = date('M', $timestamp); 
+
+            if (!isset($timeline[$month])) {
+                $timeline[$month] = 0;
+            }
+
+            $timeline[$month]++;
+        }
+
+        $totalStorageBytes = 100 * 1024 * 1024 * 1024;
+        $percent = $totalStorageBytes > 0
+            ? round(($totalSize / $totalStorageBytes) * 100, 2)
+            : 0;
+
+        if ($photoCount > 100) {
+            $uploadSpeed = 'Низкая';
+        } elseif ($photoCount > 30) {
+            $uploadSpeed = 'Хорошо';
+        } else {
+            $uploadSpeed = 'Отлично';
+        }
+
+        $timelineFormatted = [];
+        foreach ($timeline as $month => $value) {
+            $timelineFormatted[] = [
+                'month' => $month,
+                'storage' => round($value, 2)
+            ];
+        }
+
+        return [
+            'photoCount' => $photoCount,
+            'usedBytes' => $totalSize,
+            'totalBytes' => $totalStorageBytes,
+            'percent' => $percent,
+            'uploadSpeed' => $uploadSpeed,
+            'timeline' => $timelineFormatted
+        ];
+    }
+
 }
+

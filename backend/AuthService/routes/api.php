@@ -9,4 +9,6 @@ Route::post('/auth/login', [AuthController::class, 'login']);
 
 Route::middleware('jwt')->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
+    Route::delete('/auth', [AuthController::class, 'deleteUser']);
+    Route::put('/auth', [AuthController::class, 'updateUser']);
 });

@@ -17,7 +17,8 @@ class EloquentUserRepository implements UserRepositoryInterface
             id: $user->id,
             name: $user->name,
             email: $user->email,
-            passwordHash: $user->password
+            passwordHash: $user->password,
+            createdAt: $user->created_at
         );
     }
 
@@ -30,7 +31,8 @@ class EloquentUserRepository implements UserRepositoryInterface
             id: $user->id,
             name: $user->name,
             email: $user->email,
-            passwordHash: $user->password
+            passwordHash: $user->password,
+            createdAt: $user->created_at
         );
     }
 
@@ -44,5 +46,10 @@ class EloquentUserRepository implements UserRepositoryInterface
                 'password' => $user->getPasswordHash()
             ]
         );
+    }
+
+    public function delete(User $user): void
+    {
+        UserModel::where('id', $user->getId())->delete();
     }
 }

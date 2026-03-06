@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 use App\Application\DTOs\CreatePhotoDTO;
 use Illuminate\Http\Request;
 use App\Application\Photo\PhotoService;
+use App\Application\Color\ColorService;
+use App\Application\Tag\TagService;
 use Illuminate\Http\JsonResponse;
 use App\Application\Photo\MLServiceClient;
 use App\Console\Commands\ConsumePhotoCompressed;
@@ -11,7 +13,10 @@ use App\Console\Commands\ConsumePhotoCompressed;
 class PhotoController extends Controller
 {
     public function __construct(
-        private readonly PhotoService $photoService
+        private readonly PhotoService $photoService,
+        private readonly ColorService $colorService,
+        private readonly TagService $tagService
+
     ) {}
 
     public function createUploadUrl(Request $request): JsonResponse
@@ -54,7 +59,6 @@ class PhotoController extends Controller
         return response()->json([
             'id'        => $photo->getId(),
             'status'    => $photo->getStatus()->value(),
-            'dominant_color' => $photo->getDominantColor(),
             'url'       => $photo->getUrl(),
             'size'      => $photo->getSize(),
             'file_name' => $photo->getFileName(),
@@ -64,28 +68,46 @@ class PhotoController extends Controller
     }
 
     public function markUploaded(Request $request)
-    {
-        $request->validate([
-            'photo_id' => 'required|string',
-            'size' => 'sometimes|integer',
-            'url' => 'required|string',
-            'quality' => 'sometimes|integer',
-            'format' => 'sometimes|string',
-            'folder_id' => 'sometimes|string|nullable'
-        ]);
+{
+    $request->validate([
+        'photo_id' => 'required|string',
+        'size' => 'sometimes|integer',
+        'url' => 'required|string',
+        'quality' => 'sometimes|integer',
+        'format' => 'sometimes|string',
+        'folder_id' => 'sometimes|string|nullable'
+    ]);
 
+    try {
         $photo = $this->photoService->getById($request->photo_id);
 
         if (!$photo || !$photo->isOwnedBy($request->user()->getId())) {
-            return response()->json(['error' => 'Not found'], 404);
+            return response()->json(['status' => 'failed', 'error' => 'Photo not found or not owned by user'], 404);
         }
 
-        $photo->markUploaded($request->url, $request->size,$request->quality,$request->format, $request->folder_id);
+        $photo->markUploaded(
+            $request->url,
+            $request->size ?? 0,
+            $request->quality ?? null,
+            $request->format ?? null,
+            $request->folder_id ?? null
+        );
+
         $this->photoService->save($photo);
-        $result = $this->photoService->processUploadedPhoto($photo);
+        $this->photoService->processUploadedPhoto($photo);
 
         return response()->json(['status' => $photo->getStatus()->value()]);
+
+    } catch (\Exception $e) {
+        // Логируем ошибку
+        \Log::error('Mark uploaded failed: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
+
+        return response()->json([
+            'status' => 'failed',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
 
     public function recommend(Request $request): JsonResponse
     {
@@ -180,5 +202,28 @@ class PhotoController extends Controller
         $this->photoService->renamePhoto($userId, $id, $title);
 
         return response()->json(['status' => 'ok']);
+    }
+
+    public function search(Request $request): JsonResponse
+    {
+        $query = $request->query('query');
+        $filters = $request->only([
+            'file_name', 'tags', 'dominant_color', 'description', 'dateFrom', 'dateTo', 'format'
+        ]);
+              
+        $photos = $this->photoService->searchPhotos($request->user()->getId(), $query, $filters);
+        
+        return response()->json($photos);
+    }
+
+    public function getFilters(): JsonResponse
+    {
+        $tags = $this->tagService->getTags(); 
+        $colors = $this->colorService->getColors();
+
+        return response()->json([
+            'tags' => $tags,
+            'colors' => $colors,
+        ]);
     }
 }

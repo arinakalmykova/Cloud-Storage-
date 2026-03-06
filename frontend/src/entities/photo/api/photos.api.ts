@@ -1,4 +1,4 @@
-import { API_UPLOAD_URL } from '../../../shared';
+import { API_UPLOAD_URL} from '../../../shared';
 
 export async function getUploadUrl(token: string, file: File, title: string, description: string) {
   const res = await fetch(`${API_UPLOAD_URL}/upload-url`, {

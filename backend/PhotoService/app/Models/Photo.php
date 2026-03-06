@@ -3,12 +3,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Tag;
+use App\Models\Color;
 use App\Models\Folder as FolderModel;
 
 class Photo extends Model 
 {
     protected $table = 'photo';
     protected $primaryKey = 'id';
+    protected $keyType = 'string';
     public $incrementing = false;
 
     protected $fillable = [
@@ -20,7 +22,6 @@ class Photo extends Model
         'url',
         'user_id',
         'status',
-        'dominant_color',
         'folder_id'
     ];
 
@@ -30,8 +31,18 @@ class Photo extends Model
     }
 
     public function folder(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(FolderModel::class);
+    }
+
+    public function colors()
 {
-    return $this->belongsTo(FolderModel::class);
+    return $this->belongsToMany(
+        Color::class,
+        'photo_color',
+        'photo_id',
+        'color_id'
+    );
 }
 
 }

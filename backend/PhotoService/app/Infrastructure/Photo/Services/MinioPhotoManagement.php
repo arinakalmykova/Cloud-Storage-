@@ -5,15 +5,18 @@ namespace App\Infrastructure\Photo\Services;
 use App\Domain\Photo\Entities\Photo;
 use App\Domain\Photo\Services\PhotoManagementServiceInterface;
 use Illuminate\Support\Facades\Storage;
+use League\Flysystem\StorageAttributes;
 
 class MinioPhotoManagement implements PhotoManagementServiceInterface
 {
-    private $disk;
+    private $publicDisk;     
+    private $backendDisk;     
     private string $bucket;
 
     public function __construct()
     {
-        $this->disk = Storage::disk('s3_public');
+        $this->publicDisk = Storage::disk('s3_public');
+        $this->backendDisk = Storage::disk('s3_backend');
         $this->bucket = env('AWS_BUCKET');
     }
 
@@ -21,32 +24,42 @@ class MinioPhotoManagement implements PhotoManagementServiceInterface
     {
         $key = "uploads/{$photo->getId()}/original";
 
-        $cmd = $this->disk->getClient()->getCommand('putObject', [
+        $cmd = $this->publicDisk->getClient()->getCommand('putObject', [
             'Bucket' => $this->bucket,
             'Key'    => $key,
         ]);
 
-        $request = $this->disk->getClient()->createPresignedRequest($cmd, '+15 minutes');
+        $request = $this->publicDisk->getClient()->createPresignedRequest($cmd, '+15 minutes');
         return (string) $request->getUri();
     }
 
     public function getPublicUrl(string $key): string
     {
-        return 'http://127.0.0.1:9000/photo/' . ltrim($key, '/');
+        return $this->publicDisk->url($key);
     }
 
     public function uploadFile(string $key, string $filePath): void
     {
-        $this->disk->put($key, file_get_contents($filePath));
+        $this->publicDisk->put($key, file_get_contents($filePath));
     }
 
     public function getTemporaryUrl(string $key, int $expires = 3600): string
     {
-        return $this->disk->temporaryUrl($key, now()->addSeconds($expires));
+        return $this->publicDisk->temporaryUrl($key, now()->addSeconds($expires));
     }
 
     public function deleteFile(string $key): void
     {
-        $this->disk->delete($key);
+        $this->publicDisk->delete($key);
+    }
+
+    public function listContents(string $prefix = ''): array
+    {
+        $listing = $this->backendDisk->listContents($prefix, true);
+
+        return array_filter(
+            iterator_to_array($listing),
+            fn(StorageAttributes $item) => $item->isFile()
+        );
     }
 }

@@ -29,7 +29,8 @@ class AuthService
             id: Str::uuid()->toString(),
             name: $dto->name,
             email: $dto->email,
-            passwordHash: password_hash($dto->password, PASSWORD_BCRYPT)
+            passwordHash: password_hash($dto->password, PASSWORD_BCRYPT),
+            createdAt: now()->toDateTimeString() 
         );
         $this->userRepository->save($user);
 
@@ -67,10 +68,32 @@ class AuthService
             $payload = JWT::decode($token, new Key($this->jwtSecret, 'HS256'));
             $userId = $payload->sub;
 
-            return $this->userRepository->findById($userId); // убедись, что findById умеет работать с UUID
+            return $this->userRepository->findById($userId); 
         } catch (\Exception $e) {
             return null;
         }
+    }
+
+    public function deleteUser(string $token): bool
+    {
+        $user = $this->getUserFromToken($token);
+        if (!$user) {
+            return false;
+        }
+        $this->userRepository->delete($user);
+        return true;
+    }
+
+    public function updateUser(string $token, array $data): bool
+    {
+        $user = $this->getUserFromToken($token);
+        if (!$user) {
+            return false;
+        }
+        $user->setName($data['name']);
+        $user->setEmail($data['email']);
+        $this->userRepository->save($user);
+        return true;
     }
 
 

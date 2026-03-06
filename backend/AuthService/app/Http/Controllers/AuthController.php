@@ -30,6 +30,7 @@ class AuthController extends Controller
             'userId' => $user->getId(),
             'name' => $user->getName(), 
             'email' => $user->getEmail(),
+            'createdAt' => $user->getCreatedAt(),
         ]);
     }
 
@@ -61,8 +62,44 @@ class AuthController extends Controller
             'id' => $user->getId(),
             'name' => $user->getName(),
             'email' => $user->getEmail(),
+            'createdAt' => $user->getCreatedAt(),
         ]);
     }
 
+
+    public function deleteUser(Request $request)
+{
+    $token = $request->bearerToken();
+    $success = $this->authService->deleteUser($token);
+    
+    return response()->json([
+        'success' => $success,
+        'message' => $success ? 'Пользователь удален' : 'Ошибка удаления'
+    ]);
+}
+
+    public function updateUser(Request $request)
+    {
+        $token = $request->bearerToken();
+        $success = $this->authService->updateUser($token, $request->all());
+        
+        if ($success) {
+            $user = $this->authService->getUserFromToken($token);
+            return response()->json([
+                'success' => true,
+                'user' => [
+                    'id' => $user->getId(),
+                    'name' => $user->getName(),
+                    'email' => $user->getEmail(),
+                    'createdAt' => $user->getCreatedAt()
+                ]
+            ]);
+        }
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Ошибка обновления'
+        ], 400);
+    }
 
 }

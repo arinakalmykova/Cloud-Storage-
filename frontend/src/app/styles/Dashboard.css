@@ -125,21 +125,9 @@
   gap: 1rem;
 }
 
-.dashboard__storage-usage {
-  grid-column: span 6;
-  margin-top: 1.5em;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 1rem;
-  border-radius: 10px;
-  background: var(--color-black);
-  color: var(--color-white);
-  height: 350px;
-}
 
 .dashboard__storage-timeline {
-  grid-column: span 6;
+  grid-column: span 12;
   margin-top: 1.5em;
   display: flex;
   flex-direction: column;
@@ -162,25 +150,6 @@
   background: var(--color-black);
   color: var(--color-white);
   height: fit-content;
-}
-
-.dashboard__recent-uploads__header {
-  grid-column: span 12;
-  text-align: left;
-}
-
-.dashboard__recent-uploads-info {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-  color: var(--color-white);
-  gap: 5px;
-  grid-column: span 8;
-}
-
-.dashboard__recent-uploads h2 {
-  margin: 0;
 }
 
 p {

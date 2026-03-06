@@ -27,3 +27,4 @@ export { FolderCard } from './folder/ui/FolderCard.tsx';
 export { PhotoCard } from './photo/ui/PhotoCard.tsx';
 export type { Photo } from './photo/model/types.ts';
 export type { Filters } from './filter/model/types.ts';
+export {getStorageStats} from './storage/api/storage.api.ts';
