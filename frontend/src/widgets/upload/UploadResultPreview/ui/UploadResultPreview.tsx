@@ -1,5 +1,5 @@
 import { Slider } from '../../../../widgets';
-import '../../../../app/styles/UploadResultPreview.css';
+import styles from '../../../../app/styles/UploadResultPreview.module.css';
 
 type Props = {
   title: string;
@@ -31,11 +31,11 @@ export function UploadResultPreview({
     : 0;
 
   return (
-    <div className="upload__preview">
+    <div className={styles.uploadPreview}>
       {file && finalUrl && (
         <>
           <Slider originalSrc={previewUrl!} compressedSrc={finalUrl} />
-          <div className="upload__preview__info">
+          <div className={styles.uploadPreviewInfo}>
             <h4>Ваше фото успешно сохранено в архиве</h4>
             <p>
               <strong>Название:</strong> {title}

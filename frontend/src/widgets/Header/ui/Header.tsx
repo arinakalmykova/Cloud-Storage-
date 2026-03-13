@@ -3,7 +3,7 @@ import { LogOut, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Logo } from '../../../widgets';
 import { useAuth } from '../../../features';
-import '../../../app/styles/Header.css';
+import styles from '../../../app/styles/Header.module.css';
 
 export function Header() {
   const { logout } = useAuth();
@@ -14,23 +14,23 @@ export function Header() {
   };
 
   return (
-    <header className="header">
+    <header className={styles.header}>
       <Logo />
-      <div className="header__user-menu">
+      <div className={styles.headerUserMenu}>
         <img
           src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
           alt="user"
-          className="header__user-menu__img"
+          className={styles.headerUserMenuImage}
           onClick={() => {
             setIsOpen(!isOpen);
           }}
         />
         {isOpen && (
-          <nav className="header__user-nav">
-            <Link to={'/profile'} className="header__user-nav__item">
+          <nav className={styles.headerUserNav}>
+            <Link to={'/profile'} className={styles.headerUserNavItem}>
               <User size={20} /> Профиль
             </Link>
-            <Link to={'/auth'} onClick={handleLogout} className="header__user-nav__item">
+            <Link to={'/auth'} onClick={handleLogout} className={styles.headerUserNavItem}>
               <LogOut size={20} /> Выйти
             </Link>
           </nav>

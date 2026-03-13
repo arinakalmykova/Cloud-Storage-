@@ -1,4 +1,4 @@
-import '../../app/styles/ModalWindowPhoto.css';
+import styles from '../../app/styles/ModalWindowPhoto.module.css';
 import { useState } from 'react';
 
 export function ModalWindowPhoto({
@@ -13,9 +13,9 @@ export function ModalWindowPhoto({
   if (!selectedPhoto) return null;
 
   return (
-    <div className="photo-modal" onClick={onClose}>
+    <div className={styles.photoModal} onClick={onClose}>
       <div
-        className={`photo-modal__content ${orientation === 'vertical' ? 'vertical' : 'horizontal'}`}
+        className={`${styles.photoModalContent} ${orientation === 'vertical' ? styles.vertical : styles.horizontal}`}
         onClick={(e) => e.stopPropagation()}
       >
         <img
@@ -26,7 +26,7 @@ export function ModalWindowPhoto({
           }}
           alt={selectedPhoto.title || 'Photo'}
         />
-        <div className="photo-modal__info">
+        <div className={styles.photoModalInfo}>
           <h3>Название: {selectedPhoto.title || selectedPhoto.fileName}</h3>
           <p>Описание: {selectedPhoto.description || 'Нет описания'}</p>
           <p>Формат: {selectedPhoto.format || 'Не указан'}</p>

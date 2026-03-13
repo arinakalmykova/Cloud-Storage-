@@ -1,0 +1,76 @@
+.uploadBottomPanel {
+  grid-column: span 8;
+  display: flex;
+  align-items: center;
+  background-color: var(--background-color-header);
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid var(--color-blue);
+  gap: 15px;
+  height: 150px;
+}
+
+.uploadBottomPanelImage {
+  width: 140px;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.uploadBottomPanelInfo {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 10px;
+  align-self: flex-start;
+}
+
+.uploadBottomPanelTitle {
+  color: var(--color-white);
+  font-weight: 600;
+  margin: 0;
+}
+
+.uploadBottomPanelActions {
+  display: flex;
+  gap: 10px;
+}
+
+.uploadBottomPanelStatus {
+  color: var(--color-white);
+  font-family: var(--font-family);
+}
+
+.uploadBottomPanelRemove {
+  background: transparent;
+  border: 1px solid var(--color-red);
+  color: var(--color-red);
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.uploadBottomPanelUpload {
+  background-color: var(--color-white);
+  color: var(--color-grey);
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.uploadBottomPanelProgress {
+  margin-top: 5px;
+  height: 4px;
+  background-color: var(--background-logo);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.uploadBottomPanelProgressBar {
+  height: 100%;
+  background: var(--background-logo);
+  width: 0;
+  transition: width 0.3s ease;
+}

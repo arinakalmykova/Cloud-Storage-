@@ -1,15 +1,18 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../features';
-import { Button, Input } from '../../shared';
-import '../../app/styles/ProfilePage.css';
+import { Button, Input, Loader, Error } from '../../shared';
+import styles from '../../app/styles/ProfilePage.module.css';
 
 export function ProfilePage() {
-  const { user, logout, deleteUserFunc, updateUserFunc } = useAuth();
+  const { user, logout, deleteUserFunc, updateUserFunc, loading, error } = useAuth();
   const [editOpen, setEditOpen] = useState(false);
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
+  const [formError, setFormError] = useState('');
 
+  if (loading) return <Loader />;
+  if (error) return <Error error={error} />;
   if (!user) return <div>Вы не авторизованы</div>;
 
   const handleSave = async () => {
@@ -17,29 +20,32 @@ export function ProfilePage() {
     if (result.success) {
       setEditOpen(false);
     } else {
-      alert(result.message || 'Ошибка при обновлении профиля');
+      setFormError(result.message || 'Произошла ошибка');
     }
   };
 
   const handleDeleteAccount = async () => {
     if (window.confirm('Вы точно хотите удалить аккаунт?')) {
       const result = await deleteUserFunc();
-      if (!result.success) alert(result.message || 'Ошибка при удалении аккаунта');
+      if (!result.success) {
+        setFormError(result.message || 'Произошла ошибка');
+        alert (result.message || 'Произошла ошибка');
+      }
     }
   };
 
   return (
-    <div className="profile-page">
-      <div className="profile-page__content">
-        <div className="profile-page__topbar">
+    <div className={styles.profilePage}>
+      <div className={styles.profilePageContent}>
+        <div className={styles.profilePageToolbar}>
           <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
             <h1>Профиль</h1>
           </motion.div>
         </div>
 
-        <div className="profile-page__body">
+        <div className={styles.profilePageBody}>
           {editOpen ? (
-            <div className="profile-page__edit">
+            <div className={styles.profilePageEdit}>
               <h2>Редактирование профиля</h2>
               <Input
                 label="Имя:"
@@ -53,13 +59,17 @@ export function ProfilePage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Email"
               />
-              <div className="profile-page-edit__buttons">
+
+
+              {formError && <div className={styles.formError}>{formError}</div>}
+
+              <div className={styles.profilePageEditButtons}>
                 <Button onClick={handleSave}>Сохранить</Button>
               </div>
             </div>
           ) : (
             <>
-              <div className="profile-page__info">
+              <div className={styles.profilePageInfo}>
                 <h3>
                   <strong>Имя:</strong> {user.name}
                 </h3>
@@ -70,14 +80,14 @@ export function ProfilePage() {
                   <strong>Дата регистрации:</strong> {new Date(user.createdAt).toLocaleDateString()}
                 </h3>
               </div>
-              <div className="profile-page__buttons">
-                <Button className="profile-button" onClick={() => setEditOpen(true)}>
+              <div className={styles.profilePageButtons}>
+                <Button className={styles.profileButton} onClick={() => setEditOpen(true)}>
                   Редактировать
                 </Button>
-                <Button className="profile-button" onClick={handleDeleteAccount}>
+                <Button className={styles.profileButton} onClick={handleDeleteAccount}>
                   Удалить аккаунт
                 </Button>
-                <Button className="profile-button" onClick={logout}>
+                <Button className={styles.profileButton} onClick={logout}>
                   Выйти
                 </Button>
               </div>

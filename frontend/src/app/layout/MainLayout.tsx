@@ -1,13 +1,13 @@
 import { Outlet } from 'react-router-dom';
 import { Header, SideBar } from '../../widgets';
-import '../styles/MainLayout.css';
-export function MainLayout() {
+import styles from '../styles/MainLayout.module.css';
+export default function MainLayout() {
   return (
-    <div className="layout">
+    <div className={styles.layout}>
       <Header />
-      <div className="content">
+      <div className={styles.content}>
         <SideBar />
-        <main className="main">
+        <main className={styles.main}>
           <Outlet />
         </main>
       </div>

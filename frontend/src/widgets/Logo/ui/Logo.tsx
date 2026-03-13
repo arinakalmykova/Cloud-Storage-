@@ -1,15 +1,15 @@
 import { Cloud } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import '../../../app/styles/Logo.css';
+import styles from '../../../app/styles/Logo.module.css';
 
 export function Logo() {
   return (
-    <Link to={'/'} className="logo-link">
-      <div className="logo">
-        <div className="logo-icon">
+    <Link to={'/'} className={styles.logoLink}>
+      <div className={styles.logo}>
+        <div className={styles.logoIcon}>
           <Cloud />
         </div>
-        <div className="logo-text">PIXORY</div>
+        <div className={styles.logoText}>PIXORY</div>
       </div>
     </Link>
   );

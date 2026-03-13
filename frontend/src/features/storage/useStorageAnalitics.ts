@@ -22,6 +22,7 @@ export function useStorageAnalytics() {
 
   useEffect(() => {
     async function fetchStorage() {
+      if (!token) return;
       try {
         setLoading(true);
         const response: StorageAnalytics = await getStorageStats(token);

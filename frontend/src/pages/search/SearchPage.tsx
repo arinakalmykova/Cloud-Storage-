@@ -3,18 +3,18 @@ import { useSearchPhotos, usePhotoFilters, useFolderPhoto } from '../../features
 import { PhotoCard } from '../../entities';
 import { FilterPanel, ModalWindowPhoto } from '../../widgets';
 import type { Photo, Filters } from '../../entities';
-import { Input, Button } from '../../shared';
+import { Input, Button, Loader, Error } from '../../shared';
 import { useAppSelector } from '../../app';
 import { Search } from 'lucide-react';
 import { motion } from 'framer-motion';
-import '../../app/styles/SearchPage.css';
+import styles from '../../app/styles/SearchPage.module.css';
 
 export function SearchPage() {
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
 
   const token = useAppSelector((state) => state.auth.token);
   const { downloadPhotoHook } = useFolderPhoto(token ?? '');
-  const { photos, searchPhotos } = useSearchPhotos();
+  const { photos, searchPhotos, loading, error } = useSearchPhotos();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterClicked, setFilterClicked] = useState(false);
   const [filters, setFilters] = useState<Filters>({
@@ -30,33 +30,37 @@ export function SearchPage() {
   useEffect(() => {
     searchPhotos({ query: searchQuery, filters });
   }, []);
+
+  if (loading) return <Loader />;
+  if (error) return <Error error={error} />;
+
   return (
-    <div className="search-page">
-      <div className="search-page__content">
-        <div className="search-page__topbar">
+    <div className={styles.searchPage}>
+      <div className={styles.searchPageContent}>
+        <div className={styles.searchPageToolbar}>
           <motion.div
-            className="search-page__welcome"
+            className={styles.searchPageWelcome}
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
           >
             <h1>Поиск фото</h1>
           </motion.div>
         </div>
-        <div className="search-input-container">
+        <div className={styles.searchInputContainer}>
           <Button
-            className="search-button"
+            className={styles.searchButton}
             onClick={() => searchPhotos({ query: searchQuery, filters })}
           >
             <Search />
           </Button>
           <Input
-            className="search-input"
+            className={styles.searchInput}
             type="text"
             placeholder="Поиск по названию, тегам..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <Button className="filter-button" onClick={() => setFilterClicked(!filterClicked)}>
+          <Button className={styles.filterButton} onClick={() => setFilterClicked(!filterClicked)}>
             Фильтры
           </Button>
         </div>
@@ -69,7 +73,7 @@ export function SearchPage() {
           />
         )}
 
-        <div className="search-grid">
+        <div className={styles.searchGrid}>
           {photos.map((photo: Photo) => (
             <PhotoCard
               key={photo.id}

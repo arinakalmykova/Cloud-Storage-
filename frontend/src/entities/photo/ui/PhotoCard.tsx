@@ -1,11 +1,11 @@
 import type { Photo } from '../../../entities';
 import { Button } from '../../../shared';
-import '../../../app/styles/PhotoCard.css';
+import styles from '../../../app/styles/PhotoCard.module.css';
 
 type PhotoCardProps = {
   photo: Photo;
   onClick?: () => void;
-  onDelete?: (photo: Photo) => void;
+  onDelete?: (photo: Photo) => Promise<{ success: boolean; message?: string }>;
   onRename?: (photo: Photo) => void;
   onMove?: (photo: Photo) => void;
   onDownload?: (photo: Photo) => void;
@@ -20,26 +20,37 @@ export function PhotoCard({
   onDownload,
 }: PhotoCardProps) {
   return (
-    <div className="photo-card" onClick={onClick}>
+    <div className={styles.photoCard} onClick={onClick}>
       <img src={photo.url} alt={photo.title} />
 
-      <div className="photo-card__info">
+      <div className={styles.photoCardInfo}>
         <p>{photo.title}</p>
         <p>Размер: {photo.size} байт</p>
         <p>Формат: {photo.format}</p>
         <p>Дата добавления: {photo.createdAt}</p>
       </div>
 
-      <div className="photo-card__actions">
+      <div className={styles.photoCardActions}>
         {onDelete && (
           <Button
-            onClick={(e: React.MouseEvent) => {
-              e.stopPropagation();
-              onDelete?.(photo);
-            }}
-          >
-            Удалить
-          </Button>
+          onClick={async(e) => {
+            e.stopPropagation();
+            try {
+              const result = await onDelete(photo); 
+              if (result.success) {
+                alert('Фото успешно удалено');
+                window.location.reload();
+              } else {
+                alert(result.message || 'Ошибка при удалении фото');
+              }
+            } catch (error) {
+              alert('Произошла ошибка при удалении фото');
+              console.error(error);
+            }
+          }}
+        >
+          Удалить
+        </Button>
         )}
         {onRename && (
           <Button

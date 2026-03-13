@@ -1,5 +1,5 @@
+import {lazy} from 'react';
 import { createBrowserRouter } from 'react-router-dom';
-import { MainLayout, AuthLayout, ProtectedLayout } from '../../app';
 import {
   DashboardPage,
   ArchivePage,
@@ -9,44 +9,34 @@ import {
   SearchPage,
 } from '../../pages';
 
+const ProtectedLayout = lazy(() => import('../layout/ProtectedLayout'));
+const MainLayout = lazy(() => import('../layout/MainLayout'));
+const AuthLayout = lazy(() => import('../layout/AuthLayout'));
+
+export const privateRoutes = [
+  { path: '/', element: <DashboardPage /> },
+  { path: '/archive', element: <ArchivePage /> },
+  { path: '/profile', element: <ProfilePage /> },
+  { path: '/upload', element: <UploadPage /> },
+  { path: '/search', element: <SearchPage /> },
+];
+
+export const publicRoutes = [
+  { path: '/auth', element: <AuthPage /> },
+];
+
 export const router = createBrowserRouter([
   {
     element: <ProtectedLayout />,
     children: [
       {
         element: <MainLayout />,
-        children: [
-          {
-            path: '/',
-            element: <DashboardPage />,
-          },
-          {
-            path: '/archive',
-            element: <ArchivePage />,
-          },
-          {
-            path: '/profile',
-            element: <ProfilePage />,
-          },
-          {
-            path: '/upload',
-            element: <UploadPage />,
-          },
-          {
-            path: '/search',
-            element: <SearchPage />,
-          },
-        ],
+        children: privateRoutes,
       },
     ],
   },
   {
     element: <AuthLayout />,
-    children: [
-      {
-        path: '/auth',
-        element: <AuthPage />,
-      },
-    ],
+    children: publicRoutes,
   },
 ]);

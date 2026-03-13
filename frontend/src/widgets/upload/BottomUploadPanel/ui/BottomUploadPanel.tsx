@@ -1,5 +1,5 @@
 import { Button } from '../../../../shared';
-import '../../../../app/styles/BottomUploadPanel.css';
+import styles from '../../../../app/styles/BottomUploadPanel.module.css';
 
 type Props = {
   file: File;
@@ -25,26 +25,26 @@ export function BottomUploadPanel({
 }: Props) {
   return (
     file && (
-      <div className="upload__bottom-panel">
-        <img src={previewUrl!} alt={title} className="upload__bottom-panel-img" />
-        <div className="upload__bottom-panel-info">
-          <p className="upload__bottom-panel-title">
+      <div className={styles.uploadBottomPanel}>
+        <img src={previewUrl!} alt={title} className={styles.uploadBottomPanelImage} />
+        <div className={styles.uploadBottomPanelInfo}>
+          <p className={styles.uploadBottomPanelTitle}>
             {title}.{file.type.split('/')[1]}
           </p>
-          <div className="upload__bottom-panel-actions">
-            <Button className="upload__bottom-panel-remove" onClick={() => setFile(null)}>
+          <div className={styles.uploadBottomPanelActions}>
+            <Button className={styles.uploadBottomPanelRemove} onClick={() => setFile(null)}>
               ×
             </Button>
             <Button
-              className="upload__bottom-panel-upload"
+              className={styles.uploadBottomPanelUpload}
               onClick={() => file && upload(file, quality, format)}
               disabled={uploading}
             >
               {uploading ? 'Загрузка...' : 'Загрузить и сжать'}
             </Button>
           </div>
-          {status && <p className="upload__bottom-panel-status">{status}</p>}
-          {uploading && <div className="upload__bottom-panel-progress"></div>}
+          {status && <p className={styles.uploadBottomPanelStatus}>{status}</p>}
+          {uploading && <div className={styles.uploadBottomPanelProgress}></div>}
         </div>
       </div>
     )

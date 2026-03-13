@@ -13,6 +13,7 @@ export interface AuthResponse {
   name?: string;
   email?: string;
   createdAt?: string;
+  message?: string;
 }
 
 export interface ErrorResponse {

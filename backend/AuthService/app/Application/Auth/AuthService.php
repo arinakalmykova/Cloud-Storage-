@@ -97,4 +97,9 @@ class AuthService
     }
 
 
+  public function isPasswordStrong(string $password): bool
+    {
+        return strlen($password) >= 8 && preg_match('/\d/', $password);
+    }
+
 }

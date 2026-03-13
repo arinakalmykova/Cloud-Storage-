@@ -99,7 +99,6 @@ class PhotoController extends Controller
         return response()->json(['status' => $photo->getStatus()->value()]);
 
     } catch (\Exception $e) {
-        // Логируем ошибку
         \Log::error('Mark uploaded failed: '.$e->getMessage(), ['trace' => $e->getTraceAsString()]);
 
         return response()->json([

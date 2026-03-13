@@ -1,0 +1,224 @@
+.uploadLoaded {
+  grid-column: 9/-1;
+  grid-row: span 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  color: var(--color-white);
+  gap: 5px;
+  background-color: var(--color-black);
+  border-radius: 10px;
+}
+
+.uploadLoadedHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  color: var(--color-white);
+  margin: 0;
+}
+
+.uploadLoadedTitle h2 {
+  margin: 0;
+}
+
+.uploadLoadedTitle {
+  margin: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-white);
+  gap: 10px;
+}
+
+.uploadContent {
+  padding: 2rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  color: var(--color-white);
+  gap: 10px;
+}
+
+.formGroup:not(:last-child) {
+  margin-bottom: 20px;
+}
+
+.formGroup label {
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.formGroup input {
+  width: 100%;
+  border-radius: 10px;
+  background-color: var(--color-input);
+  color: var(--color-white);
+  border: none;
+  box-sizing: border-box;
+}
+
+.formGroup input:focus,
+.formGroup input:focus {
+  outline: none;
+  border: 1px solid var(--color-grey);
+  font-family: var(--font-family);
+}
+
+.formGroup input[type='range'] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 1px;
+  border-radius: 100px;
+  background: var(--color-input);
+}
+
+.formGroup input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  margin-top: -17px;
+}
+
+.formGroup span {
+  font-size: 0.8rem;
+  color: var(--color-border-grey);
+}
+
+.formGroupText {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.tagsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.tag {
+  background-color: var(--color-grey);
+  color: var(--color-white) !important;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tag button {
+  background: transparent;
+  border: none;
+  color: var(--color-red);
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+  padding: 0;
+}
+
+.uploadSizes {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  color: var(--color-white);
+  margin-top: 10px;
+}
+
+.uploadSizes p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--color-border-grey);
+}
+
+.uploadSizes p span {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-white);
+}
+
+.uploadSizesText {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 10px;
+  margin-top: 10px;
+  text-align: left;
+}
+
+.uploadSizesText:last-child {
+  border-top: 1px solid var(--color-blue);
+  margin-top: 20px;
+  padding-top: 10px;
+}
+
+.formGroupText label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-white);
+  margin-right: 10px;
+}
+
+.formGroupText select {
+  background-color: var(--color-input);
+  color: var(--color-white);
+  border: none;
+  border-radius: 10px;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.formGroupText select:focus {
+  border: 1px solid var(--color-blue);
+  background-color: var(--color-input);
+}
+
+.formGroupText {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.uploadFolder {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.uploadFolder select {
+  background-color: var(--color-input);
+  color: var(--color-white);
+  border: none;
+  border-radius: 10px;
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.uploadFolder select:focus {
+  border: 1px solid var(--color-blue);
+  background-color: var(--color-input);
+}

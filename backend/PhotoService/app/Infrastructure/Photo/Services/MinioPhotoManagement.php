@@ -6,6 +6,7 @@ use App\Domain\Photo\Entities\Photo;
 use App\Domain\Photo\Services\PhotoManagementServiceInterface;
 use Illuminate\Support\Facades\Storage;
 use League\Flysystem\StorageAttributes;
+use Illuminate\Support\Facades\Log;
 
 class MinioPhotoManagement implements PhotoManagementServiceInterface
 {
@@ -49,8 +50,8 @@ class MinioPhotoManagement implements PhotoManagementServiceInterface
     }
 
     public function deleteFile(string $key): void
-    {
-        $this->publicDisk->delete($key);
+    {  
+        $this->backendDisk->delete($key);
     }
 
     public function listContents(string $prefix = ''): array

@@ -24,7 +24,7 @@ export function initEcho(token: string) {
     forceTLS: false,
     enabledTransports: ['ws'],
     authEndpoint: '/api/broadcasting/auth',
-    authTransport: 'ajax', // ← явно укажи ajax для авторизации
+    authTransport: 'ajax',
     auth: {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -37,7 +37,6 @@ export function initEcho(token: string) {
 
   console.log('[Echo Init] 2. Echo создан');
 
-  // Проверяем наличие pusher
   setTimeout(() => {
     console.log('[Echo Debug] connector существует?', !!echo.connector);
     console.log('[Echo Debug] pusher существует?', !!echo.connector?.pusher);
@@ -48,7 +47,6 @@ export function initEcho(token: string) {
     );
   }, 1000);
 
-  // Подписка на глобальные события Pusher
   if (echo.connector?.pusher) {
     const pusher = echo.connector.pusher;
 

@@ -1,34 +1,45 @@
 import type { Folder } from '../../../entities';
 import { Button } from '../../../shared';
-import '../../../app/styles/FolderCard.css';
+import styles from '../../../app/styles/FolderCard.module.css';
 
 type Props = {
   folder: Folder;
   onClick: () => void;
-  onDelete: (folder: Folder) => void;
+  onDelete: (folder: Folder) => Promise<{ success: boolean; message?: string }>;
   onRename: (folder: Folder) => void;
 };
 
 export function FolderCard({ folder, onClick, onDelete, onRename }: Props) {
+  console.log(styles);
   return (
-    <div className="folder-card" onClick={onClick}>
+    <div className={styles.folderCard} onClick={onClick}>
       <h3>{folder.name}</h3>
       <p>{folder.photos?.length ?? 0} фото</p>
 
-      <div className="folder-card__actions">
+      <div className={styles.actions}>
         <Button
-          onClick={(e) => {
+          onClick={async(e) => {
             e.stopPropagation();
-            onDelete(folder);
+            try {
+              const result = await onDelete(folder); 
+              if (result.success) {
+                alert('Папка успешно удалена');
+              } else {
+                alert(result.message || 'Ошибка при удалении папки');
+              }
+            } catch (error) {
+              alert('Произошла ошибка при удалении папки');
+              console.error(error);
+            }
           }}
         >
           Удалить
         </Button>
 
-        <Button
+         <Button
           onClick={(e) => {
             e.stopPropagation();
-            onRename(folder);
+            onRename(folder); 
           }}
         >
           Переименовать

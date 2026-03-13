@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from 'react';
 import { getUploadUrl, markUploaded, updateTags } from '../../../entities';
-import { startDotsAnimation } from '../../../features';
+import { startDotsAnimation } from '../..';
 
 export function usePhotoUpload(
   token: string | null,

@@ -1,0 +1,163 @@
+.archivePage {
+  width: 100%;
+  min-height: 100vh;
+}
+
+.archivePageContent {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+  color: var(--color-white);
+}
+
+.archivePageWelcome {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  color: var(--color-white);
+}
+
+.archivePageWelcome h1 {
+  font-size: clamp(1.5rem, 5vw, 2rem);
+  margin: 0;
+}
+
+.archivePageTopbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.archiveSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.archiveSectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.archiveSectionHeader button {
+  padding: 0.8rem 1rem;
+  background: var(--color-white);
+  color: var(--color-black);
+  border-radius: 10px;
+  font-weight: 600;
+  font-family: var(--font-family);
+  flex-shrink: 0;
+}
+
+.archiveGrid {
+  display: block;
+}
+
+.archiveCard {
+  padding: 1.5rem;
+  background: var(--color-white);
+  color: var(--color-black);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.archiveCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.archiveRecentPhotos {
+  margin-top: 2.5rem;
+  display: block;
+  width: 100%;
+  text-align: left;
+}
+
+.recentPhotosGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.2rem;
+  margin-top: 1rem;
+}
+
+.recentPhotosGrid .photoCard {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(6px);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.folderPageHeader {
+  background: var(--color-white);
+  color: var(--color-black);
+  padding: 1.5rem;
+  border-radius: 18px;
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  grid-column: span 11;
+  grid-row: span 2;
+}
+
+.folderActions button {
+  margin-left: 0.5rem;
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.folderActions button:first-child {
+  background: var(--color-black);
+  color: var(--color-white);
+}
+
+.folderActions button:last-child {
+  background: #e53935;
+  color: var(--color-white);
+}
+
+.backButton {
+  background: var(--color-white);
+  border: none;
+  color: var(--color-grey-text);
+  padding: 0.6rem 1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  margin-bottom: 30px;
+}
+
+.photoGrid{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.2rem;
+  margin-top: 1rem;
+}
+
+.loadingMessage,
+.errorMessage {
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  text-align: center;
+  color: var(--color-white);
+}
+
+.archiveFolderGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* плавная адаптивность */
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+

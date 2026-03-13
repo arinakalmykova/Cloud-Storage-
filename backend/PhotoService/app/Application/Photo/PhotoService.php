@@ -38,6 +38,7 @@ class PhotoService
             status: PhotoStatus::pendingUpload(),
             size: null,
             folderId: null,  
+            folderName: null,
             format: null,      
             createdAt: null,   
             tags: [] 
@@ -170,16 +171,15 @@ class PhotoService
 
     public function deletePhoto(string $photoId, string $userId): void
     {
+        
         $photo = $this->repository->findById($photoId);
 
         if (!$photo || !$photo->isOwnedBy($userId)) {
             throw new \Exception('Not found');
         }
 
-        if ($photo->getKey()) {
-            $this->minioService->deleteFile($photo->getKey());
-        }
-
+        $key = "uploads/{$photo->getId()}/original";
+        $this->minioService->deleteFile($key);
         $this->repository->delete($photo);
     }
 

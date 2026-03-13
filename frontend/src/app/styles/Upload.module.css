@@ -1,0 +1,33 @@
+.uploadPage {
+  width: 100%;
+  height: 100%;
+}
+
+.uploadPageContent {
+  padding: 2rem;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-gap: 1rem;
+}
+
+.uploadWelcome {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  grid-column: span 12;
+  color: var(--color-white);
+}
+
+.uploadWelcome h1 {
+  font-size: 2rem;
+  margin: 0;
+  color: var(--color-white);
+}
+
+.uploadInfo {
+  grid-column: 1/-1;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 1rem;
+  grid-auto-rows: min-content;
+}

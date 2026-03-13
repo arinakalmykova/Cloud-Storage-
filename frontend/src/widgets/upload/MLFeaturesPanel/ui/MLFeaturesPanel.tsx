@@ -1,35 +1,42 @@
 import { Check } from 'lucide-react';
-import '../../../../app/styles/MLFeaturesPanel.css';
+import styles from '../../../../app/styles/MLFeaturesPanel.module.css';
+import { Loader, Error } from '../../../../shared';
 
 type Props = {
   MLFormat: string;
   MLQuality: number;
+  loading: boolean;
+  error: string | null;
 };
 
-export function MLFeaturesPanel({ MLFormat, MLQuality }: Props) {
+export function MLFeaturesPanel({ MLFormat, MLQuality, loading, error }: Props) {
   return (
-    <div className="upload__features">
-      <h3 className="upload__features__title">Интеллектуальные функции</h3>
+    <div className={styles.uploadFeatures}>
+      <h3 className={styles.uploadFeaturesTitle}>Интеллектуальные функции</h3>
 
-      {MLFormat || MLQuality ? (
-        <div className="upload__features__cards">
+      {loading ? (
+        <Loader />
+      ) : error ? (
+        <Error error={error} />
+      ) : MLFormat || MLQuality ? (
+        <div className={styles.uploadFeaturesCards}>
           {MLFormat && (
-            <div className="upload__features__card">
+            <div className={styles.uploadFeaturesCard}>
               <h4>Рекомендованный формат</h4>
               <p>{MLFormat.toUpperCase()}</p>
-              <Check className="upload__features__icon" />
+              <Check className={styles.uploadFeaturesIcon} />
             </div>
           )}
           {MLQuality && (
-            <div className="upload__features__card">
+            <div className={styles.uploadFeaturesCard}>
               <h4>Рекомендованное качество</h4>
               <p>{MLQuality}%</p>
-              <Check className="upload__features__icon" />
+              <Check className={styles.uploadFeaturesIcon} />
             </div>
           )}
         </div>
       ) : (
-        <p className="upload__features__note">ИИ пока не дал рекомендаций для загруженного фото.</p>
+        <p className={styles.uploadFeaturesNote}>ИИ пока не дал рекомендаций для загруженного фото.</p>
       )}
     </div>
   );

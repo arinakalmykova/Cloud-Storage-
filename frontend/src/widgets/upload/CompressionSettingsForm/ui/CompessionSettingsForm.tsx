@@ -1,7 +1,7 @@
 import { Settings } from 'lucide-react';
 import { Input } from '../../../../shared';
 import type { Folder } from '../../../../entities/folder/model/types';
-import '../../../../app/styles/CompressionSettingsForm.css';
+import styles from '../../../../app/styles/CompressionSettingsForm.module.css';
 
 type Props = {
   title: string;
@@ -83,19 +83,20 @@ export function CompressionSettingsForm({
     setTagsList(tagList.filter((t) => t !== tag));
   };
   return (
-    <div className="upload__loaded">
-      <div className="upload__content">
-        <div className="upload__loaded__header">
-          <div className="upload__loaded__title">
-            <Settings className="upload__loaded__icon" />
+    <div className={styles.uploadLoaded}>
+      <div className={styles.uploadContent}>
+        <div className={styles.uploadLoadedHeader}>
+          <div className={styles.uploadLoadedTitle}>
+            <Settings className={styles.uploadLoadedIcon} />
             <h2>Настройки сжатия</h2>
           </div>
           <p>Здесь вы можете настроить параметры сжатия</p>
         </div>
-        <form className="upload__loaded-form" method="post" action="#">
-          <div className="form-group">
-            <label htmlFor="title">Название</label>
+
+        <form className={styles.uploadLoadedForm}>
+          <div className={styles.formGroup}>
             <Input
+              label="Название:"
               id="title"
               type="text"
               name="title"
@@ -103,9 +104,10 @@ export function CompressionSettingsForm({
               onChange={(e) => setTitle(e.target.value)}
             />
           </div>
-          <div className="form-group">
-            <label htmlFor="Description">Описание</label>
+
+          <div className={styles.formGroup}>
             <Input
+              label="Описание:"
               type="text"
               name="description"
               value={description}
@@ -113,8 +115,8 @@ export function CompressionSettingsForm({
             />
           </div>
 
-          <div className="form-group">
-            <div className="form-group__text">
+          <div className={styles.formGroup}>
+            <div className={styles.formGroupText}>
               <label>Формат сжатия:</label>
               <select value={format} onChange={(e) => setFormat(e.target.value)}>
                 <option value="webp">WebP</option>
@@ -124,9 +126,10 @@ export function CompressionSettingsForm({
               </select>
             </div>
           </div>
-          <div className="form-group range">
-            <div className="form-group__text">
-              <label htmlFor="Quality">Качество</label>
+
+          <div className={styles.formGroup}>
+            <div className={styles.formGroupText}>
+              <label htmlFor="quality">Качество</label>
               <span>{quality}%</span>
             </div>
             <Input
@@ -139,23 +142,23 @@ export function CompressionSettingsForm({
                 width: '100%',
                 borderRadius: '100px',
                 background: `linear-gradient(
-                          to right,
-                          white 0%,
-                          white calc(${quality}%),
-                          #334155 calc(${quality}%),
-                          #334155 100%
-                        )`,
+                  to right,
+                  white 0%,
+                  white ${quality}%,
+                  #334155 ${quality}%,
+                  #334155 100%
+                )`,
               }}
             />
-            <div className="form-group__text">
+            <div className={styles.formGroupText}>
               <span>Маленький размер</span>
               <span>Высокое качество</span>
             </div>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="Tags">Теги</label>
+          <div className={styles.formGroup}>
             <Input
+              label="Теги:"
               type="text"
               id="tags"
               value={tags}
@@ -165,9 +168,9 @@ export function CompressionSettingsForm({
             />
 
             {tagList.length > 0 && (
-              <div className="tags-list">
+              <div className={styles.tagsList}>
                 {tagList.map((tag) => (
-                  <span key={tag} className="tag">
+                  <span key={tag} className={styles.tag}>
                     {tag}{' '}
                     <button type="button" onClick={() => removeTag(tag)}>
                       ×
@@ -177,9 +180,13 @@ export function CompressionSettingsForm({
               </div>
             )}
           </div>
-          <div className="upload__folder">
+
+          <div className={styles.uploadFolder}>
             <label>Выберите папку для сохранения:</label>
-            <select value={folderId ?? ''} onChange={(e) => setFolderId(e.target.value || null)}>
+            <select
+              value={folderId ?? ''}
+              onChange={(e) => setFolderId(e.target.value || null)}
+            >
               <option value="">Без папки</option>
               {folders.map((folder) => (
                 <option key={folder.id} value={folder.id}>
@@ -188,19 +195,19 @@ export function CompressionSettingsForm({
               ))}
             </select>
           </div>
-          <div className="upload__sizes">
-            <div className="upload__sizes__text">
-              {' '}
-              <p>Оригинальный размер:</p> <span> {originalSizeMB.toFixed(2)} MB</span>
+
+          <div className={styles.uploadSizes}>
+            <div className={styles.uploadSizesText}>
+              <p>Оригинальный размер:</p>
+              <span>{originalSizeMB.toFixed(2)} MB</span>
             </div>
-            <div className="upload__sizes__text">
-              {' '}
-              <p>Примерный размер после сжатия:</p> <span>-{compressedSizeMB.toFixed(2)} MB</span>
+            <div className={styles.uploadSizesText}>
+              <p>Примерный размер после сжатия:</p>
+              <span>{compressedSizeMB.toFixed(2)} MB</span>
             </div>
-            <div className="upload__sizes__text">
-              {' '}
+            <div className={styles.uploadSizesText}>
               <p>Вы экономите:</p>
-              <span> {savedPercent}%</span>
+              <span>{savedPercent}%</span>
             </div>
           </div>
         </form>

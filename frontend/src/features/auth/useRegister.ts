@@ -2,7 +2,8 @@ import { useAppDispatch, useAppSelector, registerThunk } from '../../app';
 
 export function useRegister() {
   const dispatch = useAppDispatch();
-  const { loading, error } = useAppSelector((state) => state.auth);
+  const registerError = useAppSelector((state) => state.auth.registerError);
+  const loading = useAppSelector((state) => state.auth.loading);
 
   const register = async (name: string, email: string, password: string) => {
     const result = await dispatch(registerThunk({ name, email, password }));
@@ -14,5 +15,5 @@ export function useRegister() {
     return false;
   };
 
-  return { register, loading, error };
+  return { register, loading, registerError };
 }

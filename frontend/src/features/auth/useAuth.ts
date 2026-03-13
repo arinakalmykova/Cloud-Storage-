@@ -3,11 +3,10 @@ import { deleteUser, updateUser } from '../../entities';
 
 export const useAuth = () => {
   const dispatch = useAppDispatch();
-  const { token, user, loading } = useAppSelector((state) => ({
-    token: state.auth.token,
-    user: state.auth.user,
-    loading: state.auth.loading,
-  }));
+ const token = useAppSelector((state) => state.auth.token);
+  const user = useAppSelector((state) => state.auth.user);
+  const loading = useAppSelector((state) => state.auth.loading);
+  const error = useAppSelector((state) => state.auth.loginError || state.auth.registerError);
 
   const deleteUserFunc = async () => {
     if (!token) return { success: false, message: 'Нет токена' };
@@ -30,6 +29,7 @@ export const useAuth = () => {
   return {
     token,
     user,
+    error,
     loading,
     deleteUserFunc,
     updateUserFunc,

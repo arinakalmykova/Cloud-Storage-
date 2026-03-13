@@ -1,10 +1,11 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../../features';
+import { Loader } from '../../shared';
 
-export const ProtectedLayout = () => {
+export default function ProtectedLayout () {
   const { isAuth, loading } = useAuth();
-
-  if (loading) return null;
+  
+  if (loading) return <Loader/>;
 
   return isAuth ? <Outlet /> : <Navigate to="/auth" replace />;
 };

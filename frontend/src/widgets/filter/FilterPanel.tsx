@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Input } from '../../shared';
 import type { Filters } from '../../entities';
-import '../../app/styles/FilterPanel.css';
+import styles from '../../app/styles/FilterPanel.module.css';
 
 interface Props {
   filters: Filters;
@@ -33,7 +33,7 @@ export function FilterPanel({ filters, setFilters, availableTags, availableColor
   };
 
   return (
-    <div className="filter-panel">
+    <div className={styles.filterPanel}>
       <Input
         label="Название:"
         type="text"
@@ -42,11 +42,11 @@ export function FilterPanel({ filters, setFilters, availableTags, availableColor
         onChange={(e) => setFilters({ ...filters, file_name: e.target.value })}
       />
 
-      <div className="tag-picker">
+      <div className={styles.tagPicker}>
         <label>Теги:</label>
-        <div className="tags">
+        <div className={styles.tags}>
           {availableTags.map((tag) => (
-            <label key={tag} className={`tag-item ${selectedTags.includes(tag) ? 'selected' : ''}`}>
+            <label key={tag} className={`${styles.tagItem} ${selectedTags.includes(tag) ? styles.selected : ''}`}>
               <Input
                 type="checkbox"
                 checked={selectedTags.includes(tag)}
@@ -58,13 +58,13 @@ export function FilterPanel({ filters, setFilters, availableTags, availableColor
         </div>
       </div>
 
-      <div className="color-picker">
+      <div className={styles.colorPicker}>
         <label>Цвета:</label>
-        <div className="color-squares">
+        <div className={styles.colorSquares}>
           {availableColors.map((color) => (
             <div
               key={color}
-              className={`color-square ${selectedColors.includes(color) ? 'selected' : ''}`}
+              className={`${styles.colorSquare} ${selectedColors.includes(color) ? styles.selected : ''}`}
               style={{ backgroundColor: color }}
               onClick={() => toggleColor(color)}
             />

@@ -1,7 +1,8 @@
 import { LayoutDashboard, Upload, FolderOpen, Search, Cloud } from 'lucide-react';
 import { useStorageAnalytics } from '../../../features';
+import { Loader, Error } from '../../../shared';
 import { Link } from 'react-router-dom';
-import '../../../app/styles/SideBar.css';
+import styles from '../../../app/styles/SideBar.module.css';
 
 export function SideBar() {
   const { data, loading, error } = useStorageAnalytics();
@@ -25,53 +26,55 @@ export function SideBar() {
   ];
 
   return (
-    <aside className="sidebar">
-      <div className="sidebar-content">
+    <aside className={styles.sidebar}>
+      <div className={styles.sidebarContent}>
         <nav>
-          <ul className="sidebar-menu">
+          <ul className={styles.sidebarMenu}>
             {navigation.map((item) => (
-              <li key={item.path} className="sidebar-item">
-                <Link to={item.path} className="sidebar-link">
-                  <item.icon className="sidebar-icon" />
-                  <span className="sidebar-text">{item.name}</span>
+              <li key={item.path} className={styles.sidebarItem}>
+                <Link to={item.path} className={styles.sidebarLink}>
+                  <item.icon className={styles.sidebarIcon} />
+                  <span className={styles.sidebarText}>{item.name}</span>
                 </Link>
               </li>
             ))}
           </ul>
         </nav>
 
-        <div className="storage-info">
-          <div className="storage-info__header">
-            <Cloud className="storage-info__icon" />
-            <span className="storage-info__text">Хранилище</span>
+        <div className={styles.storageInfo}>
+          <div className={styles.storageInfoHeader}>
+            <Cloud className={styles.storageInfoIcon} />
+            <span className={styles.storageInfoText}>Хранилище</span>
           </div>
-          <div className="storage-info__body">
-            {loading && <p>Загрузка...</p>}
-            {error && <p className="error">{error}</p>}
+          <div className={styles.storageInfoBody}>
+            {loading && <Loader />}
+            {error && <Error error={error} />}
             {!loading && !error && data && (
               <>
-                <div className="storage-info__stats">
-                  <span className="storage-info-stats__text">
+                <div className={styles.storageInfoStats}>
+                  <span className={styles.storageInfoStatsText}>
                     {formatBytes(data.usedBytes)} из {formatBytes(data.totalBytes)}
                   </span>
 
-                  <span className="storage-info-stats__percent">
+                  <span className={styles.storageInfoStatsPercent}>
                     {data.percent > 0 && data.percent < 0.01
                       ? '< 0.01%'
                       : `${data.percent.toFixed(2)}%`}
                   </span>
                 </div>
 
-                <div className="storage-info__bar">
+                <div className={styles.storageInfoBar}>
                   <div
-                    className="storage-info-bar__progress"
+                    className={styles.storageInfoBarProgress}
                     style={{
                       width:
-                        data.percent > 0 ? `${data.percent}%` : data.usedBytes > 0 ? '1%' : '0%',
+                        data.percent > 0 && data.percent < 1
+                          ? '1%'
+                          : `${data.percent}%`,
                     }}
                   />
                 </div>
-                <p className="storage-info__note">Статистика обновляется автоматически</p>
+                <p className={styles.storageInfoNote}>Статистика обновляется автоматически</p>
               </>
             )}
           </div>

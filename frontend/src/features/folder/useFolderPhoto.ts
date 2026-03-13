@@ -12,8 +12,11 @@ export function useFolderPhoto(token: string) {
     setLoading(true);
     recentAddPhotos(token)
       .then((data) => {
-        console.log('recent photos from API:', data);
         setRecentPhotos(data);
+        return {
+          success: true,
+          message: 'Фото успешно загружены',
+        };
       })
       .catch((err) => {
         console.error(err);
@@ -29,6 +32,10 @@ export function useFolderPhoto(token: string) {
     if (!token) return;
     try {
       await movePhotoToFolder(token, photoId, folderId);
+      return {
+        success: true,
+        message: 'Фото успешно перемещено в папку',
+      };
     } catch (err) {
       console.error(err);
       setError('Ошибка при перемещении фото в папку');
@@ -39,6 +46,10 @@ export function useFolderPhoto(token: string) {
     if (!token) return;
     try {
       await renamePhoto(token, photoId, newTitle);
+      return {
+        success: true,
+        message: 'Фото успешно переименовано',
+      };
     } catch (err) {
       console.error(err);
       setError('Ошибка при переименовании фото');
@@ -49,6 +60,10 @@ export function useFolderPhoto(token: string) {
     if (!token) return;
     try {
       await deletePhoto(token, photoId);
+      return {
+        success: true,
+        message: 'Фото успешно удалено',
+      };
     } catch (err) {
       console.error(err);
       setError('Ошибка при удалении фото');

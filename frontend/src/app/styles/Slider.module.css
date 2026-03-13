@@ -1,0 +1,116 @@
+.container {
+  position: relative;
+  width: 100%;
+  height: 80vh;
+  overflow: hidden;
+  max-height: 600px;
+  border-radius: 12px;
+}
+.image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+
+.image.after {
+  width: 100%;
+  z-index: 1;
+}
+
+.image.before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 2;
+  overflow: hidden;
+}
+
+.image.before .inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  clip-path: inset(0 50% 0 0);
+}
+
+input.slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  cursor: ew-resize;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  z-index: 4;
+}
+
+input.slider::-webkit-slider-runnable-track {
+  background: transparent;
+}
+
+input.slider::-moz-range-track {
+  background: transparent;
+}
+
+input.slider::-webkit-slider-thumb {
+  width: 4px;
+  height: 100%;
+  background: #ffffff;
+  cursor: ew-resize;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+input.slider::-moz-range-thumb {
+  width: 4px;
+  height: 100%;
+  background: #ffffff;
+  cursor: ew-resize;
+  border: none;
+}
+
+.sliderButton {
+  position: absolute;
+  top: 50%;
+  width: 32px;
+  height: 32px;
+  margin-top: -16px;
+  background: #ffffff;
+  border-radius: 50%;
+  z-index: 3;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.sliderButton::before,
+.sliderButton::after {
+  font-size: 14px;
+  color: #555;
+}
+
+.sliderButton::before {
+  content: '‹';
+}
+
+.sliderButton::after {
+  content: '›';
+}

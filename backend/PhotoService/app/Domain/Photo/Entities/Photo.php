@@ -19,6 +19,7 @@ class Photo
     private PhotoStatus $status;
     private ?int $quality = null;
     private ?string $folderId = null;
+    private ?string $folderName = null;
     private ?string $createdAt = null;
 
     public function __construct(
@@ -32,6 +33,7 @@ class Photo
     ?string $format = null,
     ?string $createdAt = null,
     ?string $folderId = null,
+    ?string $folderName = null,
     ?array $tags,
     
     ) {
@@ -43,6 +45,7 @@ class Photo
         $this->status = $status;
         $this->size = $size;
         $this->folderId = $folderId;
+        $this->folderName = $folderName;
         $this->format = $format;
         $this->createdAt = $createdAt;
         $this->tags = $tags;
@@ -110,6 +113,7 @@ class Photo
     public function getQuality(): ?int { return $this->quality; }
     public function getFormat(): ?string { return $this->format; }
     public function getFolderId(): ?string { return $this->folderId; }
+    public function getFolderName(): ?string { return $this->folderName; }
     public function getCreatedAt(): ?string { return $this->createdAt; }
     public function getTags(): ?array { return $this->tags; }
 
@@ -128,6 +132,7 @@ class Photo
             'size' => $this->size,
             'format' => $this->format,
             'folder' => $this->folderId,
+            'folderName' => $this->folderName,
             'createdAt' => $this->createdAt,
             'tags' => $this->tags
         ];

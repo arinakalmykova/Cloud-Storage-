@@ -18,7 +18,8 @@ import {
   Tooltip,
 } from 'recharts';
 import { useStorageAnalytics } from '../../features';
-import '../../app/styles/Dashboard.css';
+import {Loader, Error} from '../../shared';
+import styles from '../../app/styles/Dashboard.module.css';
 
 export function DashboardPage() {
   const { data, loading, error } = useStorageAnalytics();
@@ -45,18 +46,18 @@ export function DashboardPage() {
   const timeline = data?.timeline ?? [];
 
   if (loading) {
-    return <div className="dashboard-page">Загрузка...</div>;
+    return <Loader/>;
   }
 
   if (error) {
-    return <div className="dashboard-page">Ошибка: {error}</div>;
+    return <Error error={error}/>;
   }
 
   return (
-    <div className="dashboard-page">
-      <div className="dashboard__content">
+    <div className={styles.dashboardPage}>
+      <div className={styles.dashboardContent}>
         <motion.div
-          className="dashboard__welcome"
+          className={styles.dashboardWelcome}
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
@@ -64,91 +65,91 @@ export function DashboardPage() {
           <p>Добро пожаловать на вашу панель управления!</p>
         </motion.div>
 
-        <div className="dashboard__nav">
+        <div className={styles.dashboardNav}>
           {navigation.map((item) => (
-            <Link key={item.path} to={item.path} className="dashboard__nav-item">
-              <div className="dashboard__nav-icon">{item.icon}</div>
+            <Link key={item.path} to={item.path} className={styles.dashboardNavItem}>
+              <div className={styles.dashboardNavItemIcon}>{item.icon}</div>
               <h2>{item.name}</h2>
             </Link>
           ))}
         </div>
 
-        <div className="dashboard__stats">
+        <div className={styles.dashboardStats}>
           <motion.div
-            className="dashboard__stats-item"
+            className={styles.dashboardStatsItem}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <div className="dashboard__stats__header">
-              <div className="dashboard__stats-icon">
+            <div className={styles.dashboardStatsHeader}>
+              <div className={styles.dashboardStatsIcon}>
                 <Image />
               </div>
-              <div className="dashboard__stats-info">
+              <div className={styles.dashboardStatsInfo}>
                 <h2>Общее кол-во фото</h2>
               </div>
             </div>
-            <div className="dashboard__stats__body">
-              <div className="dashboard__stats__number">{photoCount}</div>
-              <div className="dashboard__stats__comment">
+            <div className={styles.dashboardStatsBody}>
+              <div className={styles.dashboardStatsNumber}>{photoCount}</div>
+              <div className={styles.dashboardStatsComment}>
                 <p>Файлов в хранилище</p>
               </div>
             </div>
           </motion.div>
 
           <motion.div
-            className="dashboard__stats-item"
+            className={styles.dashboardStatsItem}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <div className="dashboard__stats__header">
-              <div className="dashboard__stats-icon">
+            <div className={styles.dashboardStatsHeader}>
+              <div className={styles.dashboardStatsIcon}>
                 <HardDrive />
               </div>
-              <div className="dashboard__stats-info">
+              <div className={styles.dashboardStatsInfo}>
                 <h2>Занятое пространство</h2>
               </div>
             </div>
-            <div className="dashboard__stats__body">
-              <div className="dashboard__stats__number">
+            <div className={styles.dashboardStatsBody}>
+              <div className={styles.dashboardStatsNumber}>
                 {formatBytes(usedBytes)}
               </div>
-              <div className="dashboard__stats__comment">
+              <div className={styles.dashboardStatsComment}>
                 <p>Используется из 100 GB</p>
               </div>
             </div>
           </motion.div>
 
           <motion.div
-            className="dashboard__stats-item"
+            className={styles.dashboardStatsItem}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <div className="dashboard__stats__header">
-              <div className="dashboard__stats-icon">
+            <div className={styles.dashboardStatsHeader}>
+              <div className={styles.dashboardStatsIcon}>
                 <Award />
               </div>
-              <div className="dashboard__stats-info">
+              <div className={styles.dashboardStatsInfo}>
                 <h2>Скорость загрузки</h2>
               </div>
             </div>
-            <div className="dashboard__stats__body">
-              <div className="dashboard__stats__number">{uploadSpeed}</div>
-              <div className="dashboard__stats__comment">
+            <div className={styles.dashboardStatsBody}>
+              <div className={styles.dashboardStatsNumber}>{uploadSpeed}</div>
+              <div className={styles.dashboardStatsComment}>
                 <p>Оценка производительности</p>
               </div>
             </div>
           </motion.div>
         </div>
-        <div className="dashboard__storage">
+        <div className={styles.dashboardStorage}>
           <motion.div
-            className="dashboard__storage-timeline"
+            className={styles.dashboardStorageTimeline}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <div className="dashboard__storage-timeline__header">
+            <div className={styles.dashboardStorageTimelineHeader}>
               <Clock />
               <h2>Таймлайн загрузок</h2>
             </div>

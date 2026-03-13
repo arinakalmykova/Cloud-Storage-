@@ -1,6 +1,6 @@
 import { Upload } from 'lucide-react';
 import { Input } from '../../../../shared';
-import '../../../../app/styles/UploadFileBlock.css';
+import styles from '../../../../app/styles/UploadFileBlock.module.css';
 
 type Props = {
   uploading: boolean;
@@ -9,13 +9,13 @@ type Props = {
 
 export function UploadFileBlock({ uploading, onChange }: Props) {
   return (
-    <div className="upload__form">
-      <div className="upload__file">
-        <label className="upload__label">
-          <Upload className="upload__icon" />
+    <div className={styles.uploadForm}>
+      <div className={styles.uploadFile}>
+        <label className={styles.uploadLabel}>
+          <Upload className={styles.uploadIcon} />
           <h2>Загрузите фото сюда</h2>
           <Input
-            className="upload__input"
+            className={styles.uploadInput}
             type="file"
             accept="image/*"
             disabled={uploading}

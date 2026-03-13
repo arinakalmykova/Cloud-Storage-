@@ -1,0 +1,66 @@
+.profilePage {
+  width: 100%;
+  min-height: 100vh;
+}
+
+.profilePageContent {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  color: var(--color-white);
+}
+
+.profilePageTopbar {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  color: var(--color-white);
+}
+
+.profilePageButtons {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+}
+
+.profilePageInfo {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  gap: 0.9rem;
+  color: var(--color-white);
+}
+
+.profilePageEdit {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  gap: 0.9rem;
+  color: var(--color-white);
+  width: 40%;
+  margin: 0 auto;
+}
+
+.profilePageEditButtons {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.profilePageEditButtons button {
+  color: var(--color-white);
+  background-image: var(--background-logo);
+}
+
+.profileButton {
+  padding: 0.75rem;
+  background-image: var(--background-logo);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-white);
+}

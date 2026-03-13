@@ -1,15 +1,53 @@
-import { useState } from 'react';
+import { useState, useReducer } from 'react';
 import { motion } from 'framer-motion';
 import { useFolders, useFolderPhoto } from '../../features';
 import { useAppSelector } from '../../app';
 import { PhotoCard, FolderCard } from '../../entities';
 import type { Photo } from '../../entities';
 import { ModalWindow, ModalWindowPhoto } from '../../widgets';
-import { Button, Input } from '../../shared';
-import '../../app/styles/Archive.css';
+import { Button, Input, Loader, Error } from '../../shared';
+import styles from '../../app/styles/Archive.module.css';
+
+type ModalAction =
+  | { type: 'OPEN_RENAME_PHOTO'; photo: Photo }
+  | { type: 'OPEN_MOVE_PHOTO'; photo: Photo }
+  | { type: 'OPEN_CREATE_FOLDER' }
+  | { type: 'OPEN_RENAME_FOLDER'; folderId: string; folderName: string }
+  | { type: 'CLOSE_MODAL' }
+  | { type: 'SET_MODAL_FIELD'; field: string; value: any };
+
+type ModalState =
+  | { type: 'renamePhoto'; photo: Photo; newTitle: string }
+  | { type: 'movePhoto'; photo: Photo; targetFolder: string | null }
+  | { type: 'createFolder'; newFolderName: string }
+  | { type: 'renameFolder'; folderId: string; folderName: string }
+  | null;
+
+function modalReducer(state: ModalState, action: ModalAction): ModalState {
+  switch (action.type) {
+    case 'OPEN_RENAME_PHOTO':
+      return { type: 'renamePhoto', photo: action.photo, newTitle: action.photo.title };
+    case 'OPEN_MOVE_PHOTO':
+      return { type: 'movePhoto', photo: action.photo, targetFolder: null };
+    case 'OPEN_CREATE_FOLDER':
+      return { type: 'createFolder', newFolderName: '' };
+    case 'OPEN_RENAME_FOLDER':
+      return { type: 'renameFolder', folderId: action.folderId, folderName: action.folderName };
+    case 'CLOSE_MODAL':
+      return null;
+    case 'SET_MODAL_FIELD':
+      if (!state) return state;
+      return { ...state, [action.field]: action.value };
+    default:
+      return state;
+  }
+}
 
 export function ArchivePage() {
   const token = useAppSelector((state) => state.auth.token);
+  const [modal, dispatchModal] = useReducer(modalReducer, null);
+  const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
+  const [currentFolder, setCurrentFolder] = useState<string | null>(null);
 
   const { folders, loading, error, createFolderHook, deleteFolderHook, renameFolderHook } =
     useFolders(token ?? '');
@@ -22,33 +60,16 @@ export function ArchivePage() {
     downloadPhotoHook,
   } = useFolderPhoto(token ?? '');
 
-  const [currentFolder, setCurrentFolder] = useState<string | null>(null);
-  const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
-
-  const [renamePhoto, setRenamePhoto] = useState<Photo | null>(null);
-  const [movePhoto, setMovePhoto] = useState<Photo | null>(null);
-
-  const [newTitle, setNewTitle] = useState('');
-  const [targetFolder, setTargetFolder] = useState<string | null>(null);
-
-  const [createFolderOpen, setCreateFolderOpen] = useState(false);
-  const [renameFolderData, setRenameFolderData] = useState<{
-    id: string;
-    name: string;
-  } | null>(null);
-
-  const [newFolderName, setNewFolderName] = useState('');
-
-  if (loading) return <p className="loading-message">Загрузка папок...</p>;
-  if (error) return <p className="error-message">{error}</p>;
+  if (loading) return <Loader />;
+  if (error) return <Error error={error} />;
 
   return (
     <>
-      <div className="archive-page">
-        <div className="archive-page__content">
-          <div className="archive-page__topbar">
+      <div className={styles.archivePage}>
+        <div className={styles.archivePageContent}>
+          <div className={styles.archivePageToolbar}>
             <motion.div
-              className="archive-page__welcome"
+              className={styles.archivePageWelcome}
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
             >
@@ -56,81 +77,85 @@ export function ArchivePage() {
             </motion.div>
           </div>
 
-          <div className="archive-section">
-            <div className="archive-section__header">
+          <div className={styles.archiveSection}>
+            <div className={styles.archiveSectionHeader}>
               <h2>Папки</h2>
-              <button onClick={() => setCreateFolderOpen(true)}>Новая папка</button>
+              <button onClick={() => dispatchModal({ type: 'OPEN_CREATE_FOLDER' })}>
+                Новая папка
+              </button>
             </div>
 
             {!currentFolder && (
-              <div>
-                <div className="archive-grid">
+              <>
+                <div className={styles.archiveFolderGrid}>
                   {folders.map((folder) => (
                     <FolderCard
                       key={folder.id}
                       folder={folder}
                       onClick={() => setCurrentFolder(folder.id)}
-                      onDelete={(folder) => deleteFolderHook(folder.id)}
-                      onRename={(folder) =>
-                        setRenameFolderData({ id: folder.id, name: folder.name })
-                      }
+                      onDelete={async (folder) => {
+                        const result = await deleteFolderHook(folder.id);
+                        return result ?? { success: false, message: 'Ошибка удаления' };
+                      }}
+                      onRename={async (folder) => {
+                        dispatchModal({
+                          type: 'OPEN_RENAME_FOLDER',
+                          folderId: folder.id,
+                          folderName: folder.name,
+                        });
+                      }}
                     />
                   ))}
                 </div>
-                <div className="archive-recent-photos">
-                  <h2>Недавно добавленные фото</h2>
 
-                  <div className="recent-photos-grid">
+                <div className={styles.archiveRecentPhotos}>
+                  <h2>Недавно добавленные фото</h2>
+                  <div className={styles.recentPhotosGrid}>
                     {recentPhotos.map((photo) => (
                       <PhotoCard
                         key={photo.id}
                         photo={photo}
                         onClick={() => setSelectedPhoto(photo)}
-                        onDelete={(photo) => deletePhotoHook(photo.id)}
-                        onRename={(photo) => {
-                          setRenamePhoto(photo);
-                          setNewTitle(photo.title);
+                        onDelete={async () => {
+                          const result = await deletePhotoHook(photo.id);
+                          return result ?? { success: false, message: 'Ошибка удаления' };
                         }}
-                        onMove={(photo) => {
-                          setMovePhoto(photo);
-                        }}
-                        onDownload={(photo) => {
-                          downloadPhotoHook(photo.url, photo.title);
-                        }}
+                        onRename={() => dispatchModal({ type: 'OPEN_RENAME_PHOTO', photo })}
+                        onMove={() => dispatchModal({ type: 'OPEN_MOVE_PHOTO', photo })}
+                        onDownload={() => downloadPhotoHook(photo.url, photo.title)}
                       />
                     ))}
                   </div>
                 </div>
-              </div>
+              </>
             )}
+
             {currentFolder && (
-              <div className="archive-grid">
-                <div className="folder-page-header">
+              <div className={styles.archiveGrid}>
+                <div className={styles.folderPageHeader}>
                   <h3>{folders.find((f) => f.id === currentFolder)?.name}</h3>
                   <p>{folders.find((f) => f.id === currentFolder)?.photos.length} фото</p>
                 </div>
-                <button className="back-button" onClick={() => setCurrentFolder(null)}>
+                <button className={styles.backButton} onClick={() => setCurrentFolder(null)}>
                   Назад к папкам
                 </button>
                 {folders
                   .find((f) => f.id === currentFolder)
                   ?.photos.map((photo) => (
-                    <PhotoCard
-                      key={photo.id}
-                      photo={photo}
-                      onClick={() => setSelectedPhoto(photo)}
-                      onDelete={(photo) => deletePhotoHook(photo.id)}
-                      onRename={(photo) => {
-                        setRenamePhoto(photo);
-                        setNewTitle(photo.title);
-                      }}
-                      onMove={(photo) => {
-                        setMovePhoto(photo);
-                      }}
-                      onDownload={(photo) => {
-                        downloadPhotoHook(photo.url, photo.title);
-                      }}
-                    />
+                    <div className={styles.photoGrid}>
+                      <PhotoCard
+                        key={photo.id}
+                        photo={photo}
+                        onClick={() => setSelectedPhoto(photo)}
+                        onDelete={async () => {
+                          const result = await deletePhotoHook(photo.id);
+                          return result ?? { success: false, message: 'Ошибка удаления' };
+                        }}
+                        onRename={() => dispatchModal({ type: 'OPEN_RENAME_PHOTO', photo })}
+                        onMove={() => dispatchModal({ type: 'OPEN_MOVE_PHOTO', photo })}
+                        onDownload={() => downloadPhotoHook(photo.url, photo.title)}
+                      />
+                    </div>
                   ))}
               </div>
             )}
@@ -142,15 +167,30 @@ export function ArchivePage() {
         <ModalWindowPhoto selectedPhoto={selectedPhoto} onClose={() => setSelectedPhoto(null)} />
       )}
 
-      {renamePhoto && (
-        <ModalWindow onClose={() => setRenamePhoto(null)}>
+      {modal?.type === 'renamePhoto' && (
+        <ModalWindow onClose={() => dispatchModal({ type: 'CLOSE_MODAL' })}>
           <h3>Переименовать фото</h3>
-          <Input label="Название:" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} />
+          <Input
+            value={modal.newTitle}
+            onChange={(e) =>
+              dispatchModal({ type: 'SET_MODAL_FIELD', field: 'newTitle', value: e.target.value })
+            }
+          />
           <Button
-            className="modal-button"
-            onClick={() => {
-              renamePhotoHook(renamePhoto.id, newTitle);
-              setRenamePhoto(null);
+            className={styles.modalButton}
+            onClick={async () => {
+              try {
+                const result = await renamePhotoHook(modal.photo.id, modal.newTitle);
+                if (result?.success) {
+                  alert('Фото успешно переименовано');
+                  dispatchModal({ type: 'CLOSE_MODAL' });
+                } else {
+                  alert(result?.message || 'Ошибка при переименовании фото');
+                }
+              } catch (e) {
+                alert('Произошла ошибка при переименовании фото');
+                console.error(e);
+              }
             }}
           >
             Сохранить
@@ -158,10 +198,19 @@ export function ArchivePage() {
         </ModalWindow>
       )}
 
-      {movePhoto && (
-        <ModalWindow onClose={() => setMovePhoto(null)}>
+      {modal?.type === 'movePhoto' && (
+        <ModalWindow onClose={() => dispatchModal({ type: 'CLOSE_MODAL' })}>
           <h3>Переместить фото</h3>
-          <select value={targetFolder ?? ''} onChange={(e) => setTargetFolder(e.target.value)}>
+          <select
+            value={modal.targetFolder ?? ''}
+            onChange={(e) =>
+              dispatchModal({
+                type: 'SET_MODAL_FIELD',
+                field: 'targetFolder',
+                value: e.target.value,
+              })
+            }
+          >
             <option value="">Без папки</option>
             {folders.map((folder) => (
               <option key={folder.id} value={folder.id}>
@@ -170,10 +219,20 @@ export function ArchivePage() {
             ))}
           </select>
           <Button
-            className="modal-button"
-            onClick={() => {
-              movePhotoToFolderHook(movePhoto.id, targetFolder);
-              setMovePhoto(null);
+            className={styles.modalButton}
+            onClick={async () => {
+              try {
+                const result = await movePhotoToFolderHook(modal.photo.id, modal.targetFolder);
+                if (result?.success) {
+                  alert('Фото успешно перемещено');
+                  dispatchModal({ type: 'CLOSE_MODAL' });
+                } else {
+                  alert(result?.message || 'Ошибка при перемещении фото');
+                }
+              } catch (e) {
+                alert('Ошибка при перемещении фото');
+                console.error(e);
+              }
             }}
           >
             Переместить
@@ -181,22 +240,34 @@ export function ArchivePage() {
         </ModalWindow>
       )}
 
-      {createFolderOpen && (
-        <ModalWindow onClose={() => setCreateFolderOpen(false)}>
+      {modal?.type === 'createFolder' && (
+        <ModalWindow onClose={() => dispatchModal({ type: 'CLOSE_MODAL' })}>
           <h3>Создать новую папку</h3>
-
           <Input
-            label="Название:"
-            value={newFolderName}
-            onChange={(e) => setNewFolderName(e.target.value)}
+            value={modal.newFolderName}
+            onChange={(e) =>
+              dispatchModal({
+                type: 'SET_MODAL_FIELD',
+                field: 'newFolderName',
+                value: e.target.value,
+              })
+            }
           />
-
           <Button
-            className="modal-button"
-            onClick={() => {
-              createFolderHook(newFolderName);
-              setNewFolderName('');
-              setCreateFolderOpen(false);
+            className={styles.modalButton}
+            onClick={async () => {
+              try {
+                const result = await createFolderHook(modal.newFolderName);
+                if (result?.success) {
+                  alert('Папка успешно создана');
+                  dispatchModal({ type: 'CLOSE_MODAL' });
+                } else {
+                  alert(result?.message || 'Ошибка при создании папки');
+                }
+              } catch (e) {
+                alert('Ошибка при создании папки');
+                console.error(e);
+              }
             }}
           >
             Создать
@@ -204,26 +275,34 @@ export function ArchivePage() {
         </ModalWindow>
       )}
 
-      {renameFolderData && (
-        <ModalWindow onClose={() => setRenameFolderData(null)}>
+      {modal?.type === 'renameFolder' && (
+        <ModalWindow onClose={() => dispatchModal({ type: 'CLOSE_MODAL' })}>
           <h3>Переименовать папку</h3>
-
           <Input
-            label="Название:"
-            value={renameFolderData.name}
+            value={modal.folderName}
             onChange={(e) =>
-              setRenameFolderData({
-                ...renameFolderData,
-                name: e.target.value,
+              dispatchModal({
+                type: 'SET_MODAL_FIELD',
+                field: 'folderName',
+                value: e.target.value,
               })
             }
           />
-
           <Button
-            className="modal-button"
-            onClick={() => {
-              renameFolderHook(renameFolderData.id, renameFolderData.name);
-              setRenameFolderData(null);
+            className={styles.modalButton}
+            onClick={async () => {
+              try {
+                const result = await renameFolderHook(modal.folderId, modal.folderName);
+                if (result?.success) {
+                  alert('Папка успешно переименована');
+                  dispatchModal({ type: 'CLOSE_MODAL' });
+                } else {
+                  alert(result?.message || 'Ошибка при переименовании папки');
+                }
+              } catch (e) {
+                alert('Ошибка при переименовании папки');
+                console.error(e);
+              }
             }}
           >
             Сохранить

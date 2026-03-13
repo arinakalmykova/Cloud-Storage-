@@ -1,75 +1,27 @@
 import { API_AUTH_URL } from '../../../shared';
-import type { User, ErrorResponse, AuthResponse } from '../../../entities';
+import type { User, AuthResponse } from '../../../entities';
+import {apiClient} from '../../../shared';
 
 export async function registerUser(
   name: string,
   email: string,
   password: string
 ): Promise<AuthResponse> {
-  const res = await fetch(`${API_AUTH_URL}/register`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-    body: JSON.stringify({ name, email, password }),
-  });
-
-  if (!res.ok) {
-    const err: ErrorResponse = await res.json();
-    throw new Error(err.message || 'Ошибка регистрации');
-  }
-
-  return res.json();
+  return apiClient(`${API_AUTH_URL}/register`, undefined, { method: 'POST', body: JSON.stringify({ name, email, password }) });
 }
 
 export async function loginUser(email: string, password: string): Promise<AuthResponse> {
-  const res = await fetch(`${API_AUTH_URL}/login`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-    body: JSON.stringify({ email, password }),
-  });
-  if (!res.ok) {
-    const err: ErrorResponse = await res.json();
-    throw new Error(err.message || 'Неверный логин или пароль');
-  }
-
-  return res.json();
+  return apiClient(`${API_AUTH_URL}/login`, undefined, { method: 'POST', body: JSON.stringify({ email, password }) });
 }
 
 export async function fetchMe(token: string): Promise<User> {
-  const res = await fetch(`${API_AUTH_URL}/me`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/json',
-    },
-  });
-  return res.json();
+  return apiClient(`${API_AUTH_URL}/me`, token);
 }
 
 export async function deleteUser(token: string) {
-  const res = await fetch(`${API_AUTH_URL}/`, {
-    method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/json',
-    },
-  });
-  return res.json();
+  return apiClient(`${API_AUTH_URL}/`, token, { method: 'DELETE' });
 }
 
 export async function updateUser(token: string, name: string, email: string) {
-  const res = await fetch(`${API_AUTH_URL}/`, {
-    method: 'PUT',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-    body: JSON.stringify({ name, email }),
-  });
-  return res.json();
+  return apiClient(`${API_AUTH_URL}/`, token, { method: 'PUT', body: JSON.stringify({ name, email }) });
 }

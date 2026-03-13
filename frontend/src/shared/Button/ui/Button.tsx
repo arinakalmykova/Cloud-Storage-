@@ -1,5 +1,5 @@
 import React from 'react';
-import '../../../app/styles/Button.css';
+import styles from '../../../app/styles/Button.module.css';
 
 type ButtonProps = {
   children: React.ReactNode;
@@ -23,7 +23,7 @@ export function Button({
       type={type}
       onClick={onClick}
       disabled={disabled || loading}
-      className={`custom-button ${className} ${loading ? 'loading' : ''}`}
+      className={`${styles.customButton} ${className} ${loading ? 'loading' : ''}`}
     >
       {loading ? 'Загрузка...' : children}
     </button>

@@ -9,11 +9,9 @@ export function useFolders(token: string) {
 
   const fetchFolders = useCallback(() => {
     if (!token) return;
-
     setLoading(true);
     getFolders(token)
       .then((data) => {
-        console.log('folders from API:', data);
         setFolders(data);
         setLoading(false);
       })
@@ -33,6 +31,10 @@ export function useFolders(token: string) {
     try {
       const newFolder = await createFolder(token, name);
       setFolders((prev) => [...prev, newFolder]);
+      return {
+        success: true,
+        message: 'Папка успешно создана',
+      };
     } catch (err) {
       console.error(err);
       setError('Ошибка при создании папки');
@@ -44,6 +46,10 @@ export function useFolders(token: string) {
     try {
       await deleteFolder(token, folderId);
       setFolders((prev) => prev.filter((folder) => folder.id !== folderId));
+      return {
+        success: true,
+        message: 'Папка успешно удалена',
+      }
     } catch (err) {
       console.error(err);
       setError('Ошибка при удалении папки');
@@ -57,6 +63,10 @@ export function useFolders(token: string) {
       setFolders((prev) =>
         prev.map((folder) => (folder.id === folderId ? { ...folder, name: newName } : folder))
       );
+      return {
+        success: true,
+        message: 'Папка успешно переименована',
+      }
     } catch (err) {
       console.error(err);
       setError('Ошибка при переименовании папки');

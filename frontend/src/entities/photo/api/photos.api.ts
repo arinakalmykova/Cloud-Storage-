@@ -1,23 +1,14 @@
 import { API_UPLOAD_URL} from '../../../shared';
+import {apiClient} from '../../../shared';
 
 export async function getUploadUrl(token: string, file: File, title: string, description: string) {
-  const res = await fetch(`${API_UPLOAD_URL}/upload-url`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
+  return apiClient(`${API_UPLOAD_URL}/upload-url`, token, { method: 'POST', body: JSON.stringify({
       file: file,
       mimeType: file.type || 'image/jpeg',
       fileName: title,
       description: description,
     }),
   });
-
-  if (!res.ok) throw new Error('Не удалось получить ссылку');
-  return res.json();
 }
 
 export async function markUploaded(
@@ -29,67 +20,46 @@ export async function markUploaded(
   format: string,
   folderId: string | null
 ) {
-  await fetch(`${API_UPLOAD_URL}/mark-uploaded`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ photo_id: photoId, url, size, quality, format, folder_id: folderId }),
-  });
+  return apiClient(`${API_UPLOAD_URL}/mark-uploaded`, token, { method: 'POST', body: JSON.stringify({ photo_id: photoId, url, size, quality, format, folder_id: folderId }) });
 }
 
 export async function checkPhotoStatus(token: string, id: string) {
-  const res = await fetch(`${API_UPLOAD_URL}/${id}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return res.json();
+  return apiClient(`${API_UPLOAD_URL}/${id}`, token);
 }
 
 export async function updateTags(token: string, photoId: string, tags: string[]) {
-  const res = await fetch(`${API_UPLOAD_URL}/${photoId}/tags`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/json',
-    },
-    body: JSON.stringify({ tags }),
-  });
-
-  if (!res.ok) {
-    throw new Error('Ошибка обновления тегов');
-  }
-  return res.json();
+  return apiClient(`${API_UPLOAD_URL}/${photoId}/tags`, token, { method: 'POST', body: JSON.stringify({ tags }) });
 }
 
 export async function recommendML(token: string, file: File) {
   const formData = new FormData();
-  formData.append('file', file);
+  formData.append("file", file);
 
   const fileName = file.name.toLowerCase();
-  const supportedFormats = ['.jpg', '.jpeg', '.png', '.webp', '.avif'];
-  const isValidFormat = supportedFormats.some((format) => fileName.endsWith(format));
+  const supportedFormats = [".jpg", ".jpeg", ".png", ".webp", ".avif"];
+
+  const isValidFormat = supportedFormats.some((format) =>
+    fileName.endsWith(format)
+  );
 
   if (!isValidFormat) {
     throw new Error(
-      `Неподдерживаемый формат файла: ${file.name}. Поддерживаются: ${supportedFormats.join(', ')}`
+      `Неподдерживаемый формат файла: ${file.name}. Поддерживаются: ${supportedFormats.join(", ")}`
     );
   }
 
   try {
     const res = await fetch(`${API_UPLOAD_URL}/recommend`, {
-      method: 'POST',
+      method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
       },
       body: formData,
-      credentials: 'include',
+      credentials: "include",
     });
 
     if (res.status === 302) {
-      const redirectUrl = res.headers.get('Location');
+      const redirectUrl = res.headers.get("Location");
       throw new Error(`Редирект на: ${redirectUrl}`);
     }
 
@@ -100,62 +70,28 @@ export async function recommendML(token: string, file: File) {
 
     return res.json();
   } catch (error) {
-    console.error('Ошибка запроса:', error);
+    console.error("Ошибка запроса:", error);
     throw error;
   }
 }
 
 export async function deletePhoto(token: string, photoId: string) {
-  const res = await fetch(`${API_UPLOAD_URL}/${photoId}`, {
-    method: 'DELETE',
-    headers: { Authorization: `Bearer ${token}` },
-  });
-
-  if (!res.ok) {
-    throw new Error('Ошибка удаления фото');
-  }
+  return apiClient(`${API_UPLOAD_URL}/${photoId}`, token, { method: 'DELETE' });
 }
 
 export async function renamePhoto(token: string, photoId: string, newTitle: string) {
-  const res = await fetch(`${API_UPLOAD_URL}/${photoId}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/json',
-    },
-    body: JSON.stringify({ title: newTitle }),
-  });
-
-  if (!res.ok) {
-    throw new Error('Ошибка переименования фото');
-  }
+  return apiClient(`${API_UPLOAD_URL}/${photoId}`, token, { method: 'PUT', body: JSON.stringify({ title: newTitle }) });
 }
 
 export async function recentAddPhotos(token: string) {
-  const res = await fetch(`${API_UPLOAD_URL}/recent`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  return res.json();
+  return apiClient(`${API_UPLOAD_URL}/recent`, token);
 }
 
 export async function searchPhotos(token: string, params: string) {
   const urlParams = new URLSearchParams(params);
-  const res = await fetch(`${API_UPLOAD_URL}/search?${urlParams.toString()}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  return res.json();
+  return apiClient(`${API_UPLOAD_URL}/search?${urlParams.toString()}`, token);
 }
 
 export async function getFilters(token: string) {
-  const res = await fetch(`${API_UPLOAD_URL}/filters`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  return res.json();
+  return apiClient(`${API_UPLOAD_URL}/filters`, token);
 }
