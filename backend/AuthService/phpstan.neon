@@ -4,9 +4,7 @@ parameters:
         - app/
         - tests/
     checkMissingIterableValueType: false
-    ignoreErrors:
-        - '#Access to an undefined property App\\Models\\User::\$#'
-        - '#Call to an undefined static method App\\Models\\User::#'
+
     
     # Для Laravel
     bootstrapFiles:
