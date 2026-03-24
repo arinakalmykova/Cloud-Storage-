@@ -95,11 +95,7 @@ class AuthService
             return false;
         }
 
-        $deleted = $this->userRepository->delete($user);
-
-        if (!$deleted) {
-            throw new RuntimeException('Failed to delete user');
-        }
+        $this->userRepository->delete($user);
 
         return true;
     }
