@@ -1,0 +1,70 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, master, develop]
+    paths:               
+      - 'backend/AuthService/**'
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'backend/AuthService/**'
+
+jobs:
+  php-analysis:
+    runs-on: ubuntu-latest
+    name: PHP Static Analysis (AuthService)
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+      
+      - name: Install Composer dependencies
+        run: |
+          cd backend/AuthService          # ← Перейти в папку сервиса
+          composer install --no-progress --no-interaction
+      
+      - name: PHP_CodeSniffer
+        run: |
+          cd backend/AuthService
+          ./vendor/bin/phpcs app/ --standard=PSR12
+      
+      - name: PHPStan
+        run: |
+          cd backend/AuthService
+          ./vendor/bin/phpstan analyse app/ --level=8 --no-progress
+      
+      - name: Lizard
+        run: |
+          pip install lizard
+          cd backend/AuthService
+          lizard app/ -C 10
+
+  php-tests:
+    runs-on: ubuntu-latest
+    name: PHP Unit Tests (AuthService)
+    needs: php-analysis
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+      
+      - name: Install Composer dependencies
+        run: |
+          cd backend/AuthService
+          composer install --no-progress --no-interaction
+      
+      - name: Run tests
+        run: |
+          cd backend/AuthService
+          ./vendor/bin/phpunit --testdox
