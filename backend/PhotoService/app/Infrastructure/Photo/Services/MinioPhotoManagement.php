@@ -23,7 +23,7 @@ class MinioPhotoManagement implements PhotoManagementServiceInterface
 
     public function getUploadUrl(Photo $photo): string
     {
-        $key = "uploads/{$photo->getId()}/original";
+        $key = "uploads/{$photo->getId()}";
 
         $cmd = $this->publicDisk->getClient()->getCommand('putObject', [
             'Bucket' => $this->bucket,

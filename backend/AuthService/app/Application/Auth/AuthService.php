@@ -1,16 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Application\Auth;
 
-use App\Domain\Auth\Repositories\UserRepositoryInterface;
+use App\Application\DTOs\LoginUserDTO;
+use App\Application\DTOs\RegisterUserDTO;
 use App\Domain\Auth\Entities\User;
-use App\Application\Auth\LoginResult;
-use Illuminate\Support\Str;
+use App\Domain\Auth\Repositories\UserRepositoryInterface;
+use App\Events\UserCreated;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
-use App\Application\DTOs\RegisterUserDTO;
-use App\Application\DTOs\LoginUserDTO;
-use App\Events\UserCreated;
+use Illuminate\Support\Str;
+use InvalidArgumentException;
+use RuntimeException;
 
 class AuthService
 {
@@ -25,16 +28,20 @@ class AuthService
 
     public function register(RegisterUserDTO $dto): User
     {
+        $this->validatePasswordStrength($dto->password);
+        $this->validateEmailUniqueness($dto->email);
+
         $user = new User(
             id: Str::uuid()->toString(),
             name: $dto->name,
             email: $dto->email,
-            passwordHash: password_hash($dto->password, PASSWORD_BCRYPT),
-            createdAt: now()->toDateTimeString() 
+            passwordHash: $this->hashPassword($dto->password),
+            createdAt: now()->toDateTimeString()
         );
+
         $this->userRepository->save($user);
 
-       UserCreated::dispatch($user->getId());
+        UserCreated::dispatch($user->getId());
 
         return $user;
     }
@@ -42,33 +49,39 @@ class AuthService
     public function login(LoginUserDTO $dto): LoginResult
     {
         $user = $this->userRepository->findByEmail($dto->email);
+
         if (!$user || !$user->verifyPassword($dto->password)) {
-            throw new \Exception('Invalid credentials');
+            throw new InvalidArgumentException('Invalid email or password');
         }
 
-        $token = $this->generateJWT($user);
+        $token = $this->generateJwtToken($user);
 
         return new LoginResult($user->getId(), $token);
     }
 
-    private function generateJWT(User $user): string
+    private function generateJwtToken(User $user): string
     {
+        if (empty($this->jwtSecret)) {
+            throw new RuntimeException('JWT secret is not configured');
+        }
+
         $payload = [
             'sub' => $user->getId(),
             'email' => $user->getEmail(),
             'iat' => time(),
             'exp' => time() + 3600,
         ];
+
         return JWT::encode($payload, $this->jwtSecret, 'HS256');
     }
 
-    public function getUserFromToken(string $token)
+    public function getUserFromToken(string $token): ?User
     {
         try {
             $payload = JWT::decode($token, new Key($this->jwtSecret, 'HS256'));
             $userId = $payload->sub;
 
-            return $this->userRepository->findById($userId); 
+            return $this->userRepository->findById($userId);
         } catch (\Exception $e) {
             return null;
         }
@@ -77,29 +90,82 @@ class AuthService
     public function deleteUser(string $token): bool
     {
         $user = $this->getUserFromToken($token);
+
         if (!$user) {
             return false;
         }
-        $this->userRepository->delete($user);
+
+        $deleted = $this->userRepository->delete($user);
+
+        if (!$deleted) {
+            throw new RuntimeException('Failed to delete user');
+        }
+
         return true;
     }
 
     public function updateUser(string $token, array $data): bool
     {
         $user = $this->getUserFromToken($token);
+
         if (!$user) {
-            return false;
+            throw new RuntimeException('User not found or invalid token');
         }
+
+        if (!isset($data['name']) || !isset($data['email'])) {
+            throw new InvalidArgumentException('Name and email are required');
+        }
+
         $user->setName($data['name']);
         $user->setEmail($data['email']);
+
         $this->userRepository->save($user);
+
         return true;
     }
 
-
-  public function isPasswordStrong(string $password): bool
+    private function validatePasswordStrength(string $password): void
     {
-        return strlen($password) >= 8 && preg_match('/\d/', $password);
+        $errors = [];
+
+        if (strlen($password) < 6) {
+            $errors[] = 'at least 6 characters';
+        }
+
+        if (!preg_match('/[A-Z]/', $password)) {
+            $errors[] = 'at least one uppercase letter';
+        }
+
+        if (!preg_match('/[a-z]/', $password)) {
+            $errors[] = 'at least one lowercase letter';
+        }
+
+        if (!preg_match('/\d/', $password)) {
+            $errors[] = 'at least one number';
+        }
+
+        if (!preg_match('/[!@#$%^&*(),.?":{}|<>]/', $password)) {
+            $errors[] = 'at least one special character';
+        }
+
+        if (!empty($errors)) {
+            throw new InvalidArgumentException(
+                'Password must contain: ' . implode(', ', $errors)
+            );
+        }
     }
 
+    private function validateEmailUniqueness(string $email): void
+    {
+        $existingUser = $this->userRepository->findByEmail($email);
+
+        if ($existingUser) {
+            throw new InvalidArgumentException('User with this email already exists');
+        }
+    }
+
+    private function hashPassword(string $password): string
+    {
+        return password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
+    }
 }

@@ -21,6 +21,7 @@ class EloquentPhotoRepository implements PhotoRepositoryInterface
                 'url'    => $photo->getUrl(),     
                 'size'   => $photo->getSize(),
                 'file_name' => $photo->getFileName(),
+                'quality' => $photo->getQuality(),
                 'description' => $photo->getDescription(),
                 'format' => $photo->getFormat(),
                 'folder_id' => $photo->getFolderId() 

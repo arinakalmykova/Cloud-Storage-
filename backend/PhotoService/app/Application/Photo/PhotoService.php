@@ -45,7 +45,7 @@ class PhotoService
         );
 
         $presignedUrl = $this->minioService->getUploadUrl($photo);
-        $originalKey = "uploads/{$photo->getId()}/original";
+        $originalKey = "uploads/{$photo->getId()}";
         $photo->markPendingUpload($originalKey, $presignedUrl);
         $this->repository->save($photo);
 
@@ -83,7 +83,7 @@ class PhotoService
     
     public function processUploadedPhoto(Photo $photo): bool
     {
-        $key = 'uploads/' . $photo->getId() . '/original';
+        $key = 'uploads/' . $photo->getId();
 
         try {
 
@@ -178,7 +178,7 @@ class PhotoService
             throw new \Exception('Not found');
         }
 
-        $key = "uploads/{$photo->getId()}/original";
+        $key = "uploads/{$photo->getId()}";
         $this->minioService->deleteFile($key);
         $this->repository->delete($photo);
     }

@@ -53,15 +53,15 @@ class PhotoServiceTest extends TestCase
 
         // Симуляция загрузки файла
         $file = UploadedFile::fake()->image('test.jpg');
-        Storage::disk('s3_backend')->put("uploads/{$photoId}/original", file_get_contents($file));
-        $this->assertTrue(Storage::disk('s3_backend')->exists("uploads/{$photoId}/original"));
+        Storage::disk('s3_backend')->put("uploads/{$photoId}", file_get_contents($file));
+        $this->assertTrue(Storage::disk('s3_backend')->exists("uploads/{$photoId}"));
 
         // Пометка фото как загруженного
         $response2 = $this->withHeaders([
             'Authorization' => 'Bearer ' . $this->jwtToken,
         ])->post('/api/photos/mark-uploaded', [
             'photo_id' => $photoId,
-            'url' => "https://fake-s3/{$photoId}/original",
+            'url' => "https://fake-s3/{$photoId}",
             'size' => $file->getSize(),
         ]);
 

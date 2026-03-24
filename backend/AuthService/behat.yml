@@ -1,0 +1,9 @@
+default:
+    autoload:
+        '': '%paths.base%/features/bootstrap'
+    suites:
+        auth:
+            paths:
+                - features/auth
+            contexts:
+                - FeatureContext

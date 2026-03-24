@@ -11,8 +11,8 @@ class MLServiceClient
 
     public function __construct()
     {
-        $host = env('ML_SERVICE_HOST', 'mlservice'); // имя контейнера ML
-        $port = env('ML_SERVICE_PORT', '5000');      // порт FastAPI
+        $host = env('ML_SERVICE_HOST', 'mlservice'); 
+        $port = env('ML_SERVICE_PORT', '5000');   
         $this->endpoint = env('ML_SERVICE_ENDPOINT', '/classify');
 
         $this->client = new Client([

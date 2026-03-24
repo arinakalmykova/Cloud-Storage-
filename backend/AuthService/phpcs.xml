@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<ruleset name="Laravel Project">
+    <description>Coding standards for Laravel project</description>
+    
+    <!-- Используем PSR-12 стандарт -->
+    <rule ref="PSR12"/>
+    
+    <!-- Проверяем только папки app, tests, routes -->
+    <file>app/</file>
+    <file>tests/</file>
+    <file>routes/</file>
+    
+    <!-- Исключаем вендорские файлы и миграции -->
+    <exclude-pattern>vendor/</exclude-pattern>
+    <exclude-pattern>database/migrations/</exclude-pattern>
+    
+    <!-- Максимальная длина строки -->
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+            <property name="lineLimit" value="120"/>
+            <property name="absoluteLineLimit" value="150"/>
+        </properties>
+    </rule>
+</ruleset>
