@@ -99,7 +99,89 @@ jobs:
           cd ${{ env.AUTH_PATH }}
           composer install --no-interaction --no-progress --ignore-platform-req=ext-rdkafka
       
-      - name: Run unit tests with coverage and threshold check
+            - name: Run unit tests with coverage and threshold check
+        run: |
+          cd ${{ env.AUTH_PATH }}
+          # Запускаем тесты и сохраняем вывод
+          ./vendor/bin/phpunit --testsuite=Unit,Feature --testdox --coverage-text --coverage-html coverage/ > coverage-output.txt
+          
+          echo ""
+          echo "========================================="
+          echo "📊 CODE COVERAGE REPORT"
+          echo "========================================="
+          cat coverage-output.txt
+          
+          # Извлекаем проценты покрытия из строк с путями
+          # Пример строк: "App\Application\Auth\AuthService  Methods: 60.00% (6/10)   Lines: 75.76% (50/66)"
+          # Ищем строки с нужными пространствами имен
+          
+          echo ""
+          echo "========================================="
+          echo "🎯 COVERAGE THRESHOLD CHECK (>=70%)"
+          echo "========================================="
+          
+          # Ищем покрытие для Application
+          app_lines=$(grep "App\\\\Application\\\\" coverage-output.txt | grep "Lines:" | head -1 | grep -oP '\d+\.\d+(?=%)' | head -1)
+          # Ищем покрытие для Domain (суммируем все классы в Domain)
+          domain_lines=$(grep "App\\\\Domain\\\\" coverage-output.txt | grep "Lines:" | awk '{sum+=$NF} END {print sum}' | grep -oP '\d+\.\d+' || echo "0")
+          # Ищем покрытие для Infrastructure
+          infra_lines=$(grep "App\\\\Infrastructure\\\\" coverage-output.txt | grep "Lines:" | head -1 | grep -oP '\d+\.\d+(?=%)' | head -1)
+          
+          # Альтернативный метод: ищем строки с процентами после "Lines:"
+          if [ -z "$app_lines" ]; then
+            # Пробуем другой формат
+            app_lines=$(grep -E "App\\Application" coverage-output.txt | grep -oP 'Lines:\s*\K\d+\.\d+' | head -1)
+          fi
+          if [ -z "$domain_lines" ]; then
+            domain_lines=$(grep -E "App\\Domain" coverage-output.txt | grep -oP 'Lines:\s*\K\d+\.\d+' | head -1)
+          fi
+          if [ -z "$infra_lines" ]; then
+            infra_lines=$(grep -E "App\\Infrastructure" coverage-output.txt | grep -oP 'Lines:\s*\K\d+\.\d+' | head -1)
+          fi
+          
+          # Если все еще пусто, используем значения из сводки
+          if [ -z "$app_lines" ]; then
+            # Берем общее покрытие как fallback
+            total_lines=$(grep "Lines:" coverage-output.txt | grep -v "App\\\\" | grep -oP '\d+\.\d+(?=%)' | head -1)
+            echo "⚠️ Could not parse individual module coverage, using total coverage: ${total_lines:-0}%"
+            app_lines=$total_lines
+            domain_lines=$total_lines
+            infra_lines=$total_lines
+          fi
+          
+          echo "Application coverage: ${app_lines:-0}%"
+          echo "Domain coverage: ${domain_lines:-0}%"
+          echo "Infrastructure coverage: ${infra_lines:-0}%"
+          echo "========================================="
+          
+          # Проверяем порог 70%
+          THRESHOLD=70
+          FAILED=0
+          
+          if (( $(echo "${app_lines:-0} < $THRESHOLD" | bc -l) )); then
+            echo "❌ FAIL: Application coverage (${app_lines:-0}%) is below $THRESHOLD%"
+            FAILED=1
+          fi
+          
+          if (( $(echo "${domain_lines:-0} < $THRESHOLD" | bc -l) )); then
+            echo "❌ FAIL: Domain coverage (${domain_lines:-0}%) is below $THRESHOLD%"
+            FAILED=1
+          fi
+          
+          if (( $(echo "${infra_lines:-0} < $THRESHOLD" | bc -l) )); then
+            echo "❌ FAIL: Infrastructure coverage (${infra_lines:-0}%) is below $THRESHOLD%"
+            FAILED=1
+          fi
+          
+          if [ $FAILED -eq 0 ]; then
+            echo "✅ PASS: All coverage thresholds met (>= $THRESHOLD%)"
+          else
+            echo ""
+            echo "📋 Coverage details from report:"
+            grep -E "(App\\\\)" coverage-output.txt | head -10
+            exit 1
+          fi
+          
         run: |
           cd ${{ env.AUTH_PATH }}
           # Запускаем тесты и сохраняем вывод для анализа
