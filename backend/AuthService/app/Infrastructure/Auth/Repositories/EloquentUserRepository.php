@@ -5,6 +5,7 @@ namespace App\Infrastructure\Auth\Repositories;
 use App\Domain\Auth\Entities\User;
 use App\Domain\Auth\Repositories\UserRepositoryInterface;
 use App\Models\User as UserModel;
+use RuntimeException;  
 
 class EloquentUserRepository implements UserRepositoryInterface
 {
@@ -36,7 +37,7 @@ class EloquentUserRepository implements UserRepositoryInterface
         );
     }
 
-    public function save(User $user): bool
+    public function save(User $user): void
     {
         try {
             $eloquentUser = UserModel::updateOrCreate(
@@ -47,19 +48,19 @@ class EloquentUserRepository implements UserRepositoryInterface
                     'password' => $user->getPasswordHash(),
                 ]
             );
-            
-            return $eloquentUser->exists;
-            
         } catch (\Exception $e) {
             throw new RuntimeException('Failed to save user: ' . $e->getMessage());
         }
     }
 
-    public function delete(User $user): bool
+    public function delete(User $user): void
     {
         try {
             $deleted = UserModel::where('id', $user->getId())->delete();
-            return $deleted > 0;
+            
+            if ($deleted === 0) {
+                throw new RuntimeException('User not found');
+            }
             
         } catch (\Exception $e) {
             throw new RuntimeException('Failed to delete user: ' . $e->getMessage());
