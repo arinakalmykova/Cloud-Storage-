@@ -1,39 +1,50 @@
-name: CI/CD - AuthService with PostgreSQL
+name: CI/CD - AuthService with Docker Compose
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ main, master ]
     paths:
       - 'backend/AuthService/**'
   pull_request:
-    branches: [ "main", "master" ]
+    branches: [ main, master ]
     paths:
       - 'backend/AuthService/**'
 
 jobs:
   test-auth-service:
     runs-on: ubuntu-latest
-    name: Test AuthService with PostgreSQL
-    
-    # ✅ Сервис PostgreSQL
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_DB: auth_test
-          POSTGRES_USER: auth_user
-          POSTGRES_PASSWORD: auth_password
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+    name: Test AuthService
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      
+      - name: Create docker-compose.ci.yml
+        run: |
+          cat > docker-compose.ci.yml << 'EOF'
+          version: '3.8'
+          
+          services:
+            postgres_auth:
+              image: postgres:16
+              container_name: pg-auth-ci
+              environment:
+                POSTGRES_DB: auth_test
+                POSTGRES_USER: auth_user
+                POSTGRES_PASSWORD: auth_password
+              ports:
+                - "5432:5432"
+              healthcheck:
+                test: ["CMD-SHELL", "pg_isready -U auth_user -d auth_test"]
+                interval: 5s
+                timeout: 5s
+                retries: 10
+          EOF
+      
+      - name: Start Docker Compose
+        run: |
+          docker-compose -f docker-compose.ci.yml up -d
+          sleep 10
       
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -41,7 +52,6 @@ jobs:
           php-version: '8.2'
           extensions: mbstring, pdo, pdo_pgsql, pgsql, tokenizer, xml
           coverage: xdebug
-          tools: composer, phpcs, phpstan
       
       - name: Install Composer dependencies
         working-directory: backend/AuthService
@@ -58,7 +68,7 @@ jobs:
       
       - name: Run migrations
         working-directory: backend/AuthService
-        run: php artisan migrate --env=testing
+        run: php artisan migrate
         env:
           DB_CONNECTION: pgsql
           DB_HOST: localhost
@@ -102,3 +112,7 @@ jobs:
         with:
           name: coverage-report
           path: backend/AuthService/coverage/
+      
+      - name: Stop Docker Compose
+        if: always()
+        run: docker-compose -f docker-compose.ci.yml down
