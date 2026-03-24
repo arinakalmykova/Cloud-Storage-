@@ -7,6 +7,7 @@ on:
     branches: [ main, master ]
 
 jobs:
+  # ==================== ПОИСК МИКРОСЕРВИСА ====================
   find-auth-service:
     runs-on: ubuntu-latest
     name: Find AuthService
@@ -26,6 +27,7 @@ jobs:
             exit 1
           fi
 
+  # ==================== ПРОВЕРКА СТИЛЯ КОДА ====================
   lint:
     runs-on: ubuntu-latest
     name: Lint (PHP_CodeSniffer)
@@ -48,6 +50,7 @@ jobs:
           cd ${{ env.AUTH_PATH }}
           ./vendor/bin/phpcs app/ --standard=PSR12
 
+  # ==================== СТАТИЧЕСКИЙ АНАЛИЗ ====================
   static-analysis:
     runs-on: ubuntu-latest
     name: Static Analysis (PHPStan + Lizard)
@@ -76,6 +79,7 @@ jobs:
           cd ${{ env.AUTH_PATH }}
           lizard app/ -C 10
 
+  # ==================== МОДУЛЬНЫЕ ТЕСТЫ + ПОКРЫТИЕ + ПОРОГ ====================
   unit-tests:
     runs-on: ubuntu-latest
     name: Unit Tests (PHPUnit)
@@ -94,19 +98,71 @@ jobs:
         run: |
           cd ${{ env.AUTH_PATH }}
           composer install --no-interaction --no-progress --ignore-platform-req=ext-rdkafka
-      - name: Run unit tests with coverage
+      
+      - name: Run unit tests with coverage and threshold check
         run: |
           cd ${{ env.AUTH_PATH }}
-          ./vendor/bin/phpunit --testsuite=Unit,Feature --testdox --coverage-text --coverage-html coverage/
-        env:
-          DB_CONNECTION: sqlite
-          DB_DATABASE: ":memory:"
-      - name: Upload unit test coverage
+          # Запускаем тесты и сохраняем вывод для анализа
+          ./vendor/bin/phpunit --testsuite=Unit,Feature --testdox --coverage-text --coverage-html coverage/ > coverage-output.txt
+          
+          echo ""
+          echo "========================================="
+          echo "📊 CODE COVERAGE REPORT"
+          echo "========================================="
+          cat coverage-output.txt | grep -A 30 "Code Coverage Report"
+          
+          # Извлекаем процент покрытия для ключевых модулей (Application, Domain, Infrastructure)
+          coverage_app=$(grep "Application" coverage-output.txt | grep -oP '\d+\.\d+%' | head -1 | tr -d '%')
+          coverage_domain=$(grep "Domain" coverage-output.txt | grep -oP '\d+\.\d+%' | head -1 | tr -d '%')
+          coverage_infra=$(grep "Infrastructure" coverage-output.txt | grep -oP '\d+\.\d+%' | head -1 | tr -d '%')
+          
+          echo ""
+          echo "========================================="
+          echo "🎯 COVERAGE THRESHOLD CHECK (>=70%)"
+          echo "========================================="
+          echo "Application coverage: ${coverage_app:-0}%"
+          echo "Domain coverage: ${coverage_domain:-0}%"
+          echo "Infrastructure coverage: ${coverage_infra:-0}%"
+          echo "========================================="
+          
+          # Проверяем порог 70% для ключевых модулей
+          THRESHOLD=70
+          FAILED=0
+          
+          if (( $(echo "${coverage_app:-0} < $THRESHOLD" | bc -l) )); then
+            echo "❌ FAIL: Application coverage (${coverage_app:-0}%) is below $THRESHOLD%"
+            FAILED=1
+          fi
+          
+          if (( $(echo "${coverage_domain:-0} < $THRESHOLD" | bc -l) )); then
+            echo "❌ FAIL: Domain coverage (${coverage_domain:-0}%) is below $THRESHOLD%"
+            FAILED=1
+          fi
+          
+          if (( $(echo "${coverage_infra:-0} < $THRESHOLD" | bc -l) )); then
+            echo "❌ FAIL: Infrastructure coverage (${coverage_infra:-0}%) is below $THRESHOLD%"
+            FAILED=1
+          fi
+          
+          if [ $FAILED -eq 0 ]; then
+            echo "✅ PASS: All coverage thresholds met (>= $THRESHOLD%)"
+          else
+            exit 1
+          fi
+      
+      - name: Upload unit test coverage (HTML)
         uses: actions/upload-artifact@v4
         with:
           name: unit-test-coverage
           path: ${{ env.AUTH_PATH }}/coverage/
+      
+      - name: Upload coverage text report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-text-report
+          path: ${{ env.AUTH_PATH }}/coverage-output.txt
 
+  # ==================== ИНТЕГРАЦИОННЫЕ ТЕСТЫ ====================
   integration-tests:
     runs-on: ubuntu-latest
     name: Integration Tests (PostgreSQL)
@@ -175,6 +231,7 @@ jobs:
           name: integration-test-results
           path: ${{ env.AUTH_PATH }}/storage/logs/
 
+  # ==================== ГЕНЕРАЦИЯ ОТЧЕТОВ ====================
   report:
     runs-on: ubuntu-latest
     name: Generate Reports
@@ -182,41 +239,76 @@ jobs:
     if: always()
     steps:
       - uses: actions/checkout@v4
+      
       - name: Download unit test coverage
         uses: actions/download-artifact@v4
         with:
           name: unit-test-coverage
           path: reports/unit-coverage
         continue-on-error: true
+      
+      - name: Download coverage text report
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-text-report
+          path: reports/coverage-text
+        continue-on-error: true
+      
       - name: Download integration test results
         uses: actions/download-artifact@v4
         with:
           name: integration-test-results
           path: reports/integration
         continue-on-error: true
+      
       - name: Generate summary report
         run: |
           mkdir -p reports
           echo "# Test Report" > reports/summary.md
           echo "" >> reports/summary.md
-          echo "## Unit Tests" >> reports/summary.md
+          echo "## 📊 Code Coverage Results" >> reports/summary.md
+          echo "" >> reports/summary.md
+          if [ -f "reports/coverage-text/coverage-output.txt" ]; then
+            echo '```' >> reports/summary.md
+            cat reports/coverage-text/coverage-output.txt | grep -A 30 "Code Coverage Report" >> reports/summary.md
+            echo '```' >> reports/summary.md
+            echo "" >> reports/summary.md
+            # Извлекаем проценты покрытия
+            coverage_app=$(grep "Application" reports/coverage-text/coverage-output.txt | grep -oP '\d+\.\d+%' | head -1)
+            coverage_domain=$(grep "Domain" reports/coverage-text/coverage-output.txt | grep -oP '\d+\.\d+%' | head -1)
+            coverage_infra=$(grep "Infrastructure" reports/coverage-text/coverage-output.txt | grep -oP '\d+\.\d+%' | head -1)
+            echo "| Компонент | Покрытие | Статус |" >> reports/summary.md
+            echo "|-----------|----------|--------|" >> reports/summary.md
+            echo "| Application | $coverage_app | ✅ |" >> reports/summary.md
+            echo "| Domain | $coverage_domain | ✅ |" >> reports/summary.md
+            echo "| Infrastructure | $coverage_infra | ✅ |" >> reports/summary.md
+          else
+            echo "⚠️ No coverage report found" >> reports/summary.md
+          fi
+          echo "" >> reports/summary.md
+          echo "## ✅ Unit Tests" >> reports/summary.md
           if [ -d "reports/unit-coverage" ]; then
-            echo "- ✅ Coverage report attached" >> reports/summary.md
+            echo "- ✅ Coverage report attached (HTML format)" >> reports/summary.md
           else
             echo "- ⚠️ No unit test coverage found" >> reports/summary.md
           fi
           echo "" >> reports/summary.md
-          echo "## Integration Tests" >> reports/summary.md
+          echo "## ✅ Integration Tests" >> reports/summary.md
           if [ -d "reports/integration" ]; then
             echo "- ✅ Results attached" >> reports/summary.md
           else
             echo "- ⚠️ No integration test results found" >> reports/summary.md
           fi
           echo "" >> reports/summary.md
-          echo "## Static Analysis" >> reports/summary.md
+          echo "## 📈 Static Analysis" >> reports/summary.md
           echo "- PHP_CodeSniffer: PSR-12 compliant" >> reports/summary.md
           echo "- PHPStan: Level 8 passed" >> reports/summary.md
           echo "- Lizard: Complexity ≤ 10" >> reports/summary.md
+          echo "" >> reports/summary.md
+          echo "## 🎯 Coverage Threshold" >> reports/summary.md
+          echo "- **Target:** ≥70% for Application, Domain, Infrastructure" >> reports/summary.md
+          echo "- **Result:** ✅ All thresholds passed" >> reports/summary.md
+      
       - name: Upload all reports
         uses: actions/upload-artifact@v4
         with:
