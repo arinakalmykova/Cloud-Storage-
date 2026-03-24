@@ -1,24 +1,31 @@
-<?xml version="1.0"?>
-<ruleset name="Laravel Project">
-    <description>Coding standards for Laravel project</description>
-    
-    <!-- Используем PSR-12 стандарт -->
-    <rule ref="PSR12"/>
-    
-    <!-- Проверяем только папки app, tests, routes -->
-    <file>app/</file>
-    <file>tests/</file>
-    <file>routes/</file>
-    
-    <!-- Исключаем вендорские файлы и миграции -->
-    <exclude-pattern>vendor/</exclude-pattern>
-    <exclude-pattern>database/migrations/</exclude-pattern>
-    
-    <!-- Максимальная длина строки -->
-    <rule ref="Generic.Files.LineLength">
-        <properties>
-            <property name="lineLimit" value="120"/>
-            <property name="absoluteLineLimit" value="150"/>
-        </properties>
-    </rule>
-</ruleset>
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true">
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory>tests/Feature</directory>
+        </testsuite>
+    </testsuites>
+    <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="APP_KEY" value="base64:testkey1234567890testkey1234567890"/>
+        <env name="BCRYPT_ROUNDS" value="4"/>
+        <env name="CACHE_DRIVER" value="array"/>
+        <env name="MAIL_MAILER" value="array"/>
+        <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="SESSION_DRIVER" value="array"/>
+        <env name="TELESCOPE_ENABLED" value="false"/>
+        
+        <!-- ✅ Используем SQLite для тестов -->
+        <env name="DB_CONNECTION" value="sqlite"/>
+        <env name="DB_DATABASE" value=":memory:"/>
+        
+        <!-- Отключаем Kafka -->
+        <env name="KAFKA_ENABLED" value="false"/>
+    </php>
+</phpunit>
