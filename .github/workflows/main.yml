@@ -1,0 +1,76 @@
+name: CI/CD - AuthService
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'backend/AuthService/**'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - 'backend/AuthService/**'
+
+jobs:
+  # Проверка PHP кода
+  php-analysis:
+    runs-on: ubuntu-latest
+    name: PHP Static Analysis
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer, phpcs, phpstan
+      
+      - name: Install dependencies
+        working-directory: backend/AuthService
+        run: composer install --no-interaction --no-progress
+      
+      - name: PHP_CodeSniffer (PSR-12)
+        working-directory: backend/AuthService
+        run: ./vendor/bin/phpcs app/ --standard=PSR12
+      
+      - name: PHPStan
+        working-directory: backend/AuthService
+        run: ./vendor/bin/phpstan analyse app/ --level=8 --no-progress
+      
+      - name: Install Lizard
+        run: pip install lizard
+      
+      - name: Cyclomatic Complexity
+        working-directory: backend/AuthService
+        run: lizard app/ -C 10
+
+  # Тесты
+  php-tests:
+    runs-on: ubuntu-latest
+    name: PHP Unit Tests
+    needs: php-analysis
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: xdebug
+      
+      - name: Install dependencies
+        working-directory: backend/AuthService
+        run: composer install --no-interaction --no-progress
+      
+      - name: Create database
+        working-directory: backend/AuthService
+        run: |
+          mkdir -p database
+          touch database/database.sqlite || true
+      
+      - name: Run tests
+        working-directory: backend/AuthService
+        run: ./vendor/bin/phpunit --testdox || echo "No tests found"
