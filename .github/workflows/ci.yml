@@ -27,7 +27,7 @@ jobs:
             exit 1
           fi
 
-  # ==================== STAGE 1: TEST (Линтинг + Статический анализ + Модульные тесты) ====================
+  # ==================== STAGE 1: TEST (Линтинг + Статический анализ) ====================
   lint:
     runs-on: ubuntu-latest
     name: Lint (PHP_CodeSniffer)
@@ -78,6 +78,7 @@ jobs:
           cd ${{ env.AUTH_PATH }}
           lizard app/ -C 10
 
+  # ==================== STAGE 1: UNIT TESTS (SQLite in-memory) ====================
   unit-tests:
     runs-on: ubuntu-latest
     name: Unit Tests (PHPUnit)
@@ -96,50 +97,96 @@ jobs:
         run: |
           cd ${{ env.AUTH_PATH }}
           composer install --no-interaction --no-progress --ignore-platform-req=ext-rdkafka
-      - name: Create database
-        run: |
-          cd ${{ env.AUTH_PATH }}
-          mkdir -p database
-          touch database/database.sqlite || true
       - name: Run unit tests with coverage
         run: |
           cd ${{ env.AUTH_PATH }}
-          ./vendor/bin/phpunit --testdox --coverage-text --coverage-html coverage/
+          ./vendor/bin/phpunit --testsuite=Unit,Feature --testdox --coverage-text --coverage-html coverage/
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: :memory:
       - name: Upload unit test coverage
         uses: actions/upload-artifact@v4
         with:
           name: unit-test-coverage
           path: ${{ env.AUTH_PATH }}/coverage/
 
-  # ==================== STAGE 2: INTEGRATION (Интеграционные тесты) ====================
+  # ==================== STAGE 2: INTEGRATION TESTS (PostgreSQL) ====================
   integration-tests:
     runs-on: ubuntu-latest
-    name: Integration Tests
-    needs: unit-tests
+    name: Integration Tests (PostgreSQL)
+    needs: [find-auth-service, unit-tests]
     env:
       AUTH_PATH: ${{ needs.find-auth-service.outputs.auth_path }}
+      DB_CONNECTION: pgsql
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_DATABASE: auth_test
+      DB_USERNAME: auth_user
+      DB_PASSWORD: auth_password
+    
+    # ✅ PostgreSQL сервис-контейнер
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: auth_test
+          POSTGRES_USER: auth_user
+          POSTGRES_PASSWORD: auth_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
     steps:
       - uses: actions/checkout@v4
+      
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
-          extensions: mbstring, pdo, sqlite, tokenizer, xml
+          extensions: mbstring, pdo, pdo_pgsql, pgsql, tokenizer, xml
+      
       - name: Install dependencies
         run: |
           cd ${{ env.AUTH_PATH }}
           composer install --no-interaction --no-progress --ignore-platform-req=ext-rdkafka
-      - name: Setup test database
+      
+      - name: Wait for PostgreSQL
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+          until pg_isready -h localhost -p 5432 -U auth_user -d auth_test; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+      
+      - name: Run migrations
         run: |
           cd ${{ env.AUTH_PATH }}
-          mkdir -p database
-          touch database/database.sqlite
-          cp .env.example .env || true
+          php artisan migrate --force
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_DATABASE: auth_test
+          DB_USERNAME: auth_user
+          DB_PASSWORD: auth_password
+      
       - name: Run integration tests
         run: |
           cd ${{ env.AUTH_PATH }}
-          # Интеграционные тесты (если есть отдельный тестсьют)
-          ./vendor/bin/phpunit --testsuite=Integration --testdox || echo "No integration tests found"
+          ./vendor/bin/phpunit --testsuite=Integration --testdox
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_DATABASE: auth_test
+          DB_USERNAME: auth_user
+          DB_PASSWORD: auth_password
+      
       - name: Upload integration test results
         if: always()
         uses: actions/upload-artifact@v4
@@ -161,22 +208,33 @@ jobs:
         with:
           name: unit-test-coverage
           path: reports/unit-coverage
+        continue-on-error: true
       
       - name: Download integration test results
         uses: actions/download-artifact@v4
         with:
           name: integration-test-results
           path: reports/integration
+        continue-on-error: true
       
       - name: Generate summary report
         run: |
+          mkdir -p reports
           echo "# Test Report" > reports/summary.md
           echo "" >> reports/summary.md
           echo "## Unit Tests" >> reports/summary.md
-          echo "- Coverage report attached" >> reports/summary.md
+          if [ -d "reports/unit-coverage" ]; then
+            echo "- ✅ Coverage report attached" >> reports/summary.md
+          else
+            echo "- ⚠️ No unit test coverage found" >> reports/summary.md
+          fi
           echo "" >> reports/summary.md
           echo "## Integration Tests" >> reports/summary.md
-          echo "- Results attached" >> reports/summary.md
+          if [ -d "reports/integration" ]; then
+            echo "- ✅ Results attached" >> reports/summary.md
+          else
+            echo "- ⚠️ No integration test results found" >> reports/summary.md
+          fi
           echo "" >> reports/summary.md
           echo "## Static Analysis" >> reports/summary.md
           echo "- PHP_CodeSniffer: PSR-12 compliant" >> reports/summary.md
@@ -188,7 +246,3 @@ jobs:
         with:
           name: all-reports
           path: reports/
-      
-      - name: Publish test report to GitHub Pages (optional)
-        run: |
-          echo "Reports ready for download in artifacts"
