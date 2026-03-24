@@ -39,7 +39,7 @@ class AuthController extends Controller
                 $validated['email'],
                 $validated['password']
             );
-            
+
             $user = $this->authService->register($dto);
 
             return response()->json([
@@ -48,7 +48,6 @@ class AuthController extends Controller
                 'email' => $user->getEmail(),
                 'createdAt' => $user->getCreatedAt(),
             ], 201);
-
         } catch (InvalidArgumentException $e) {
             return response()->json([
                 'error' => $e->getMessage()
@@ -75,14 +74,13 @@ class AuthController extends Controller
                 $validated['email'],
                 $validated['password']
             );
-            
+
             $loginResult = $this->authService->login($dto);
 
             return response()->json([
                 'userId' => $loginResult->userId,
                 'token' => $loginResult->token,
             ], 200);
-
         } catch (InvalidArgumentException $e) {
             return response()->json([
                 'error' => $e->getMessage()
@@ -118,7 +116,6 @@ class AuthController extends Controller
                 'email' => $user->getEmail(),
                 'createdAt' => $user->getCreatedAt(),
             ], 200);
-
         } catch (RuntimeException $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -149,7 +146,6 @@ class AuthController extends Controller
                 'success' => true,
                 'message' => 'User deleted successfully'
             ], 200);
-
         } catch (RuntimeException $e) {
             return response()->json([
                 'success' => false,
@@ -195,7 +191,6 @@ class AuthController extends Controller
                     'createdAt' => $user->getCreatedAt()
                 ]
             ], 200);
-
         } catch (InvalidArgumentException $e) {
             return response()->json([
                 'success' => false,

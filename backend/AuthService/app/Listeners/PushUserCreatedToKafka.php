@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Listeners;
 
 use App\Events\UserCreated;
@@ -12,7 +13,7 @@ class PushUserCreatedToKafka
         Log::info('PushUserCreatedToKafka: Event received', [
             'user_id' => $event->userId
         ]);
-        
+
         try {
             // Используем фасад Kafka для отправки сообщения
             Kafka::publish()
@@ -23,12 +24,11 @@ class PushUserCreatedToKafka
                     'timestamp' => now()->toISOString()
                 ])
                 ->send();
-            
+
             Log::info('✅ UserCreated event sent to Kafka', [
                 'user_id' => $event->userId,
                 'topic' => 'auth_events'
             ]);
-            
         } catch (\Exception $e) {
             Log::error('❌ Failed to send event to Kafka', [
                 'user_id' => $event->userId,

@@ -1,40 +1,56 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Http\JsonResponse;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
-use App\Domain\Auth\Repositories\UserRepositoryInterface;
+use App\Application\Auth\AuthService;
+use RuntimeException;
 
 class JwtMiddleware
 {
-    private UserRepositoryInterface $userRepo;
+    private AuthService $authService;
 
-    public function __construct(UserRepositoryInterface $userRepo)
+    public function __construct(AuthService $authService)
     {
-        $this->userRepo = $userRepo;
+        $this->authService = $authService;
     }
 
+    /**
+     * Handle an incoming request.
+     *
+     * @param Request $request
+     * @param Closure $next
+     * @return Response|JsonResponse
+     */
     public function handle(Request $request, Closure $next)
     {
         $token = $request->bearerToken();
 
         if (!$token) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json(['error' => 'Token not provided'], 401);
         }
 
         try {
-            $decoded = JWT::decode($token, new Key(env('JWT_SECRET'), 'HS256'));
-            $user = $this->userRepo->findById($decoded->sub);
+            $user = $this->authService->getUserFromToken($token);
+            
             if (!$user) {
-                return response()->json(['error' => 'User not found'], 401);
+                return response()->json(['error' => 'Invalid or expired token'], 401);
             }
 
-            $request->setUserResolver(fn() => $user);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Invalid token'], 401);
+            // Привязываем пользователя к запросу
+            $request->merge(['user' => $user]);
+            $request->setUserResolver(function () use ($user) {
+                return $user;
+            });
+        } catch (RuntimeException $e) {
+            return response()->json(['error' => 'Token validation failed: ' . $e->getMessage()], 401);
         }
 
         return $next($request);

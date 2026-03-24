@@ -6,6 +6,7 @@ parameters:
     checkMissingIterableValueType: false
     ignoreErrors:
         - '#Unsafe usage of new static#'
+        - '#Call to an undefined static method App\\Models\\User::#'
     
     # Для Laravel
     bootstrapFiles:

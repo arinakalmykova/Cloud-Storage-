@@ -8,7 +8,11 @@ use Illuminate\Queue\SerializesModels;
 
 class UserCreated
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable;
+    use InteractsWithSockets;
+    use SerializesModels;
 
-    public function __construct(public string $userId) {}
+    public function __construct(public string $userId)
+    {
+    }
 }
