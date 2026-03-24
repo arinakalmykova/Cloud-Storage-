@@ -39,7 +39,7 @@ class JwtMiddleware
 
         try {
             $user = $this->authService->getUserFromToken($token);
-            
+
             if (!$user) {
                 return response()->json(['error' => 'Invalid or expired token'], 401);
             }

@@ -8,7 +8,6 @@ use App\Domain\Auth\Entities\User;
 use App\Domain\Auth\Repositories\UserRepositoryInterface;
 use App\Models\User as UserModel;
 use RuntimeException;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class EloquentUserRepository implements UserRepositoryInterface
 {
@@ -16,7 +15,7 @@ class EloquentUserRepository implements UserRepositoryInterface
     {
         /** @var UserModel|null $user */
         $user = UserModel::find($id);
-        
+
         if (!$user) {
             return null;
         }
@@ -34,7 +33,7 @@ class EloquentUserRepository implements UserRepositoryInterface
     {
         /** @var UserModel|null $user */
         $user = UserModel::where('email', $email)->first();
-        
+
         if (!$user) {
             return null;
         }

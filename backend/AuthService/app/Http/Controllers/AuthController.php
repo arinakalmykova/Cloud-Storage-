@@ -180,7 +180,15 @@ class AuthController extends Controller
                 ], 400);
             }
 
+            // ✅ Добавляем проверку на null
             $user = $this->authService->getUserFromToken($token);
+
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'User not found after update'
+                ], 404);
+            }
 
             return response()->json([
                 'success' => true,
