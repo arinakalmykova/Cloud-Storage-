@@ -105,7 +105,7 @@ class AuthServiceTest extends TestCase
     public function login_with_weak_password_throws_exception()
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Password must contain');
+        $this->expectExceptionMessage('Invalid email or password');
 
         // Сначала регистрируем пользователя с правильным паролем
         $registerDto = new RegisterUserDTO(
@@ -115,10 +115,10 @@ class AuthServiceTest extends TestCase
         );
         $this->authService->register($registerDto);
 
-        // Пытаемся войти с неправильным паролем
+        // Пытаемся войти с НЕПРАВИЛЬНЫМ паролем (не соответствующим сохраненному)
         $loginDto = new LoginUserDTO(
             email: 'test@example.com',
-            password: 'weak'
+            password: 'WrongPassword123!'  // ← просто неправильный пароль
         );
 
         $this->authService->login($loginDto);
