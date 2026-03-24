@@ -1,38 +1,104 @@
-version: '3.8'
+name: CI/CD - AuthService with PostgreSQL
 
-services:
-  # PostgreSQL для AuthService тестов
-  postgres_auth:
-    image: postgres:16
-    container_name: pg-auth-ci
-    environment:
-      POSTGRES_DB: auth_test
-      POSTGRES_USER: auth_user
-      POSTGRES_PASSWORD: auth_password
-    ports:
-      - "5432:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U auth_user -d auth_test"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
+on:
+  push:
+    branches: [ "main", "master" ]
+    paths:
+      - 'backend/AuthService/**'
+  pull_request:
+    branches: [ "main", "master" ]
+    paths:
+      - 'backend/AuthService/**'
 
-  # Kafka (если нужен для тестов)
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.6.1
-    ports:
-      - "2181:2181"
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-
-  kafka:
-    image: confluentinc/cp-kafka:7.6.1
-    ports:
-      - "9092:9092"
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-    depends_on:
-      - zookeeper
+jobs:
+  test-auth-service:
+    runs-on: ubuntu-latest
+    name: Test AuthService with PostgreSQL
+    
+    # ✅ Сервис PostgreSQL
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: auth_test
+          POSTGRES_USER: auth_user
+          POSTGRES_PASSWORD: auth_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, pdo, pdo_pgsql, pgsql, tokenizer, xml
+          coverage: xdebug
+          tools: composer, phpcs, phpstan
+      
+      - name: Install Composer dependencies
+        working-directory: backend/AuthService
+        run: composer install --no-interaction --no-progress --ignore-platform-req=ext-rdkafka
+      
+      - name: Wait for PostgreSQL
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+          until pg_isready -h localhost -p 5432 -U auth_user -d auth_test; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+      
+      - name: Run migrations
+        working-directory: backend/AuthService
+        run: php artisan migrate --env=testing
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_DATABASE: auth_test
+          DB_USERNAME: auth_user
+          DB_PASSWORD: auth_password
+      
+      - name: Run tests
+        working-directory: backend/AuthService
+        run: ./vendor/bin/phpunit --testdox --coverage-text
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_DATABASE: auth_test
+          DB_USERNAME: auth_user
+          DB_PASSWORD: auth_password
+      
+      - name: PHP_CodeSniffer
+        working-directory: backend/AuthService
+        run: ./vendor/bin/phpcs app/ --standard=PSR12
+        continue-on-error: true
+      
+      - name: PHPStan
+        working-directory: backend/AuthService
+        run: ./vendor/bin/phpstan analyse app/ --level=8 --no-progress
+        continue-on-error: true
+      
+      - name: Install Lizard
+        run: pip install lizard
+      
+      - name: Cyclomatic Complexity
+        working-directory: backend/AuthService
+        run: lizard app/ -C 10
+        continue-on-error: true
+      
+      - name: Upload test coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: backend/AuthService/coverage/
