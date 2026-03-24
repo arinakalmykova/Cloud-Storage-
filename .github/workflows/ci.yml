@@ -78,7 +78,7 @@ jobs:
           cd ${{ env.AUTH_PATH }}
           lizard app/ -C 10
 
-  # ==================== STAGE 1: UNIT TESTS (SQLite in-memory) ====================
+  # ==================== UNIT TESTS (SQLite in-memory) ====================
   unit-tests:
     runs-on: ubuntu-latest
     name: Unit Tests (PHPUnit)
@@ -110,21 +110,13 @@ jobs:
           name: unit-test-coverage
           path: ${{ env.AUTH_PATH }}/coverage/
 
-  # ==================== STAGE 2: INTEGRATION TESTS (PostgreSQL) ====================
+  # ==================== INTEGRATION TESTS (PostgreSQL) ====================
   integration-tests:
     runs-on: ubuntu-latest
     name: Integration Tests (PostgreSQL)
     needs: [find-auth-service, unit-tests]
     env:
       AUTH_PATH: ${{ needs.find-auth-service.outputs.auth_path }}
-      DB_CONNECTION: pgsql
-      DB_HOST: localhost
-      DB_PORT: 5432
-      DB_DATABASE: auth_test
-      DB_USERNAME: auth_user
-      DB_PASSWORD: auth_password
-    
-    # ✅ PostgreSQL сервис-контейнер
     services:
       postgres:
         image: postgres:16
@@ -139,21 +131,17 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-    
     steps:
       - uses: actions/checkout@v4
-      
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
           extensions: mbstring, pdo, pdo_pgsql, pgsql, tokenizer, xml
-      
       - name: Install dependencies
         run: |
           cd ${{ env.AUTH_PATH }}
           composer install --no-interaction --no-progress --ignore-platform-req=ext-rdkafka
-      
       - name: Wait for PostgreSQL
         run: |
           sudo apt-get update
@@ -162,7 +150,6 @@ jobs:
             echo "Waiting for PostgreSQL..."
             sleep 2
           done
-      
       - name: Run migrations
         run: |
           cd ${{ env.AUTH_PATH }}
@@ -174,7 +161,6 @@ jobs:
           DB_DATABASE: auth_test
           DB_USERNAME: auth_user
           DB_PASSWORD: auth_password
-      
       - name: Run integration tests
         run: |
           cd ${{ env.AUTH_PATH }}
@@ -186,7 +172,6 @@ jobs:
           DB_DATABASE: auth_test
           DB_USERNAME: auth_user
           DB_PASSWORD: auth_password
-      
       - name: Upload integration test results
         if: always()
         uses: actions/upload-artifact@v4
@@ -194,7 +179,7 @@ jobs:
           name: integration-test-results
           path: ${{ env.AUTH_PATH }}/storage/logs/
 
-  # ==================== STAGE 3: REPORT (Генерация отчетов) ====================
+  # ==================== REPORT (Генерация отчетов) ====================
   report:
     runs-on: ubuntu-latest
     name: Generate Reports
@@ -202,21 +187,18 @@ jobs:
     if: always()
     steps:
       - uses: actions/checkout@v4
-      
       - name: Download unit test coverage
         uses: actions/download-artifact@v4
         with:
           name: unit-test-coverage
           path: reports/unit-coverage
         continue-on-error: true
-      
       - name: Download integration test results
         uses: actions/download-artifact@v4
         with:
           name: integration-test-results
           path: reports/integration
         continue-on-error: true
-      
       - name: Generate summary report
         run: |
           mkdir -p reports
@@ -240,7 +222,6 @@ jobs:
           echo "- PHP_CodeSniffer: PSR-12 compliant" >> reports/summary.md
           echo "- PHPStan: Level 8 passed" >> reports/summary.md
           echo "- Lizard: Complexity ≤ 10" >> reports/summary.md
-      
       - name: Upload all reports
         uses: actions/upload-artifact@v4
         with:
