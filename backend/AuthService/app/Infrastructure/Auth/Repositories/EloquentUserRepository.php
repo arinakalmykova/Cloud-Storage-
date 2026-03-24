@@ -11,11 +11,15 @@ use RuntimeException;
 
 class EloquentUserRepository implements UserRepositoryInterface
 {
+    /**
+     * @param string $id
+     * @return User|null
+     */
     public function findById(string $id): ?User
     {
         /** @var UserModel|null $user */
-        $user = UserModel::find($id);
-
+        $user = UserModel::query()->find($id);
+        
         if (!$user) {
             return null;
         }
@@ -29,11 +33,15 @@ class EloquentUserRepository implements UserRepositoryInterface
         );
     }
 
+    /**
+     * @param string $email
+     * @return User|null
+     */
     public function findByEmail(string $email): ?User
     {
         /** @var UserModel|null $user */
-        $user = UserModel::where('email', $email)->first();
-
+        $user = UserModel::query()->where('email', $email)->first();
+        
         if (!$user) {
             return null;
         }
@@ -47,10 +55,14 @@ class EloquentUserRepository implements UserRepositoryInterface
         );
     }
 
+    /**
+     * @param User $user
+     * @return void
+     */
     public function save(User $user): void
     {
         try {
-            UserModel::updateOrCreate(
+            UserModel::query()->updateOrCreate(
                 ['id' => $user->getId()],
                 [
                     'name' => $user->getName(),
@@ -63,10 +75,14 @@ class EloquentUserRepository implements UserRepositoryInterface
         }
     }
 
+    /**
+     * @param User $user
+     * @return void
+     */
     public function delete(User $user): void
     {
         try {
-            $deleted = UserModel::where('id', $user->getId())->delete();
+            $deleted = UserModel::query()->where('id', $user->getId())->delete();
 
             if ($deleted === 0) {
                 throw new RuntimeException('User not found');
