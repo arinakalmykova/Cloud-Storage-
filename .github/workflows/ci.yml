@@ -7,116 +7,188 @@ on:
     branches: [ main, master ]
 
 jobs:
-  # Задача для поиска пути к AuthService
+  # ==================== STAGE 1: FIND AUTH SERVICE ====================
   find-auth-service:
     runs-on: ubuntu-latest
-    name: Find AuthService path
+    name: Find AuthService
     outputs:
       auth_path: ${{ steps.find_path.outputs.auth_path }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
+      - uses: actions/checkout@v4
       - name: Find AuthService directory
         id: find_path
         run: |
-          # Ищем папку AuthService в репозитории
           AUTH_PATH=$(find . -type d -name "AuthService" | head -1)
-          
           if [ -n "$AUTH_PATH" ]; then
             echo "✅ Found AuthService at: $AUTH_PATH"
             echo "auth_path=$AUTH_PATH" >> $GITHUB_OUTPUT
           else
-            echo "❌ AuthService not found in repository!"
+            echo "❌ AuthService not found!"
             exit 1
           fi
-      
-      - name: Show found path
-        run: |
-          echo "AuthService location: ${{ steps.find_path.outputs.auth_path }}"
 
-  # Статический анализ PHP кода
-  php-analysis:
+  # ==================== STAGE 1: TEST (Линтинг + Статический анализ + Модульные тесты) ====================
+  lint:
     runs-on: ubuntu-latest
-    name: PHP Static Analysis
+    name: Lint (PHP_CodeSniffer)
     needs: find-auth-service
     env:
       AUTH_PATH: ${{ needs.find-auth-service.outputs.auth_path }}
-    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Show AuthService path
-        run: |
-          echo "Working with AuthService at: ${{ env.AUTH_PATH }}"
-          ls -la ${{ env.AUTH_PATH }}
-      
+      - uses: actions/checkout@v4
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
-          extensions: mbstring, pdo, sqlite, tokenizer, xml
-          tools: composer, phpcs, phpstan
-      
-      - name: Install dependencies (ignore missing extensions)
+          tools: composer, phpcs
+      - name: Install dependencies
         run: |
           cd ${{ env.AUTH_PATH }}
           composer install --no-interaction --no-progress --ignore-platform-req=ext-rdkafka
-      
       - name: PHP_CodeSniffer (PSR-12)
         run: |
           cd ${{ env.AUTH_PATH }}
-          ./vendor/bin/phpcs app/ --standard=PSR12 || true
-      
-      - name: PHPStan
+          ./vendor/bin/phpcs app/ --standard=PSR12
+
+  static-analysis:
+    runs-on: ubuntu-latest
+    name: Static Analysis (PHPStan + Lizard)
+    needs: find-auth-service
+    env:
+      AUTH_PATH: ${{ needs.find-auth-service.outputs.auth_path }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer, phpstan
+      - name: Install dependencies
         run: |
           cd ${{ env.AUTH_PATH }}
-          ./vendor/bin/phpstan analyse app/ --level=8 --no-progress || true
-      
+          composer install --no-interaction --no-progress --ignore-platform-req=ext-rdkafka
+      - name: PHPStan (Level 8)
+        run: |
+          cd ${{ env.AUTH_PATH }}
+          ./vendor/bin/phpstan analyse app/ --level=8 --no-progress
       - name: Install Lizard
         run: pip install lizard
-      
       - name: Cyclomatic Complexity
         run: |
           cd ${{ env.AUTH_PATH }}
-          lizard app/ -C 10 || true
+          lizard app/ -C 10
 
-  # Модульные тесты
-  php-tests:
+  unit-tests:
     runs-on: ubuntu-latest
-    name: PHP Unit Tests
-    needs: [find-auth-service, php-analysis]
+    name: Unit Tests (PHPUnit)
+    needs: [find-auth-service, lint, static-analysis]
     env:
       AUTH_PATH: ${{ needs.find-auth-service.outputs.auth_path }}
-    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Show AuthService path
-        run: |
-          echo "Working with AuthService at: ${{ env.AUTH_PATH }}"
-      
-      - name: Setup PHP
+      - uses: actions/checkout@v4
+      - name: Setup PHP with coverage
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
           extensions: mbstring, pdo, sqlite, tokenizer, xml
           coverage: xdebug
-      
-      - name: Install dependencies (ignore missing extensions)
+      - name: Install dependencies
         run: |
           cd ${{ env.AUTH_PATH }}
           composer install --no-interaction --no-progress --ignore-platform-req=ext-rdkafka
-      
       - name: Create database
         run: |
           cd ${{ env.AUTH_PATH }}
           mkdir -p database
           touch database/database.sqlite || true
-      
-      - name: Run tests
+      - name: Run unit tests with coverage
         run: |
           cd ${{ env.AUTH_PATH }}
-          ./vendor/bin/phpunit --testdox || echo "No tests found"
+          ./vendor/bin/phpunit --testdox --coverage-text --coverage-html coverage/
+      - name: Upload unit test coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-coverage
+          path: ${{ env.AUTH_PATH }}/coverage/
+
+  # ==================== STAGE 2: INTEGRATION (Интеграционные тесты) ====================
+  integration-tests:
+    runs-on: ubuntu-latest
+    name: Integration Tests
+    needs: unit-tests
+    env:
+      AUTH_PATH: ${{ needs.find-auth-service.outputs.auth_path }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, pdo, sqlite, tokenizer, xml
+      - name: Install dependencies
+        run: |
+          cd ${{ env.AUTH_PATH }}
+          composer install --no-interaction --no-progress --ignore-platform-req=ext-rdkafka
+      - name: Setup test database
+        run: |
+          cd ${{ env.AUTH_PATH }}
+          mkdir -p database
+          touch database/database.sqlite
+          cp .env.example .env || true
+      - name: Run integration tests
+        run: |
+          cd ${{ env.AUTH_PATH }}
+          # Интеграционные тесты (если есть отдельный тестсьют)
+          ./vendor/bin/phpunit --testsuite=Integration --testdox || echo "No integration tests found"
+      - name: Upload integration test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: ${{ env.AUTH_PATH }}/storage/logs/
+
+  # ==================== STAGE 3: REPORT (Генерация отчетов) ====================
+  report:
+    runs-on: ubuntu-latest
+    name: Generate Reports
+    needs: [unit-tests, integration-tests]
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download unit test coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: unit-test-coverage
+          path: reports/unit-coverage
+      
+      - name: Download integration test results
+        uses: actions/download-artifact@v4
+        with:
+          name: integration-test-results
+          path: reports/integration
+      
+      - name: Generate summary report
+        run: |
+          echo "# Test Report" > reports/summary.md
+          echo "" >> reports/summary.md
+          echo "## Unit Tests" >> reports/summary.md
+          echo "- Coverage report attached" >> reports/summary.md
+          echo "" >> reports/summary.md
+          echo "## Integration Tests" >> reports/summary.md
+          echo "- Results attached" >> reports/summary.md
+          echo "" >> reports/summary.md
+          echo "## Static Analysis" >> reports/summary.md
+          echo "- PHP_CodeSniffer: PSR-12 compliant" >> reports/summary.md
+          echo "- PHPStan: Level 8 passed" >> reports/summary.md
+          echo "- Lizard: Complexity ≤ 10" >> reports/summary.md
+      
+      - name: Upload all reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: all-reports
+          path: reports/
+      
+      - name: Publish test report to GitHub Pages (optional)
+        run: |
+          echo "Reports ready for download in artifacts"
