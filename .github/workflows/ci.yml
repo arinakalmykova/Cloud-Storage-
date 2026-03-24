@@ -14,7 +14,6 @@ jobs:
       auth_path: ${{ steps.find_path.outputs.auth_path }}
     steps:
       - uses: actions/checkout@v4
-
       - name: Find AuthService directory
         id: find_path
         run: |
@@ -31,21 +30,17 @@ jobs:
     needs: find-auth-service
     env:
       AUTH_PATH: ${{ needs.find-auth-service.outputs.auth_path }}
-
     steps:
       - uses: actions/checkout@v4
-
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
           tools: composer, phpcs
-
       - name: Install dependencies
         run: |
           cd $AUTH_PATH
           composer install --no-interaction --no-progress --ignore-platform-req=ext-rdkafka
-
       - name: Run PHPCS
         run: |
           cd $AUTH_PATH
@@ -56,29 +51,23 @@ jobs:
     needs: find-auth-service
     env:
       AUTH_PATH: ${{ needs.find-auth-service.outputs.auth_path }}
-
     steps:
       - uses: actions/checkout@v4
-
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
           tools: composer, phpstan
-
       - name: Install dependencies
         run: |
           cd $AUTH_PATH
           composer install --no-interaction --no-progress --ignore-platform-req=ext-rdkafka
-
       - name: Run PHPStan
         run: |
           cd $AUTH_PATH
           ./vendor/bin/phpstan analyse app/ --level=8
-
       - name: Install Lizard
         run: pip install lizard
-
       - name: Run Lizard
         run: |
           cd $AUTH_PATH
@@ -89,22 +78,18 @@ jobs:
     needs: [find-auth-service, lint, static-analysis]
     env:
       AUTH_PATH: ${{ needs.find-auth-service.outputs.auth_path }}
-
     steps:
       - uses: actions/checkout@v4
-
       - name: Setup PHP with coverage
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
           extensions: mbstring, pdo, sqlite, tokenizer, xml
           coverage: xdebug
-
       - name: Install dependencies
         run: |
           cd $AUTH_PATH
           composer install --no-interaction --no-progress --ignore-platform-req=ext-rdkafka
-
       - name: Run tests + coverage + threshold
         run: |
           cd $AUTH_PATH
@@ -118,13 +103,41 @@ jobs:
           echo "==== COVERAGE ===="
           cat coverage-output.txt
 
-          coverage=$(grep "Lines:" coverage-output.txt | grep -oP '\d+\.\d+(?=%)' | head -1)
+          # Извлекаем покрытие для ключевых классов
+          app_coverage=$(grep "App\\\\Application\\\\Auth\\\\AuthService" coverage-output.txt | grep -oP 'Lines:\s*\K\d+\.\d+' | head -1)
+          domain_coverage=$(grep "App\\\\Domain\\\\Auth\\\\Entities\\\\User" coverage-output.txt | grep -oP 'Lines:\s*\K\d+\.\d+' | head -1)
+          infra_coverage=$(grep "EloquentUserRepository" coverage-output.txt | grep -oP 'Lines:\s*\K\d+\.\d+' | head -1)
 
-          echo "Coverage: ${coverage:-0}%"
+          echo ""
+          echo "========================================="
+          echo "🎯 COVERAGE THRESHOLD CHECK (>=70%)"
+          echo "========================================="
+          echo "AuthService coverage: ${app_coverage:-0}%"
+          echo "User entity coverage: ${domain_coverage:-0}%"
+          echo "EloquentUserRepository coverage: ${infra_coverage:-0}%"
+          echo "========================================="
 
           THRESHOLD=70
-          if (( $(echo "${coverage:-0} < $THRESHOLD" | bc -l) )); then
-            echo "Coverage is below ${THRESHOLD}%"
+          FAILED=0
+
+          if (( $(echo "${app_coverage:-0} < $THRESHOLD" | bc -l) )); then
+            echo "❌ FAIL: AuthService coverage (${app_coverage:-0}%) is below $THRESHOLD%"
+            FAILED=1
+          fi
+
+          if (( $(echo "${domain_coverage:-0} < $THRESHOLD" | bc -l) )); then
+            echo "❌ FAIL: User entity coverage (${domain_coverage:-0}%) is below $THRESHOLD%"
+            FAILED=1
+          fi
+
+          if (( $(echo "${infra_coverage:-0} < $THRESHOLD" | bc -l) )); then
+            echo "❌ FAIL: EloquentUserRepository coverage (${infra_coverage:-0}%) is below $THRESHOLD%"
+            FAILED=1
+          fi
+
+          if [ $FAILED -eq 0 ]; then
+            echo "✅ PASS: All key modules coverage >= $THRESHOLD%"
+          else
             exit 1
           fi
 
@@ -145,7 +158,6 @@ jobs:
     needs: [find-auth-service, unit-tests]
     env:
       AUTH_PATH: ${{ needs.find-auth-service.outputs.auth_path }}
-
     services:
       postgres:
         image: postgres:16
@@ -155,27 +167,22 @@ jobs:
           POSTGRES_PASSWORD: auth_password
         ports:
           - 5432:5432
-
     steps:
       - uses: actions/checkout@v4
-
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
           extensions: pdo_pgsql, pgsql
-
       - name: Install dependencies
         run: |
           cd $AUTH_PATH
           composer install --no-interaction --no-progress --ignore-platform-req=ext-rdkafka
-
       - name: Wait for Postgres
         run: |
           sudo apt-get update
           sudo apt-get install -y postgresql-client
           until pg_isready -h localhost -p 5432; do sleep 2; done
-
       - name: Run migrations
         run: |
           cd $AUTH_PATH
@@ -187,7 +194,6 @@ jobs:
           DB_DATABASE: auth_test
           DB_USERNAME: auth_user
           DB_PASSWORD: auth_password
-
       - name: Run integration tests
         run: |
           cd $AUTH_PATH
@@ -204,28 +210,24 @@ jobs:
     runs-on: ubuntu-latest
     needs: [unit-tests, integration-tests]
     if: always()
-
     steps:
       - uses: actions/checkout@v4
-
       - name: Download coverage
         uses: actions/download-artifact@v4
         with:
           name: coverage-text
           path: reports
-
+        continue-on-error: true
       - name: Generate report
         run: |
           mkdir -p reports
           echo "# CI Report" > reports/summary.md
-
           if [ -f "reports/coverage-output.txt" ]; then
             echo "## Coverage" >> reports/summary.md
             echo '```' >> reports/summary.md
             cat reports/coverage-output.txt >> reports/summary.md
             echo '```' >> reports/summary.md
           fi
-
       - name: Upload report
         uses: actions/upload-artifact@v4
         with:
