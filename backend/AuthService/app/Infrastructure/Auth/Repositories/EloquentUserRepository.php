@@ -19,7 +19,7 @@ class EloquentUserRepository implements UserRepositoryInterface
     {
         /** @var UserModel|null $user */
         $user = UserModel::query()->find($id);
-        
+
         if (!$user) {
             return null;
         }
@@ -41,7 +41,7 @@ class EloquentUserRepository implements UserRepositoryInterface
     {
         /** @var UserModel|null $user */
         $user = UserModel::query()->where('email', $email)->first();
-        
+
         if (!$user) {
             return null;
         }
