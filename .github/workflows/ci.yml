@@ -103,41 +103,39 @@ jobs:
           echo "==== COVERAGE ===="
           cat coverage-output.txt
 
-          # Извлекаем покрытие для ключевых классов
-          app_coverage=$(grep "App\\\\Application\\\\Auth\\\\AuthService" coverage-output.txt | grep -oP 'Lines:\s*\K\d+\.\d+' | head -1)
-          domain_coverage=$(grep "App\\\\Domain\\\\Auth\\\\Entities\\\\User" coverage-output.txt | grep -oP 'Lines:\s*\K\d+\.\d+' | head -1)
-          infra_coverage=$(grep "EloquentUserRepository" coverage-output.txt | grep -oP 'Lines:\s*\K\d+\.\d+' | head -1)
-
           echo ""
           echo "========================================="
           echo "🎯 COVERAGE THRESHOLD CHECK (>=70%)"
           echo "========================================="
-          echo "AuthService coverage: ${app_coverage:-0}%"
-          echo "User entity coverage: ${domain_coverage:-0}%"
-          echo "EloquentUserRepository coverage: ${infra_coverage:-0}%"
-          echo "========================================="
+
+          # Берём покрытие конкретных классов (правильный grep)
+          app=$(grep -A1 "AuthService" coverage-output.txt | grep "Lines:" | grep -oP '\d+\.\d+' | head -1)
+          domain=$(grep -A1 "Entities\\User" coverage-output.txt | grep "Lines:" | grep -oP '\d+\.\d+' | head -1)
+          infra=$(grep -A1 "EloquentUserRepository" coverage-output.txt | grep "Lines:" | grep -oP '\d+\.\d+' | head -1)
+
+          echo "AuthService: ${app:-0}%"
+          echo "User: ${domain:-0}%"
+          echo "Repository: ${infra:-0}%"
 
           THRESHOLD=70
           FAILED=0
 
-          if (( $(echo "${app_coverage:-0} < $THRESHOLD" | bc -l) )); then
-            echo "❌ FAIL: AuthService coverage (${app_coverage:-0}%) is below $THRESHOLD%"
-            FAILED=1
-          fi
+          check() {
+            NAME=$1
+            VALUE=$2
+            if (( $(echo "${VALUE:-0} < $THRESHOLD" | bc -l) )); then
+              echo "❌ FAIL: $NAME (${VALUE:-0}%) < $THRESHOLD%"
+              FAILED=1
+            else
+              echo "✅ PASS: $NAME (${VALUE:-0}%)"
+            fi
+          }
 
-          if (( $(echo "${domain_coverage:-0} < $THRESHOLD" | bc -l) )); then
-            echo "❌ FAIL: User entity coverage (${domain_coverage:-0}%) is below $THRESHOLD%"
-            FAILED=1
-          fi
+          check "AuthService" "$app"
+          check "User Entity" "$domain"
+          check "Repository" "$infra"
 
-          if (( $(echo "${infra_coverage:-0} < $THRESHOLD" | bc -l) )); then
-            echo "❌ FAIL: EloquentUserRepository coverage (${infra_coverage:-0}%) is below $THRESHOLD%"
-            FAILED=1
-          fi
-
-          if [ $FAILED -eq 0 ]; then
-            echo "✅ PASS: All key modules coverage >= $THRESHOLD%"
-          else
+          if [ $FAILED -eq 1 ]; then
             exit 1
           fi
 
