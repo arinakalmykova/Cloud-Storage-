@@ -36,20 +36,33 @@ class EloquentUserRepository implements UserRepositoryInterface
         );
     }
 
-    public function save(User $user): void
+    public function save(User $user): bool
     {
-        UserModel::updateOrCreate(
-            ['id' => $user->getId()],
-            [
-                'name' => $user->getName(),
-                'email' => $user->getEmail(),
-                'password' => $user->getPasswordHash()
-            ]
-        );
+        try {
+            $eloquentUser = UserModel::updateOrCreate(
+                ['id' => $user->getId()],
+                [
+                    'name' => $user->getName(),
+                    'email' => $user->getEmail(),
+                    'password' => $user->getPasswordHash(),
+                ]
+            );
+            
+            return $eloquentUser->exists;
+            
+        } catch (\Exception $e) {
+            throw new RuntimeException('Failed to save user: ' . $e->getMessage());
+        }
     }
 
-    public function delete(User $user): void
+    public function delete(User $user): bool
     {
-        UserModel::where('id', $user->getId())->delete();
+        try {
+            $deleted = UserModel::where('id', $user->getId())->delete();
+            return $deleted > 0;
+            
+        } catch (\Exception $e) {
+            throw new RuntimeException('Failed to delete user: ' . $e->getMessage());
+        }
     }
 }
