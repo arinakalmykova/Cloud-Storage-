@@ -3,21 +3,54 @@ name: CI/CD - AuthService
 on:
   push:
     branches: [ main, master ]
-    paths:
-      - 'backend/AuthService/**'
   pull_request:
     branches: [ main, master ]
-    paths:
-      - 'backend/AuthService/**'
 
 jobs:
+  # Задача для поиска пути к AuthService
+  find-auth-service:
+    runs-on: ubuntu-latest
+    name: Find AuthService path
+    outputs:
+      auth_path: ${{ steps.find_path.outputs.auth_path }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Find AuthService directory
+        id: find_path
+        run: |
+          # Ищем папку AuthService в репозитории
+          AUTH_PATH=$(find . -type d -name "AuthService" | head -1)
+          
+          if [ -n "$AUTH_PATH" ]; then
+            echo "✅ Found AuthService at: $AUTH_PATH"
+            echo "auth_path=$AUTH_PATH" >> $GITHUB_OUTPUT
+          else
+            echo "❌ AuthService not found in repository!"
+            exit 1
+          fi
+      
+      - name: Show found path
+        run: |
+          echo "AuthService location: ${{ steps.find_path.outputs.auth_path }}"
+
+  # Статический анализ PHP кода
   php-analysis:
     runs-on: ubuntu-latest
     name: PHP Static Analysis
+    needs: find-auth-service
+    env:
+      AUTH_PATH: ${{ needs.find-auth-service.outputs.auth_path }}
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      
+      - name: Show AuthService path
+        run: |
+          echo "Working with AuthService at: ${{ env.AUTH_PATH }}"
+          ls -la ${{ env.AUTH_PATH }}
       
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -27,32 +60,43 @@ jobs:
           tools: composer, phpcs, phpstan
       
       - name: Install dependencies (ignore missing extensions)
-        working-directory: backend/AuthService
-        run: composer install --no-interaction --no-progress --ignore-platform-req=ext-rdkafka
+        run: |
+          cd ${{ env.AUTH_PATH }}
+          composer install --no-interaction --no-progress --ignore-platform-req=ext-rdkafka
       
       - name: PHP_CodeSniffer (PSR-12)
-        working-directory: backend/AuthService
-        run: ./vendor/bin/phpcs app/ --standard=PSR12 || true
+        run: |
+          cd ${{ env.AUTH_PATH }}
+          ./vendor/bin/phpcs app/ --standard=PSR12 || true
       
       - name: PHPStan
-        working-directory: backend/AuthService
-        run: ./vendor/bin/phpstan analyse app/ --level=8 --no-progress || true
+        run: |
+          cd ${{ env.AUTH_PATH }}
+          ./vendor/bin/phpstan analyse app/ --level=8 --no-progress || true
       
       - name: Install Lizard
         run: pip install lizard
       
       - name: Cyclomatic Complexity
-        working-directory: backend/AuthService
-        run: lizard app/ -C 10 || true
+        run: |
+          cd ${{ env.AUTH_PATH }}
+          lizard app/ -C 10 || true
 
+  # Модульные тесты
   php-tests:
     runs-on: ubuntu-latest
     name: PHP Unit Tests
-    needs: php-analysis
+    needs: [find-auth-service, php-analysis]
+    env:
+      AUTH_PATH: ${{ needs.find-auth-service.outputs.auth_path }}
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      
+      - name: Show AuthService path
+        run: |
+          echo "Working with AuthService at: ${{ env.AUTH_PATH }}"
       
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -62,15 +106,17 @@ jobs:
           coverage: xdebug
       
       - name: Install dependencies (ignore missing extensions)
-        working-directory: backend/AuthService
-        run: composer install --no-interaction --no-progress --ignore-platform-req=ext-rdkafka
+        run: |
+          cd ${{ env.AUTH_PATH }}
+          composer install --no-interaction --no-progress --ignore-platform-req=ext-rdkafka
       
       - name: Create database
-        working-directory: backend/AuthService
         run: |
+          cd ${{ env.AUTH_PATH }}
           mkdir -p database
           touch database/database.sqlite || true
       
       - name: Run tests
-        working-directory: backend/AuthService
-        run: ./vendor/bin/phpunit --testdox || echo "No tests found"
+        run: |
+          cd ${{ env.AUTH_PATH }}
+          ./vendor/bin/phpunit --testdox || echo "No tests found"
