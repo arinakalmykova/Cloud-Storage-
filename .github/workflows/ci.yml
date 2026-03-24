@@ -100,7 +100,7 @@ jobs:
           ./vendor/bin/phpunit --testsuite=Unit,Feature --testdox --coverage-text --coverage-html coverage/
         env:
           DB_CONNECTION: sqlite
-          DB_DATABASE: :memory:
+          DB_DATABASE: ":memory:"
       - name: Upload unit test coverage
         uses: actions/upload-artifact@v4
         with:
