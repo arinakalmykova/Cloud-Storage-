@@ -1,5 +1,5 @@
 <?php 
-
+declare(strict_types=1);
 namespace App\Domain\Auth\Entities;
 
 class User
@@ -16,7 +16,7 @@ class User
         $this->name = $name;
         $this->email = $email;
         $this->passwordHash = $passwordHash;
-        $this->createdAt = $createdAt;
+        $this->createdAt = $createdAt ?? date('Y-m-d H:i:s');
     }
 
     public function getId(): string { return $this->id; }
