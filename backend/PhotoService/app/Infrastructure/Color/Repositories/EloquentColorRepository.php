@@ -15,12 +15,13 @@ class EloquentColorRepository implements ColorRepositoryInterface
         );
     }
 
-     public function getColors(): array
+     public function getColorsByUser(string $userId): array
     {
-        return ColorModel::all()->map(function (ColorModel $model) {
-            return $model->color;
-        })->toArray();
+        return ColorModel::whereHas('photos', function ($query) use ($userId) {
+            $query->where('user_id', $userId);
+        })->pluck('color')->unique()->values()->toArray();
     }
+
 
      public function findByHex(string $hex): ?Color
     {

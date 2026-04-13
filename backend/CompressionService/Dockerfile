@@ -1,40 +1,46 @@
-# Используем официальный PHP 8.3 FPM
 FROM php:8.3-fpm
 
-# Устанавливаем зависимости для Imagick и другие нужные пакеты
-RUN apt-get update && apt-get install -y \
-    libmagickwand-dev --no-install-recommends \
-    unzip \
-    zip \
-    git \
-    curl \
-    libpq-dev \
-    sqlite3 \
-    librdkafka-dev \ 
-    && pecl install imagick \
-    && docker-php-ext-enable imagick \
-    && docker-php-ext-install pdo pdo_pgsql sockets \
-    && apt-get clean \
-    && pecl install rdkafka \
-    && docker-php-ext-enable rdkafka \
-    && rm -rf /var/lib/apt/lists/*
-    
-
 # Устанавливаем Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-RUN pecl install redis && docker-php-ext-enable redis
-# Рабочая директория
+# Добавляем backports репозиторий для свежих пакетов
+RUN echo "deb http://deb.debian.org/debian bookworm-backports main" >> /etc/apt/sources.list
+
+# Устанавливаем базовые зависимости
+RUN apt-get update && apt-get install -y \
+    libpng-dev \
+    libjpeg62-turbo-dev \
+    libfreetype6-dev \
+    libwebp-dev \
+    libzip-dev \
+    zip \
+    unzip \
+    git \
+    libpq-dev \
+    librdkafka-dev \
+    imagemagick \
+    libmagickwand-dev \
+    wget \
+    gnupg \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+    && docker-php-ext-install -j$(nproc) gd pdo pdo_pgsql sockets \
+    && pecl install redis rdkafka imagick \
+    && docker-php-ext-enable redis rdkafka imagick \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Устанавливаем libavif-bin из backports (содержит avifenc)
+RUN apt-get update && apt-get install -y -t bookworm-backports libavif-bin \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /var/www
 
-# Копируем код проекта
 COPY . .
 
-# Устанавливаем зависимости Laravel
 RUN composer install --no-interaction --optimize-autoloader
 
-# Открываем порт 80
-EXPOSE 80
+RUN chmod -R 777 storage
 
-# Запуск PHP-FPM
+EXPOSE 80
 CMD ["php-fpm"]

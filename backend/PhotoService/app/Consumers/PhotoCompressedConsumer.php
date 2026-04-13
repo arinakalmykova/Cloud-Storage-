@@ -18,20 +18,10 @@ class PhotoCompressedConsumer
         $this->logFile = storage_path('logs/kafka-forced.log');
     }
 
-    private function forcedLog(string $message, array $context = []): void
-    {
-        $entry = date('c') . "  " . $message . "\n";
-        if ($context !== []) {
-            $entry .= "    " . json_encode($context, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n";
-        }
-        $entry .= "\n";
-
-        file_put_contents($this->logFile, $entry, FILE_APPEND | LOCK_EX);
-    }
 
     public function __invoke(ConsumerMessage $message): void
     {
-        $this->forcedLog('Kafka consumer invoked', [
+        Log::info('Kafka consumer invoked', [
             'topic'     => $message->getTopicName(),
             'key'       => $message->getKey(),
             'offset'    => $message->getOffset(),
@@ -42,7 +32,7 @@ class PhotoCompressedConsumer
 
         $payload = $message->getBody();
 
-        $this->forcedLog('Raw payload received', ['payload' => $payload]);
+        Log::info('Raw payload received', ['payload' => $payload]);
 
         try {
             if (empty($payload['photo_id']) || !isset($payload['size'])) {
@@ -52,7 +42,7 @@ class PhotoCompressedConsumer
             $photoId = $payload['photo_id'];
             $compressedSize = $payload['size'];
 
-            $this->forcedLog("Starting to process compressed photo", [
+            Log::info("Starting to process compressed photo", [
                 'photo_id' => $photoId,
                 'size'     => $compressedSize,
             ]);
@@ -60,32 +50,32 @@ class PhotoCompressedConsumer
             $photo = $this->photoService->getById($photoId);
 
             if (!$photo) {
-                $this->forcedLog('Photo not found', ['photo_id' => $photoId]);
+                Log::info('Photo not found', ['photo_id' => $photoId]);
                 return;
             }
 
-            $this->forcedLog('Photo entity loaded successfully', ['photo_id' => $photoId]);
+            Log::info('Photo entity loaded successfully', ['photo_id' => $photoId]);
 
             $compressedUrl = $photo->getUrl();
 
-            $this->forcedLog('Determined compressed URL', ['url' => $compressedUrl]);
+            Log::info('Determined compressed URL', ['url' => $compressedUrl]);
 
             $photo->markCompressed($compressedUrl, $compressedSize);
 
             $this->photoService->save($photo);
             broadcast(new PhotoCompressed($photoId,$compressedUrl,$photo->getUserId(),$compressedSize)); 
-            $this->forcedLog('Photo successfully marked as compressed and saved', [
+            Log::info('Photo successfully marked as compressed and saved', [
                 'photo_id'       => $photoId,
                 'compressed_url' => $compressedUrl,
                 'compressed_size'=> $compressedSize,
             ]);
 
-            $this->forcedLog('Processing completed successfully ✓', [
+            Log::info('Processing completed successfully ✓', [
                 'photo_id' => $photoId,
             ]);
         }
         catch (Throwable $e) {
-            $this->forcedLog('ERROR during processing', [
+            Log::info('ERROR during processing', [
                 'payload' => $payload,
                 'error'   => $e->getMessage(),
                 'class'   => get_class($e),

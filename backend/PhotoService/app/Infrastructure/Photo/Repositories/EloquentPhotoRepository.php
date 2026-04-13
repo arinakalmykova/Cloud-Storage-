@@ -188,4 +188,35 @@ class EloquentPhotoRepository implements PhotoRepositoryInterface
             return $photo->toArray();
         })->values()->toArray();
     }
+
+    public function findByUserId(string $userId): array
+    {
+        $models = PhotoModel::where('user_id', $userId)
+            ->with('tags', 'folder')
+            ->get();
+
+        return $models->map(function (PhotoModel $model) {
+            $tags = $model->tags->map(fn($tag) => $tag->name)->toArray();
+            
+            $folderId = $model->folder_id;
+            $folderName = $model->folder?->name;
+            
+            $photo = new Photo(
+                id: $model->id,
+                userId: $model->user_id,
+                fileName: $model->file_name,
+                description: $model->description,
+                url: $model->url,
+                status: new PhotoStatus($model->status),
+                size: $model->size,
+                format: $model->format,
+                createdAt: $model->created_at,
+                folderId: $folderId,
+                folderName: $folderName,
+                tags: $tags,
+            );
+            
+            return $photo;
+        })->toArray();
+    }
 }

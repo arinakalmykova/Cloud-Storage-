@@ -25,7 +25,7 @@ export function PhotoCard({
 
       <div className={styles.photoCardInfo}>
         <p>{photo.title}</p>
-        <p>Размер: {photo.size} байт</p>
+        <p>Размер: {photo.size}</p>
         <p>Формат: {photo.format}</p>
         <p>Дата добавления: {photo.createdAt}</p>
       </div>

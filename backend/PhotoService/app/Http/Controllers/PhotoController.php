@@ -108,13 +108,33 @@ class PhotoController extends Controller
     }
 }
 
-    public function recommend(Request $request): JsonResponse
+   public function recommend(Request $request): JsonResponse
     {
+        // Валидация: файл обязателен и не больше 50 МБ
         $request->validate([
-            'file' => 'required|file|image|mimes:jpg,jpeg,png,gif,webp,avif|max:10240',
+            'file' => 'required|file|max:51200', // размер в КБ
         ]);
 
-        $tmp = $request->file('file')->getPathname();
+        $file = $request->file('file');
+
+        // Разрешённые MIME-типов
+        $allowedMimes = [
+            'image/jpeg',
+            'image/png',
+            'image/webp',
+            'image/avif',
+        ];
+
+        if (!in_array($file->getMimeType(), $allowedMimes)) {
+            return response()->json([
+                'error' => 'Invalid file type',
+                'messages' => [
+                    'file' => ['The file must be an image of type: jpg, jpeg, png, webp, avif.']
+                ]
+            ], 422);
+        }
+
+        $tmp = $file->getPathname();
 
         $mlClient = new MLServiceClient();
         $result = $mlClient->classify($tmp);
@@ -215,10 +235,12 @@ class PhotoController extends Controller
         return response()->json($photos);
     }
 
-    public function getFilters(): JsonResponse
+    public function getFilters(Request $request): JsonResponse
     {
-        $tags = $this->tagService->getTags(); 
-        $colors = $this->colorService->getColors();
+        $userId = $request->user()->getId();
+
+        $tags = $this->tagService->getTags($userId); 
+        $colors = $this->colorService->getColors($userId);
 
         return response()->json([
             'tags' => $tags,

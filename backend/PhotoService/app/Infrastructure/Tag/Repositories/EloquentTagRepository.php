@@ -32,10 +32,10 @@ class EloquentTagRepository implements TagRepositoryInterface
         return $tags;
     }
 
-     public function getTags(): array
+     public function getTagsByUser(string $userId): array
     {
-        return TagModel::all()->map(function (TagModel $model) {
-            return $model->name;
-        })->toArray();
+        return TagModel::whereHas('photos', function ($query) use ($userId) {
+            $query->where('user_id', $userId);
+        })->pluck('name')->unique()->values()->toArray();
     }
 }

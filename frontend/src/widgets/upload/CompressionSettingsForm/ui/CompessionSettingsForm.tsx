@@ -44,25 +44,27 @@ export function CompressionSettingsForm({
 }: Props) {
   let compressionRatio = 1;
   if (file) {
-    switch (format) {
-      case 'webp':
-        compressionRatio = 1 - (0.8 * (100 - quality)) / 100;
-        break;
-      case 'jpeg':
-        compressionRatio = 1 - (0.75 * (100 - quality)) / 100;
-        break;
-      case 'avif':
-        compressionRatio = 1 - (0.85 * (100 - quality)) / 100;
-        break;
-      case 'png':
-        compressionRatio = 1 - (0.3 * (100 - quality)) / 100;
-        break;
-      default:
-        compressionRatio = 1 - (0.7 * (100 - quality)) / 100;
-    }
+    // Базовые коэффициенты сжатия при качестве 80%
+    const baseRatios = {
+      avif: 0.04, // 4% от оригинала
+      webp: 0.07, // 7%
+      jpeg: 0.12, // 12%
+      png: 0.85, // 85%
+    };
+
+    const baseRatio = baseRatios[format as keyof typeof baseRatios] || 0.1;
+
+    // Корректировка на качество (0-100)
+    // При качестве 0 -> размер * 0.5 от базового
+    // При качестве 50 -> размер * 0.75 от базового
+    // При качестве 100 -> размер * 1.0 от базового
+    const qualityFactor = 0.5 + quality / 200;
+
+    compressionRatio = baseRatio * qualityFactor;
   }
+
   const compressedSizeMB = file ? originalSizeMB * compressionRatio : 0;
-  const savedPercent = file ? Math.round((1 - compressedSizeMB / originalSizeMB) * 100) : 0;
+  const savedPercent = file ? Math.round((1 - compressionRatio) * 100) : 0;
 
   const handleTagsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTags(e.target.value);
@@ -183,10 +185,7 @@ export function CompressionSettingsForm({
 
           <div className={styles.uploadFolder}>
             <label>Выберите папку для сохранения:</label>
-            <select
-              value={folderId ?? ''}
-              onChange={(e) => setFolderId(e.target.value || null)}
-            >
+            <select value={folderId ?? ''} onChange={(e) => setFolderId(e.target.value || null)}>
               <option value="">Без папки</option>
               {folders.map((folder) => (
                 <option key={folder.id} value={folder.id}>

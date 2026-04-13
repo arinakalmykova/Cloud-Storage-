@@ -29,8 +29,8 @@ class TagService
         return $tag;
     }
 
-    public function getTags(): array
+    public function getTags(string $userId): array
     {
-        return $this->tags->getTags();
+        return $this->tags->getTagsByUser($userId);
     }
 }

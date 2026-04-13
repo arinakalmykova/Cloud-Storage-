@@ -28,9 +28,6 @@ class AuthServiceIntegrationTest extends TestCase
     {
         parent::setUp();
 
-        // ✅ В интеграционных тестах НЕ отключаем события
-        // Event::fake();  // ← НЕ вызываем! События должны работать
-
         $this->jwtSecret = env('JWT_SECRET', 'testsecret');
         $userRepo = app(\App\Infrastructure\Auth\Repositories\EloquentUserRepository::class);
 

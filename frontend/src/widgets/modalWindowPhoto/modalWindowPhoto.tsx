@@ -30,7 +30,7 @@ export function ModalWindowPhoto({
           <h3>Название: {selectedPhoto.title || selectedPhoto.fileName}</h3>
           <p>Описание: {selectedPhoto.description || 'Нет описания'}</p>
           <p>Формат: {selectedPhoto.format || 'Не указан'}</p>
-          <p>Размер: {selectedPhoto.size ? `${selectedPhoto.size} байт` : 'Не указан'}</p>
+          <p>Размер: {selectedPhoto.size || 'Не указан'}</p>
           <p>Дата добавления: {selectedPhoto.createdAt || 'Не указана'}</p>
           <p>Папка: {selectedPhoto.folder || 'Нет'}</p>
           <p>Теги: {selectedPhoto.tags?.length ? selectedPhoto.tags.join(', ') : 'Нет'}</p>

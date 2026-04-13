@@ -5,7 +5,6 @@ import {
   Image,
   HardDrive,
   Clock,
-  Award,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -36,13 +35,12 @@ export function DashboardPage() {
 
   const navigation = [
     { name: 'Загрузка', path: '/upload', icon: <Upload /> },
-    { name: 'Архив', path: '/files', icon: <FolderOpen /> },
+    { name: 'Архив', path: '/archive', icon: <FolderOpen /> },
     { name: 'Поиск', path: '/search', icon: <Search /> },
   ];
 
   const photoCount = data?.photoCount ?? 0;
   const usedBytes = data?.usedBytes ?? 0;
-  const uploadSpeed = data?.uploadSpeed ?? '—';
   const timeline = data?.timeline ?? [];
 
   if (loading) {
@@ -115,29 +113,7 @@ export function DashboardPage() {
                 {formatBytes(usedBytes)}
               </div>
               <div className={styles.dashboardStatsComment}>
-                <p>Используется из 100 GB</p>
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div
-            className={styles.dashboardStatsItem}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <div className={styles.dashboardStatsHeader}>
-              <div className={styles.dashboardStatsIcon}>
-                <Award />
-              </div>
-              <div className={styles.dashboardStatsInfo}>
-                <h2>Скорость загрузки</h2>
-              </div>
-            </div>
-            <div className={styles.dashboardStatsBody}>
-              <div className={styles.dashboardStatsNumber}>{uploadSpeed}</div>
-              <div className={styles.dashboardStatsComment}>
-                <p>Оценка производительности</p>
+                <p>Используется из 50 GB</p>
               </div>
             </div>
           </motion.div>

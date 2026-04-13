@@ -17,9 +17,9 @@ class ColorService
         return $color;
     }
 
-    public function getColors(): array
+     public function getColors(string $userId): array
     {
-        return $this->color->getColors();
+        return $this->color->getColorsByUser($userId);
     }
 
     public function findByHex(string $hex): ?Color

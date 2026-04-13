@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use ColorThief\ColorThief;
 use App\Domain\PhotoProcessResult;
+use Carbon\Carbon;
 use Imagick;
 
 class PhotoService
@@ -86,7 +87,6 @@ class PhotoService
         $key = 'uploads/' . $photo->getId();
 
         try {
-
             $content = Storage::disk('s3_backend')->get($key);
             if (!$content || strlen($content) === 0) {
                 Log::error('File is empty or not found', ['key' => $key]);
@@ -119,7 +119,7 @@ class PhotoService
             
             
             if ($hexColor) {
-                 $existingColors = $this->colorService->getColors(); 
+                 $existingColors = $this->colorService->getColors($photo->getUserId()); 
                 if (in_array($hexColor, $existingColors)) {
                     $color = $this->colorService->findByHex($hexColor);
                     $colorId = $color->getId();
@@ -201,59 +201,49 @@ class PhotoService
     }
 
 
-    public function getStorageStats(): array
-    {
-        $objects = $this->minioService->listContents('uploads/');
-
-        $totalSize = 0;
-        $photoCount = 0;
-        $timeline = [];
-
-        foreach ($objects as $object) {
-            $size = $object->fileSize();
-            $totalSize += $size;
-            $photoCount++;
-
-            $timestamp = $object->lastModified();
-            $month = date('M', $timestamp); 
-
+public function getStorageStats(string $userId): array
+{
+    $photos = $this->repository->findByUserId($userId);
+    
+    $totalSize = 0;
+    $photoCount = 0;
+    $timeline = [];
+    
+    foreach ($photos as $photo) {
+        $totalSize += $photo->getSize() ?? 0;
+        $photoCount++;
+        
+        $createdAt = $photo->getCreatedAt();
+        if ($createdAt) {
+            $date = Carbon::parse($createdAt); 
+            $month = $date->format('M'); 
             if (!isset($timeline[$month])) {
                 $timeline[$month] = 0;
             }
-
             $timeline[$month]++;
         }
-
-        $totalStorageBytes = 100 * 1024 * 1024 * 1024;
-        $percent = $totalStorageBytes > 0
-            ? round(($totalSize / $totalStorageBytes) * 100, 2)
-            : 0;
-
-        if ($photoCount > 100) {
-            $uploadSpeed = 'Низкая';
-        } elseif ($photoCount > 30) {
-            $uploadSpeed = 'Хорошо';
-        } else {
-            $uploadSpeed = 'Отлично';
-        }
-
-        $timelineFormatted = [];
-        foreach ($timeline as $month => $value) {
-            $timelineFormatted[] = [
-                'month' => $month,
-                'storage' => round($value, 2)
-            ];
-        }
-
-        return [
-            'photoCount' => $photoCount,
-            'usedBytes' => $totalSize,
-            'totalBytes' => $totalStorageBytes,
-            'percent' => $percent,
-            'uploadSpeed' => $uploadSpeed,
-            'timeline' => $timelineFormatted
+    }
+    
+    $totalStorageBytes = 50 * 1024 * 1024 * 1024;
+    $percent = $totalStorageBytes > 0
+        ? round(($totalSize / $totalStorageBytes) * 100, 4)
+        : 0;
+    
+    $timelineFormatted = [];
+    foreach ($timeline as $month => $value) {
+        $timelineFormatted[] = [
+            'month' => $month,
+            'storage' => round($value, 2)
         ];
     }
-
+    
+    return [
+        'photoCount' => $photoCount,
+        'usedBytes' => $totalSize,
+        'totalBytes' => $totalStorageBytes,
+        'percent' => $percent,
+        'uploadSpeed' => '0 MB/s',
+        'timeline' => $timelineFormatted
+    ];
 }
-
+}

@@ -122,6 +122,21 @@ class Photo
         return $this->userId === $userId;
     }
 
+    public function formatFileSize(?int $bytes): string
+    {
+        if ($bytes === null) {
+            return '0 B';
+        }
+        
+        if ($bytes >= 1048576) {
+            return round($bytes / 1048576, 2) . ' MB';
+        }
+        if ($bytes >= 1024) {
+            return round($bytes / 1024, 2) . ' KB';
+        }
+        return $bytes . ' B';
+    }
+
      public function toArray(): array
     {
         return [
@@ -129,7 +144,7 @@ class Photo
             'title' => $this->fileName,
             'description' => $this->description,
             'url' => $this->url,
-            'size' => $this->size,
+            'size' => $this->formatFileSize($this->size),
             'format' => $this->format,
             'folder' => $this->folderId,
             'folderName' => $this->folderName,
