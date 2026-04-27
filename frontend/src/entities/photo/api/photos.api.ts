@@ -1,8 +1,10 @@
-import { API_UPLOAD_URL} from '../../../shared';
-import {apiClient} from '../../../shared';
+import { API_UPLOAD_URL } from '../../../shared';
+import { apiClient } from '../../../shared';
 
 export async function getUploadUrl(token: string, file: File, title: string, description: string) {
-  return apiClient(`${API_UPLOAD_URL}/upload-url`, token, { method: 'POST', body: JSON.stringify({
+  return apiClient(`${API_UPLOAD_URL}/upload-url`, token, {
+    method: 'POST',
+    body: JSON.stringify({
       file: file,
       mimeType: file.type || 'image/jpeg',
       fileName: title,
@@ -18,9 +20,21 @@ export async function markUploaded(
   size: number,
   quality: number,
   format: string,
-  folderId: string | null
+  folderId: string | null,
+  contentType: string | null
 ) {
-  return apiClient(`${API_UPLOAD_URL}/mark-uploaded`, token, { method: 'POST', body: JSON.stringify({ photo_id: photoId, url, size, quality, format, folder_id: folderId }) });
+  return apiClient(`${API_UPLOAD_URL}/mark-uploaded`, token, {
+    method: 'POST',
+    body: JSON.stringify({
+      photo_id: photoId,
+      url,
+      size,
+      quality,
+      format,
+      folder_id: folderId,
+      content_type: contentType,
+    }),
+  });
 }
 
 export async function checkPhotoStatus(token: string, id: string) {
@@ -28,49 +42,95 @@ export async function checkPhotoStatus(token: string, id: string) {
 }
 
 export async function updateTags(token: string, photoId: string, tags: string[]) {
-  return apiClient(`${API_UPLOAD_URL}/${photoId}/tags`, token, { method: 'POST', body: JSON.stringify({ tags }) });
+  return apiClient(`${API_UPLOAD_URL}/${photoId}/tags`, token, {
+    method: 'POST',
+    body: JSON.stringify({ tags }),
+  });
 }
 
-export async function recommendML(token: string, file: File) {
-  const formData = new FormData();
-  formData.append("file", file);
+type RecommendOptions = {
+  format?: string;
+  quality?: number;
+  contentType?: string;
+};
 
+function validateImageFile(file: File) {
   const fileName = file.name.toLowerCase();
-  const supportedFormats = [".jpg", ".jpeg", ".png", ".webp", ".avif"];
+  const supportedFormats = ['.jpg', '.jpeg', '.png', '.webp', '.avif'];
 
-  const isValidFormat = supportedFormats.some((format) =>
-    fileName.endsWith(format)
-  );
+  const isValidFormat = supportedFormats.some((format) => fileName.endsWith(format));
 
   if (!isValidFormat) {
     throw new Error(
-      `Неподдерживаемый формат файла: ${file.name}. Поддерживаются: ${supportedFormats.join(", ")}`
+      `РќРµРїРѕРґРґРµСЂР¶РёРІР°РµРјС‹Р№ С„РѕСЂРјР°С‚ С„Р°Р№Р»Р°: ${file.name}. РџРѕРґРґРµСЂР¶РёРІР°СЋС‚СЃСЏ: ${supportedFormats.join(', ')}`
     );
   }
+}
+
+export async function recommendML(token: string, file: File) {
+  validateImageFile(file);
+
+  const formData = new FormData();
+  formData.append('file', file);
 
   try {
     const res = await fetch(`${API_UPLOAD_URL}/recommend`, {
-      method: "POST",
+      method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
       },
       body: formData,
-      credentials: "include",
+      credentials: 'include',
     });
 
     if (res.status === 302) {
-      const redirectUrl = res.headers.get("Location");
-      throw new Error(`Редирект на: ${redirectUrl}`);
+      const redirectUrl = res.headers.get('Location');
+      throw new Error(`Р РµРґРёСЂРµРєС‚ РЅР°: ${redirectUrl}`);
     }
 
     if (!res.ok) {
       const errorText = await res.text();
-      throw new Error(`Ошибка ML-рекомендации: ${res.status} - ${errorText}`);
+      throw new Error(`РћС€РёР±РєР° ML-СЂРµРєРѕРјРµРЅРґР°С†РёРё: ${res.status} - ${errorText}`);
     }
 
     return res.json();
   } catch (error) {
-    console.error("Ошибка запроса:", error);
+    console.error('РћС€РёР±РєР° Р·Р°РїСЂРѕСЃР°:', error);
+    throw error;
+  }
+}
+
+export async function estimateCompressionPreview(
+  token: string,
+  file: File,
+  options: Required<RecommendOptions>
+) {
+  validateImageFile(file);
+
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('format', options.format);
+  formData.append('quality', String(options.quality));
+  formData.append('content_type', options.contentType);
+
+  try {
+    const res = await fetch(`${API_UPLOAD_URL}/estimate`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+      credentials: 'include',
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`РћС€РёР±РєР° РѕС†РµРЅРєРё СЃР¶Р°С‚РёСЏ: ${res.status} - ${errorText}`);
+    }
+
+    return res.json();
+  } catch (error) {
+    console.error('РћС€РёР±РєР° РѕС†РµРЅРєРё СЃР¶Р°С‚РёСЏ:', error);
     throw error;
   }
 }
@@ -80,7 +140,10 @@ export async function deletePhoto(token: string, photoId: string) {
 }
 
 export async function renamePhoto(token: string, photoId: string, newTitle: string) {
-  return apiClient(`${API_UPLOAD_URL}/${photoId}`, token, { method: 'PUT', body: JSON.stringify({ title: newTitle }) });
+  return apiClient(`${API_UPLOAD_URL}/${photoId}`, token, {
+    method: 'PUT',
+    body: JSON.stringify({ title: newTitle }),
+  });
 }
 
 export async function recentAddPhotos(token: string) {

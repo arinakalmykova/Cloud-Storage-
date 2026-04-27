@@ -21,6 +21,8 @@ class Photo
     private ?string $folderId = null;
     private ?string $folderName = null;
     private ?string $createdAt = null;
+    private ?string $contentType = null;
+    private ?string $dominantColor = null;
 
     public function __construct(
     string $id, 
@@ -35,6 +37,7 @@ class Photo
     ?string $folderId = null,
     ?string $folderName = null,
     ?array $tags,
+    ?string $contentType = null,
     
     ) {
         $this->id = $id;
@@ -49,6 +52,7 @@ class Photo
         $this->format = $format;
         $this->createdAt = $createdAt;
         $this->tags = $tags;
+        $this->contentType = $contentType;
     }
 
     public function markPendingUpload(string $key, string $presignedUrl): void
@@ -58,13 +62,21 @@ class Photo
         $this->status = PhotoStatus::pendingUpload();
     }
 
-    public function markUploaded(string $url, int $size, ?int $quality = null, ?string $format = null, ?string $folder_id = null): void  
+    public function markUploaded(
+        string $url,
+        int $size,
+        ?int $quality = null,
+        ?string $format = null,
+        ?string $folder_id = null,
+        ?string $contentType = null
+    ): void
     {
         $this->url = $url;
         $this->size = $size;
         $this->quality = $quality;
         $this->format = $format;
         $this->folderId = $folder_id;
+        $this->contentType = $contentType;
         $this->status = PhotoStatus::uploaded();
     }
 
@@ -116,6 +128,7 @@ class Photo
     public function getFolderName(): ?string { return $this->folderName; }
     public function getCreatedAt(): ?string { return $this->createdAt; }
     public function getTags(): ?array { return $this->tags; }
+    public function getContentType(): ?string { return $this->contentType; }
 
     public function isOwnedBy(string $userId): bool
     {
@@ -149,7 +162,8 @@ class Photo
             'folder' => $this->folderId,
             'folderName' => $this->folderName,
             'createdAt' => $this->createdAt,
-            'tags' => $this->tags
+            'tags' => $this->tags,
+            'contentType' => $this->contentType,
         ];
     }
 }

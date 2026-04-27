@@ -43,7 +43,7 @@ class ImageMagickCompressor implements CompressorServiceInterface
                 
                 $encoder = match (strtolower($format)) {
                     'jpg', 'jpeg' => new JpegEncoder(quality: $quality->value(), progressive: true, strip: true),
-                    'png' => new PngEncoder(quality: $quality->value()),
+                    'png' => new PngEncoder(),
                     'webp' => new WebpEncoder(quality: $quality->value(), strip: true),
                     default => throw new RuntimeException("Unsupported format: {$format}")
                 };

@@ -5,6 +5,7 @@ import { useAppSelector } from '../../app';
 export function usePhotoFilters() {
   const [tags, setTags] = useState<string[]>([]);
   const [colors, setColors] = useState<string[]>([]);
+  const [contentTypes, setContentTypes] = useState<string[]>([]);
   const token = useAppSelector((state) => state.auth.token);
   useEffect(() => {
     const fetchFilters = async () => {
@@ -12,10 +13,11 @@ export function usePhotoFilters() {
       const data = await getFilters(token);
       setTags(data.tags);
       setColors(data.colors);
+      setContentTypes(data.content_types ?? []);
     };
 
     fetchFilters();
   }, []);
 
-  return { tags, colors };
+  return { tags, colors, contentTypes };
 }

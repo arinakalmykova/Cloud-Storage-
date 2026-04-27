@@ -7,7 +7,8 @@ export function usePhotoUpload(
   title: string,
   description: string,
   tagList: string[] = [],
-  folderId: string | null
+  folderId: string | null,
+  contentType: string | null
 ) {
   const [uploading, setUploading] = useState(false);
   const [status, setStatus] = useState('');
@@ -62,7 +63,8 @@ export function usePhotoUpload(
         file.size,
         quality,
         format,
-        folderId
+        folderId,
+        contentType
       );
 
       setStatus('Фото отправлено на сжатие. Ожидаем подтверждения...');

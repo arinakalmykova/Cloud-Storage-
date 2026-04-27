@@ -6,4 +6,5 @@ export interface Filters {
   dateFrom: string;
   dateTo: string;
   format: string;
+  content_type: string;
 }

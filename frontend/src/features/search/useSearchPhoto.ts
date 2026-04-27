@@ -11,6 +11,7 @@ interface SearchFilters {
   dateFrom?: string;
   dateTo?: string;
   format?: string;
+  content_type?: string;
 }
 
 export function useSearchPhotos() {

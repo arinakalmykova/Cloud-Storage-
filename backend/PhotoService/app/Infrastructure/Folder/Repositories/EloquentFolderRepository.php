@@ -55,7 +55,7 @@ class EloquentFolderRepository implements FolderRepositoryInterface
         }
 
         // Создаём Domain сущность Photo
-        $photo = new \App\Domain\Photo\Entities\Photo(
+        $photo = new Photo(
             id: $model->id,
             userId: $model->user_id,
             fileName: $model->file_name,
@@ -70,13 +70,12 @@ class EloquentFolderRepository implements FolderRepositoryInterface
             tags: $model->tags->pluck('name')->toArray(),
         );
 
-        // Используем метод сущности для форматирования размера
         return [
             'id' => $photo->getId(),
             'title' => $photo->getFileName(),
             'description' => $photo->getDescription(),
             'url' => $photo->getUrl(),
-            'size' => $photo->formatFileSize($photo->getSize()), // ← метод из сущности
+            'size' => $photo->formatFileSize($photo->getSize()), 
             'format' => $photo->getFormat(),
             'folder' => $photo->getFolderName(),
             'createdAt' => $photo->getCreatedAt(),
@@ -96,5 +95,10 @@ class EloquentFolderRepository implements FolderRepositoryInterface
         FolderModel::where('user_id', $userId)
             ->where('id', $folderId)
             ->update(['name' => $newName]);
+    }
+
+    public function findById(string $id): Folder|null
+    {
+        return FolderModel::find($id);
     }
 }

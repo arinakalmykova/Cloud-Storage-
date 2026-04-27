@@ -1,6 +1,7 @@
 import { Settings } from 'lucide-react';
 import { Input } from '../../../../shared';
 import type { Folder } from '../../../../entities/folder/model/types';
+import { formatsForContentType } from '../../../../features/photo-upload/lib/compressionProfiles';
 import styles from '../../../../app/styles/CompressionSettingsForm.module.css';
 
 type Props = {
@@ -17,7 +18,10 @@ type Props = {
   tags: string;
   tagList: string[];
   file: File | null;
+  contentType: string;
   originalSizeMB: number;
+  estimatedSizeBytes: number | null;
+  savedPercent: number | null;
   folders: Folder[];
   folderId: string | null;
   setFolderId: (v: string | null) => void;
@@ -36,35 +40,20 @@ export function CompressionSettingsForm({
   setTagsList,
   tags,
   tagList,
+  contentType,
   originalSizeMB,
+  estimatedSizeBytes,
+  savedPercent,
   folders,
-  file,
   folderId,
   setFolderId,
 }: Props) {
-  let compressionRatio = 1;
-  if (file) {
-    // Базовые коэффициенты сжатия при качестве 80%
-    const baseRatios = {
-      avif: 0.04, // 4% от оригинала
-      webp: 0.07, // 7%
-      jpeg: 0.12, // 12%
-      png: 0.85, // 85%
-    };
-
-    const baseRatio = baseRatios[format as keyof typeof baseRatios] || 0.1;
-
-    // Корректировка на качество (0-100)
-    // При качестве 0 -> размер * 0.5 от базового
-    // При качестве 50 -> размер * 0.75 от базового
-    // При качестве 100 -> размер * 1.0 от базового
-    const qualityFactor = 0.5 + quality / 200;
-
-    compressionRatio = baseRatio * qualityFactor;
-  }
-
-  const compressedSizeMB = file ? originalSizeMB * compressionRatio : 0;
-  const savedPercent = file ? Math.round((1 - compressionRatio) * 100) : 0;
+  const availableFormats = formatsForContentType(contentType);
+  const activeFormat = format || availableFormats[0];
+  const isLosslessFormat = activeFormat === 'png';
+  const activeQuality = isLosslessFormat ? 100 : Math.max(0, Math.min(100, quality || 0));
+  const estimatedSizeMB =
+    typeof estimatedSizeBytes === 'number' ? estimatedSizeBytes / (1024 * 1024) : null;
 
   const handleTagsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTags(e.target.value);
@@ -84,6 +73,7 @@ export function CompressionSettingsForm({
   const removeTag = (tag: string) => {
     setTagsList(tagList.filter((t) => t !== tag));
   };
+
   return (
     <div className={styles.uploadLoaded}>
       <div className={styles.uploadContent}>
@@ -120,11 +110,12 @@ export function CompressionSettingsForm({
           <div className={styles.formGroup}>
             <div className={styles.formGroupText}>
               <label>Формат сжатия:</label>
-              <select value={format} onChange={(e) => setFormat(e.target.value)}>
-                <option value="webp">WebP</option>
-                <option value="jpeg">JPEG</option>
-                <option value="avif">AVIF</option>
-                <option value="png">PNG</option>
+              <select value={activeFormat} onChange={(e) => setFormat(e.target.value)}>
+                {availableFormats.map((option) => (
+                  <option key={option} value={option}>
+                    {option.toUpperCase()}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -132,13 +123,15 @@ export function CompressionSettingsForm({
           <div className={styles.formGroup}>
             <div className={styles.formGroupText}>
               <label htmlFor="quality">Качество</label>
-              <span>{quality}%</span>
+              <span>{isLosslessFormat ? '100%' : `${activeQuality}%`}</span>
             </div>
             <Input
+              id="quality"
               type="range"
               min={0}
               max={100}
-              value={quality}
+              value={activeQuality}
+              disabled={isLosslessFormat}
               onChange={(e) => setQuality(Number(e.target.value))}
               style={{
                 width: '100%',
@@ -146,15 +139,15 @@ export function CompressionSettingsForm({
                 background: `linear-gradient(
                   to right,
                   white 0%,
-                  white ${quality}%,
-                  #334155 ${quality}%,
+                  white ${activeQuality}%,
+                  #334155 ${activeQuality}%,
                   #334155 100%
                 )`,
               }}
             />
             <div className={styles.formGroupText}>
-              <span>Маленький размер</span>
-              <span>Высокое качество</span>
+              <span>{isLosslessFormat ? 'PNG сохраняется без потерь' : 'Меньший размер'}</span>
+              <span>{isLosslessFormat ? 'Качество фиксировано' : 'Более высокое качество'}</span>
             </div>
           </div>
 
@@ -175,7 +168,7 @@ export function CompressionSettingsForm({
                   <span key={tag} className={styles.tag}>
                     {tag}{' '}
                     <button type="button" onClick={() => removeTag(tag)}>
-                      ×
+                      X
                     </button>
                   </span>
                 ))}
@@ -201,12 +194,12 @@ export function CompressionSettingsForm({
               <span>{originalSizeMB.toFixed(2)} MB</span>
             </div>
             <div className={styles.uploadSizesText}>
-              <p>Примерный размер после сжатия:</p>
-              <span>{compressedSizeMB.toFixed(2)} MB</span>
+              <p>Оценка размера после сжатия:</p>
+              <span>{estimatedSizeMB !== null ? `${estimatedSizeMB.toFixed(2)} MB` : '—'}</span>
             </div>
             <div className={styles.uploadSizesText}>
-              <p>Вы экономите:</p>
-              <span>{savedPercent}%</span>
+              <p>Ожидаемая экономия:</p>
+              <span>{typeof savedPercent === 'number' ? `${savedPercent}%` : '—'}</span>
             </div>
           </div>
         </form>

@@ -17,6 +17,7 @@ Route::middleware('jwt')->group(function () {
     Route::post('/photos/mark-uploaded', [PhotoController::class, 'markUploaded']);
     Route::post('/photos/{id}/tags', [PhotoController::class, 'updateTags']);
     Route::post('/photos/recommend',[PhotoController::class, 'recommend']);
+    Route::post('/photos/estimate',[PhotoController::class, 'estimateCompression']);
     Route::get('/folders',[FolderController::class, 'getFolders']);
     Route::post('/folders',[FolderController::class, 'createFolder']);
     Route::delete('/photos/{id}', [PhotoController::class, 'deletePhoto']);
@@ -41,6 +42,5 @@ Route::middleware('jwt')->group(function () {
         return Broadcast::auth($request);
     });
 });
-
 
 

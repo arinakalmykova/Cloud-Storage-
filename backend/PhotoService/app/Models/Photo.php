@@ -18,6 +18,7 @@ class Photo extends Model
         'file_name',
         'description',
         'format',
+        'content_type',
         'quality',
         'size',
         'url',

@@ -200,6 +200,11 @@ class PhotoService
         return $this->repository->search($userId, $query, $filters);
     }
 
+    public function getContentTypes(string $userId): array
+    {
+        return $this->repository->getContentTypes($userId);
+    }
+
 
 public function getStorageStats(string $userId): array
 {

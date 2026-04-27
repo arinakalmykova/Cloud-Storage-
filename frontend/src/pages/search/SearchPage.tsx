@@ -25,8 +25,9 @@ export function SearchPage() {
     dateFrom: '',
     dateTo: '',
     format: '',
+    content_type: '',
   });
-  const { tags, colors } = usePhotoFilters();
+  const { tags, colors, contentTypes } = usePhotoFilters();
   useEffect(() => {
     searchPhotos({ query: searchQuery, filters });
   }, []);
@@ -70,6 +71,7 @@ export function SearchPage() {
             setFilters={setFilters}
             availableTags={tags}
             availableColors={colors}
+            availableContentTypes={contentTypes}
           />
         )}
 

@@ -17,14 +17,14 @@ class FolderService
     ) {}
 
 
-    public function getById(string $id): ?Photo
+    public function getById(string $id): ?Folder
     {
-        return $this->repository->findById($id);
+        return $this->folderRepository->findById($id);
     }
     
-    public function save(Photo $photo): void
+    public function save( Folder $folder): void
     {
-        $this->repository->save($photo);
+        $this->folderRepository->save($folder);
     }
 
 

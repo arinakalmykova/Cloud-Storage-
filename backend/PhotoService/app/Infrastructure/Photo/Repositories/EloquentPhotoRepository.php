@@ -24,6 +24,7 @@ class EloquentPhotoRepository implements PhotoRepositoryInterface
                 'quality' => $photo->getQuality(),
                 'description' => $photo->getDescription(),
                 'format' => $photo->getFormat(),
+                'content_type' => $photo->getContentType(),
                 'folder_id' => $photo->getFolderId() 
             ]
         );
@@ -58,6 +59,7 @@ class EloquentPhotoRepository implements PhotoRepositoryInterface
             folderId: $folderId,     
             folderName: $folderName, 
             tags: $tags,
+            contentType: $model->content_type,
         );
     }
 
@@ -107,6 +109,7 @@ class EloquentPhotoRepository implements PhotoRepositoryInterface
                     folderId: $folderId,    
                     folderName: $folderName,  
                     tags: $tags,
+                    contentType: $model->content_type,
                 );
                 
                 return $photo->toArray(); 
@@ -165,6 +168,10 @@ class EloquentPhotoRepository implements PhotoRepositoryInterface
             $qb->where('format', $filters['format']);
         }
 
+        if (!empty($filters['content_type'])) {
+            $qb->where('content_type', $filters['content_type']);
+        }
+
         $models = $qb->with('tags', 'colors', 'folder')->get();
 
         return $models->map(function (PhotoModel $model) {
@@ -184,6 +191,7 @@ class EloquentPhotoRepository implements PhotoRepositoryInterface
                 folderId: $folderId,      
                 folderName: $folderName,  
                 tags: $model->tags->map(fn($tag) => $tag->name)->toArray(),
+                contentType: $model->content_type,
             );
             return $photo->toArray();
         })->values()->toArray();
@@ -214,9 +222,20 @@ class EloquentPhotoRepository implements PhotoRepositoryInterface
                 folderId: $folderId,
                 folderName: $folderName,
                 tags: $tags,
+                contentType: $model->content_type,
             );
             
             return $photo;
         })->toArray();
+    }
+
+    public function getContentTypes(string $userId): array
+    {
+        return PhotoModel::where('user_id', $userId)
+            ->whereNotNull('content_type')
+            ->distinct()
+            ->orderBy('content_type')
+            ->pluck('content_type')
+            ->toArray();
     }
 }

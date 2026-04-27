@@ -1,4 +1,4 @@
-import { useReducer } from 'react';
+import { useEffect, useReducer, useRef } from 'react';
 import { motion } from 'framer-motion';
 import {
   usePhotoUpload,
@@ -7,6 +7,10 @@ import {
   useAuth,
   useFolders,
 } from '../../features';
+import {
+  formatsForContentType,
+  normalizeQualityForFormat,
+} from '../../features/photo-upload/lib/compressionProfiles';
 import {
   UploadFileBlock,
   CompressionSettingsForm,
@@ -26,6 +30,9 @@ type UploadState = {
   quality: number;
   format: string;
   folderId: string | null;
+  contentType: string;
+  estimatedSizeBytes: number | null;
+  savedPercent: number | null;
 };
 
 type UploadAction =
@@ -37,6 +44,9 @@ type UploadAction =
   | { type: 'SET_QUALITY'; quality: number }
   | { type: 'SET_FORMAT'; format: string }
   | { type: 'SET_FOLDER_ID'; folderId: string | null }
+  | { type: 'SET_CONTENT_TYPE'; contentType: string }
+  | { type: 'SET_ESTIMATED_SIZE_BYTES'; estimatedSizeBytes: number | null }
+  | { type: 'SET_SAVED_PERCENT'; savedPercent: number | null }
   | { type: 'RESET_UPLOAD' };
 
 function uploadReducer(state: UploadState, action: UploadAction): UploadState {
@@ -57,8 +67,28 @@ function uploadReducer(state: UploadState, action: UploadAction): UploadState {
       return { ...state, format: action.format };
     case 'SET_FOLDER_ID':
       return { ...state, folderId: action.folderId };
+    case 'SET_CONTENT_TYPE':
+      return { ...state, contentType: action.contentType };
+    case 'SET_ESTIMATED_SIZE_BYTES':
+      return { ...state, estimatedSizeBytes: action.estimatedSizeBytes };
+    case 'SET_SAVED_PERCENT':
+      return { ...state, savedPercent: action.savedPercent };
     case 'RESET_UPLOAD':
-      return { ...state, file: null, previewUrl: null, title: '', description: '', tags: '', tagList: [], quality: 0, format: '', folderId: null };
+      return {
+        ...state,
+        file: null,
+        previewUrl: null,
+        title: '',
+        description: '',
+        tags: '',
+        tagList: [],
+        quality: 0,
+        format: '',
+        folderId: null,
+        contentType: '',
+        estimatedSizeBytes: null,
+        savedPercent: null,
+      };
     default:
       return state;
   }
@@ -79,8 +109,13 @@ export function UploadPage() {
     quality: 0,
     format: '',
     folderId: null,
+    contentType: '',
+    estimatedSizeBytes: null,
+    savedPercent: null,
   });
 
+  const skipManualEstimateRef = useRef(false);
+  const manualEstimateTimeoutRef = useRef<number | null>(null);
   const originalSizeMB = state.file ? state.file.size / (1024 * 1024) : 0;
 
   const {
@@ -95,11 +130,28 @@ export function UploadPage() {
     setStatus,
     setFinalUrl,
     setCompressedSize,
-  } = usePhotoUpload(token, state.title, state.description, state.tagList, state.folderId);
+  } = usePhotoUpload(
+    token,
+    state.title,
+    state.description,
+    state.tagList,
+    state.folderId,
+    state.contentType || null
+  );
 
   usePhotoCompressionEcho({ userId, token, photoId, onDone: onCompressionDone });
 
-  const { MLQuality, MLFormat, run: getMLRecommendation, loading, error } = useMLRecommendation(token);
+  const {
+    MLQuality,
+    MLFormat,
+    MLContentType,
+    estimatedSizeBytes,
+    savedPercent,
+    recommend: getMLRecommendation,
+    estimate: estimateCompression,
+    loading,
+    error,
+  } = useMLRecommendation(token);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0] || null;
@@ -111,16 +163,116 @@ export function UploadPage() {
     dispatch({ type: 'SET_FILE', file: selectedFile, previewUrl: preview });
     dispatch({ type: 'SET_TITLE', title: selectedFile.name.replace(/\.[^/.]+$/, '') });
 
-    // Сбрасываем состояние загрузки
     setFinalUrl(null);
     setCompressedSize(0);
     setUploading(false);
     setStatus('');
+    dispatch({ type: 'SET_ESTIMATED_SIZE_BYTES', estimatedSizeBytes: null });
+    dispatch({ type: 'SET_SAVED_PERCENT', savedPercent: null });
 
     const result = await getMLRecommendation(selectedFile);
-    if (result?.quality) dispatch({ type: 'SET_QUALITY', quality: result.quality });
-    if (result?.format) dispatch({ type: 'SET_FORMAT', format: result.format });
+    const detectedContentType = result?.content_type ?? '';
+    const recommendedFormat = result?.format ?? '';
+    const recommendedQuality =
+      typeof result?.quality === 'number' && recommendedFormat
+        ? normalizeQualityForFormat(result.quality, recommendedFormat, detectedContentType)
+        : 0;
+
+    skipManualEstimateRef.current = true;
+
+    dispatch({ type: 'SET_CONTENT_TYPE', contentType: detectedContentType });
+
+    if (recommendedFormat) {
+      dispatch({ type: 'SET_FORMAT', format: recommendedFormat });
+    }
+
+    if (recommendedQuality) {
+      dispatch({ type: 'SET_QUALITY', quality: recommendedQuality });
+    }
+
+    dispatch({
+      type: 'SET_ESTIMATED_SIZE_BYTES',
+      estimatedSizeBytes: typeof result?.estimated_size === 'number' ? result.estimated_size : null,
+    });
+    dispatch({
+      type: 'SET_SAVED_PERCENT',
+      savedPercent: typeof result?.saved_percent === 'number' ? result.saved_percent : null,
+    });
   };
+
+  useEffect(() => {
+    return () => {
+      if (manualEstimateTimeoutRef.current !== null) {
+        window.clearTimeout(manualEstimateTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!state.contentType) {
+      return;
+    }
+
+    const allowedFormats = formatsForContentType(state.contentType);
+
+    if (!state.format || !allowedFormats.includes(state.format as (typeof allowedFormats)[number])) {
+      dispatch({ type: 'SET_FORMAT', format: allowedFormats[0] });
+    }
+  }, [state.contentType, state.format]);
+
+  useEffect(() => {
+    if (!state.format) {
+      return;
+    }
+
+    const normalizedQuality = normalizeQualityForFormat(
+      state.quality || 100,
+      state.format,
+      state.contentType
+    );
+
+    if (normalizedQuality !== state.quality) {
+      dispatch({ type: 'SET_QUALITY', quality: normalizedQuality });
+    }
+  }, [state.quality, state.format, state.contentType]);
+
+  useEffect(() => {
+    if (!state.file || !state.format || !state.contentType) {
+      return;
+    }
+
+    if (skipManualEstimateRef.current) {
+      skipManualEstimateRef.current = false;
+      return;
+    }
+
+    if (manualEstimateTimeoutRef.current !== null) {
+      window.clearTimeout(manualEstimateTimeoutRef.current);
+    }
+
+    manualEstimateTimeoutRef.current = window.setTimeout(async () => {
+      const result = await estimateCompression(state.file!, {
+        format: state.format,
+        quality: state.quality,
+        contentType: state.contentType,
+      });
+
+      dispatch({
+        type: 'SET_ESTIMATED_SIZE_BYTES',
+        estimatedSizeBytes: typeof result?.estimated_size === 'number' ? result.estimated_size : null,
+      });
+      dispatch({
+        type: 'SET_SAVED_PERCENT',
+        savedPercent: typeof result?.saved_percent === 'number' ? result.saved_percent : null,
+      });
+    }, 450);
+
+    return () => {
+      if (manualEstimateTimeoutRef.current !== null) {
+        window.clearTimeout(manualEstimateTimeoutRef.current);
+      }
+    };
+  }, [estimateCompression, state.contentType, state.file, state.format, state.quality]);
 
   return (
     <div className={styles.uploadPage}>
@@ -131,7 +283,7 @@ export function UploadPage() {
           animate={{ opacity: 1, y: 0 }}
         >
           <h1>Загрузка фото</h1>
-          <p>Загрузите ваши фото и оптимизируйте их с использованием умного сжатия</p>
+          <p>Загружайте ваши фото и оптимизируйте их с использованием умного сжатия</p>
         </motion.div>
 
         <div className={styles.uploadInfo}>
@@ -156,6 +308,9 @@ export function UploadPage() {
               folderId: state.folderId,
               setFolderId: (id: string | null) => dispatch({ type: 'SET_FOLDER_ID', folderId: id }),
               file: state.file,
+              contentType: state.contentType,
+              estimatedSizeBytes: state.estimatedSizeBytes ?? estimatedSizeBytes,
+              savedPercent: state.savedPercent ?? savedPercent,
             }}
           />
 
@@ -186,7 +341,13 @@ export function UploadPage() {
             previewUrl={state.previewUrl}
           />
 
-          <MLFeaturesPanel MLFormat={MLFormat} MLQuality={MLQuality} loading={loading} error={error}  />
+          <MLFeaturesPanel
+            MLFormat={MLFormat}
+            MLQuality={MLQuality}
+            MLContentType={MLContentType}
+            loading={loading}
+            error={error}
+          />
         </div>
       </div>
     </div>

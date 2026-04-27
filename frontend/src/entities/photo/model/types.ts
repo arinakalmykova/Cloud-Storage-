@@ -8,4 +8,5 @@ export interface Photo {
   createdAt: string;
   folder?: string | null;
   tags?: string[];
+  contentType?: string | null;
 }

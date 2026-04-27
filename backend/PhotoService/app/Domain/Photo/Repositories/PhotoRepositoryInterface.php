@@ -12,6 +12,7 @@ interface PhotoRepositoryInterface
     public function delete(Photo $photo): void;
     public function findRecentByUserId(string $userId, int $limit = 10): array;
     public function search( string $userId, ?string $query, array $filters): array;
+    public function getContentTypes(string $userId): array;
+    public function findbyUserId(string $userId): array;
 }
-
 

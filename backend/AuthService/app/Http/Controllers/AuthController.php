@@ -180,7 +180,6 @@ class AuthController extends Controller
                 ], 400);
             }
 
-            // ✅ Добавляем проверку на null
             $user = $this->authService->getUserFromToken($token);
 
             if (!$user) {

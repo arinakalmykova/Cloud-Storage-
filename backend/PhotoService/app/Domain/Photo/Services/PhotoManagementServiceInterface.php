@@ -14,5 +14,8 @@ interface PhotoManagementServiceInterface
     
     public function getTemporaryUrl(string $key, int $expires = 3600): string;
 
+
     public function listContents(string $prefix = ''): array;
+
+    public function deleteFile(string $key): void;
 }

@@ -8,11 +8,29 @@ interface Props {
   setFilters: React.Dispatch<React.SetStateAction<Filters>>;
   availableTags: string[];
   availableColors: string[];
+  availableContentTypes: string[];
 }
 
-export function FilterPanel({ filters, setFilters, availableTags, availableColors }: Props) {
+const contentTypeLabels: Record<string, string> = {
+  photo: 'Фотографическое изображение',
+  text_graphics: 'Текст/графика',
+  illustration: 'Иллюстрация',
+  ui_screenshot: 'Изображение интерфейса',
+  mixed: 'Комбинированное изображение',
+};
+
+const defaultContentTypes = ['photo', 'text_graphics', 'illustration', 'ui_screenshot', 'mixed'];
+
+export function FilterPanel({
+  filters,
+  setFilters,
+  availableTags,
+  availableColors,
+  availableContentTypes,
+}: Props) {
   const [selectedTags, setSelectedTags] = useState<string[]>(filters.tags || []);
   const [selectedColors, setSelectedColors] = useState<string[]>(filters.dominant_color || []);
+  const imageTypes = availableContentTypes.length > 0 ? availableContentTypes : defaultContentTypes;
 
   useEffect(() => {
     setFilters({ ...filters, tags: selectedTags, dominant_color: selectedColors });
@@ -93,6 +111,17 @@ export function FilterPanel({ filters, setFilters, availableTags, availableColor
         value={filters.dateTo}
         onChange={(e) => setFilters({ ...filters, dateTo: e.target.value })}
       />
+      <select
+        value={filters.content_type}
+        onChange={(e) => setFilters({ ...filters, content_type: e.target.value })}
+      >
+        <option value="">Все типы изображений</option>
+        {imageTypes.map((contentType) => (
+          <option key={contentType} value={contentType}>
+            {contentTypeLabels[contentType] ?? contentType}
+          </option>
+        ))}
+      </select>
       <select
         value={filters.format}
         onChange={(e) => setFilters({ ...filters, format: e.target.value })}

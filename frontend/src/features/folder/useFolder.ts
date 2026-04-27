@@ -7,19 +7,24 @@ export function useFolders(token: string) {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchFolders = useCallback(() => {
-    if (!token) return;
-    setLoading(true);
-    getFolders(token)
-      .then((data) => {
-        setFolders(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setError('Ошибка при загрузке папок');
-        setLoading(false);
-      });
+  const fetchFolders = useCallback(async () => {
+    if (!token) {
+      setFolders([]);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await getFolders(token);
+      setFolders(data);
+    } catch (err) {
+      console.error(err);
+      setError('РћС€РёР±РєР° РїСЂРё Р·Р°РіСЂСѓР·РєРµ РїР°РїРѕРє');
+    } finally {
+      setLoading(false);
+    }
   }, [token]);
 
   useEffect(() => {
@@ -28,50 +33,65 @@ export function useFolders(token: string) {
 
   const createFolderHook = async (name: string) => {
     if (!token) return;
+
     try {
-      const newFolder = await createFolder(token, name);
-      setFolders((prev) => [...prev, newFolder]);
+      setError(null);
+      await createFolder(token, name);
+      await fetchFolders();
+
       return {
         success: true,
-        message: 'Папка успешно создана',
+        message: 'РџР°РїРєР° СѓСЃРїРµС€РЅРѕ СЃРѕР·РґР°РЅР°',
       };
     } catch (err) {
       console.error(err);
-      setError('Ошибка при создании папки');
+      setError('РћС€РёР±РєР° РїСЂРё СЃРѕР·РґР°РЅРёРё РїР°РїРєРё');
     }
   };
 
   const deleteFolderHook = async (folderId: string) => {
     if (!token) return;
+
     try {
+      setError(null);
       await deleteFolder(token, folderId);
-      setFolders((prev) => prev.filter((folder) => folder.id !== folderId));
+      await fetchFolders();
+
       return {
         success: true,
-        message: 'Папка успешно удалена',
-      }
+        message: 'РџР°РїРєР° СѓСЃРїРµС€РЅРѕ СѓРґР°Р»РµРЅР°',
+      };
     } catch (err) {
       console.error(err);
-      setError('Ошибка при удалении папки');
+      setError('РћС€РёР±РєР° РїСЂРё СѓРґР°Р»РµРЅРёРё РїР°РїРєРё');
     }
   };
 
   const renameFolderHook = async (folderId: string, newName: string) => {
     if (!token) return;
+
     try {
+      setError(null);
       await renameFolder(token, folderId, newName);
-      setFolders((prev) =>
-        prev.map((folder) => (folder.id === folderId ? { ...folder, name: newName } : folder))
-      );
+      await fetchFolders();
+
       return {
         success: true,
-        message: 'Папка успешно переименована',
-      }
+        message: 'РџР°РїРєР° СѓСЃРїРµС€РЅРѕ РїРµСЂРµРёРјРµРЅРѕРІР°РЅР°',
+      };
     } catch (err) {
       console.error(err);
-      setError('Ошибка при переименовании папки');
+      setError('РћС€РёР±РєР° РїСЂРё РїРµСЂРµРёРјРµРЅРѕРІР°РЅРёРё РїР°РїРєРё');
     }
   };
 
-  return { folders, loading, error, createFolderHook, deleteFolderHook, renameFolderHook };
+  return {
+    folders,
+    loading,
+    error,
+    createFolderHook,
+    deleteFolderHook,
+    renameFolderHook,
+    fetchFolders,
+  };
 }

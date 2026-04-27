@@ -9,6 +9,7 @@ export {
   checkPhotoStatus,
   updateTags,
   recommendML,
+  estimateCompressionPreview,
   deletePhoto,
   renamePhoto,
   recentAddPhotos,

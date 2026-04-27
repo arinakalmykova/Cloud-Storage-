@@ -44,7 +44,6 @@ class JwtMiddleware
                 return response()->json(['error' => 'Invalid or expired token'], 401);
             }
 
-            // Привязываем пользователя к запросу (правильный способ для Laravel)
             $request->setUserResolver(function () use ($user) {
                 return $user;
             });
