@@ -8,39 +8,108 @@ use Symfony\Component\Process\Process;
 
 class CompressionRecommendationService
 {
-    private const VISUAL_WEIGHT = 0.92;
-    private const SIZE_WEIGHT = 0.08;
+    /**
+     * Коэффициенты многокритериальной оценки.
+     *
+     * α = 0.9 — вклад визуального качества.
+     * β = 0.1 — вклад уменьшения размера.
+     */
+    private const VISUAL_WEIGHT = 0.9;
+    private const SIZE_WEIGHT = 0.1;
+
+    /**
+     * Минимально допустимое perceptual quality.
+     *
+     * SSIM >= 0.95 считается visually acceptable.
+     */
+    private const MIN_VISUAL_SCORE = 0.95;
+
+    /**
+     * Параллельная обработка кандидатов.
+     */
     private const MAX_PARALLEL_PROCESSES = 4;
+
+    /**
+     * Интервал polling процессов.
+     */
     private const POLL_INTERVAL_MICROSECONDS = 10000;
+
+    /**
+     * Таймаут оценки кандидата.
+     */
     private const PROCESS_TIMEOUT_SECONDS = 30;
+
+    /**
+     * Шаг первичного перебора quality.
+     */
+    private const INITIAL_QUALITY_STEP = 5;
+
+    /**
+     * Шаг refinement-поиска.
+     */
     private const REFINEMENT_STEP = 2;
+
+    /**
+     * Радиус refinement-поиска.
+     */
     private const REFINEMENT_RADIUS = 4;
 
-    public function recommend(string $sourceKey, string $contentType): array
-    {
+    /**
+     * Порог относительного прироста visual quality.
+     */
+    private const VISUAL_GAIN_PERCENT_THRESHOLD = 0.01;
+
+    /**
+     * Порог относительного роста размера файла.
+     */
+    private const SIZE_GROWTH_PERCENT_THRESHOLD = 0.15;
+
+    public function recommend(
+        string $sourceKey,
+        string $contentType
+    ): array {
+
         $originalBlob = Storage::disk('s3')->get($sourceKey);
 
         if ($originalBlob === false || $originalBlob === '') {
-            throw new RuntimeException('Failed to read source image.');
+            throw new RuntimeException(
+                'Failed to read source image.'
+            );
         }
 
-        $tempFilePath = tempnam(sys_get_temp_dir(), 'cmp_rec_');
+        $tempFilePath = tempnam(
+            sys_get_temp_dir(),
+            'cmp_rec_'
+        );
+
         if ($tempFilePath === false) {
-            throw new RuntimeException('Failed to allocate temporary file for recommendation.');
+            throw new RuntimeException(
+                'Failed to allocate temporary file.'
+            );
         }
 
-        file_put_contents($tempFilePath, $originalBlob);
+        file_put_contents(
+            $tempFilePath,
+            $originalBlob
+        );
 
         try {
-            $bestCandidate = $this->findBestCandidate($tempFilePath, $contentType);
+
+            $bestCandidate = $this->findBestCandidate(
+                $tempFilePath,
+                $contentType
+            );
+
         } finally {
+
             @unlink($tempFilePath);
         }
 
         if ($bestCandidate === null) {
+
             return [
                 'format' => 'webp',
-                'quality' => 80,
+                'quality' => 85,
                 'estimated_size' => strlen($originalBlob),
                 'saved_bytes' => 0,
                 'saved_percent' => 0,
@@ -48,9 +117,17 @@ class CompressionRecommendationService
         }
 
         $originalSize = strlen($originalBlob);
-        $savedBytes = max(0, $originalSize - (int) $bestCandidate['compressed_size']);
+
+        $savedBytes = max(
+            0,
+            $originalSize
+            - (int) $bestCandidate['compressed_size']
+        );
+
         $savedPercent = $originalSize > 0
-            ? (int) round(($savedBytes / $originalSize) * 100)
+            ? (int) round(
+                ($savedBytes / $originalSize) * 100
+            )
             : 0;
 
         return [
@@ -59,6 +136,7 @@ class CompressionRecommendationService
             'estimated_size' => (int) $bestCandidate['compressed_size'],
             'saved_bytes' => $savedBytes,
             'saved_percent' => $savedPercent,
+            'visual_score' => $bestCandidate['visual_score'],
         ];
     }
 
@@ -68,25 +146,50 @@ class CompressionRecommendationService
         string $format,
         int $quality
     ): array {
+
         unset($contentType);
-        $normalizedQuality = max(0, min(100, $quality));
+
+        $normalizedQuality = max(
+            0,
+            min(100, $quality)
+        );
+
         $originalBlob = Storage::disk('s3')->get($sourceKey);
 
         if ($originalBlob === false || $originalBlob === '') {
-            throw new RuntimeException('Failed to read source image.');
+            throw new RuntimeException(
+                'Failed to read source image.'
+            );
         }
 
         $scorer = new CompressionCandidateScorer();
-        $result = $scorer->score($originalBlob, $format, $normalizedQuality, self::VISUAL_WEIGHT, self::SIZE_WEIGHT);
+
+        $result = $scorer->score(
+            $originalBlob,
+            $format,
+            $normalizedQuality,
+            self::VISUAL_WEIGHT,
+            self::SIZE_WEIGHT
+        );
 
         if ($result === null) {
-            throw new RuntimeException('Failed to estimate compression result.');
+            throw new RuntimeException(
+                'Failed to estimate compression result.'
+            );
         }
 
         $originalSize = strlen($originalBlob);
-        $savedBytes = max(0, $originalSize - (int) $result['compressed_size']);
+
+        $savedBytes = max(
+            0,
+            $originalSize
+            - (int) $result['compressed_size']
+        );
+
         $savedPercent = $originalSize > 0
-            ? (int) round(($savedBytes / $originalSize) * 100)
+            ? (int) round(
+                ($savedBytes / $originalSize) * 100
+            )
             : 0;
 
         return [
@@ -95,47 +198,93 @@ class CompressionRecommendationService
             'estimated_size' => (int) $result['compressed_size'],
             'saved_bytes' => $savedBytes,
             'saved_percent' => $savedPercent,
+            'visual_score' => $result['visual_score'] ?? null,
         ];
     }
 
-    private function findBestCandidate(string $tempFilePath, string $contentType): ?array
-    {
-        $initialBestCandidate = $this->runCandidateBatch($tempFilePath, $this->buildCandidates($contentType));
+    private function findBestCandidate(
+        string $tempFilePath,
+        string $contentType
+    ): ?array {
 
-        if ($initialBestCandidate === null) {
+        $format = $this->recommendedFormatForContentType(
+            $contentType
+        );
+
+        $candidates = [];
+
+        foreach (
+            $this->candidateQualitiesForFormat(
+                $format
+            )
+            as $quality
+        ) {
+
+            $candidates[] = [
+                'format' => $format,
+                'quality' => $quality,
+            ];
+        }
+
+        $bestCandidate = $this->runCandidateBatch(
+            $tempFilePath,
+            $candidates
+        );
+
+        if ($bestCandidate === null) {
             return null;
         }
 
-        $refinedCandidates = $this->buildRefinementCandidates(
-            (string) $initialBestCandidate['format'],
-            (int) $initialBestCandidate['quality']
-        );
+        /**
+         * Refinement.
+         */
+        $refinedCandidates =
+            $this->buildRefinementCandidates(
+                $format,
+                (int) $bestCandidate['quality']
+            );
 
         if ($refinedCandidates === []) {
-            return $initialBestCandidate;
+            return $bestCandidate;
         }
 
-        $refinedBestCandidate = $this->runCandidateBatch($tempFilePath, $refinedCandidates);
+        $refinedBest =
+            $this->runCandidateBatch(
+                $tempFilePath,
+                $refinedCandidates
+            );
 
-        if ($refinedBestCandidate === null) {
-            return $initialBestCandidate;
-        }
-
-        return $refinedBestCandidate['score'] > $initialBestCandidate['score']
-            ? $refinedBestCandidate
-            : $initialBestCandidate;
+        return $refinedBest
+            ?? $bestCandidate;
     }
 
-    private function runCandidateBatch(string $tempFilePath, array $candidates): ?array
-    {
+    private function runCandidateBatch(
+        string $tempFilePath,
+        array $candidates
+    ): ?array {
+
         $queue = array_values($candidates);
+
         $running = [];
-        $bestCandidate = null;
+
+        $results = [];
 
         while ($queue !== [] || $running !== []) {
-            while ($queue !== [] && count($running) < self::MAX_PARALLEL_PROCESSES) {
+
+            while (
+                $queue !== []
+                && count($running)
+                < self::MAX_PARALLEL_PROCESSES
+            ) {
+
                 $candidate = array_shift($queue);
-                $process = $this->createCandidateProcess($tempFilePath, $candidate);
+
+                $process =
+                    $this->createCandidateProcess(
+                        $tempFilePath,
+                        $candidate
+                    );
+
                 $process->start();
 
                 $running[] = [
@@ -145,6 +294,7 @@ class CompressionRecommendationService
             }
 
             foreach ($running as $index => $job) {
+
                 /** @var Process $process */
                 $process = $job['process'];
 
@@ -153,11 +303,31 @@ class CompressionRecommendationService
                 }
 
                 if ($process->isSuccessful()) {
-                    $result = json_decode($process->getOutput(), true);
 
-                    if (is_array($result) && isset($result['score'])) {
-                        if ($bestCandidate === null || $result['score'] > $bestCandidate['score']) {
-                            $bestCandidate = $result;
+                    $result = json_decode(
+                        $process->getOutput(),
+                        true
+                    );
+
+                    if (
+                        is_array($result)
+                        && isset(
+                            $result['visual_score'],
+                            $result['compressed_size'],
+                            $result['quality']
+                        )
+                    ) {
+
+                        /**
+                         * Отбрасываем perceptually
+                         * unacceptable варианты.
+                         */
+                        if (
+                            $result['visual_score']
+                            >= self::MIN_VISUAL_SCORE
+                        ) {
+
+                            $results[] = $result;
                         }
                     }
                 }
@@ -166,17 +336,98 @@ class CompressionRecommendationService
             }
 
             if ($running !== []) {
-                usleep(self::POLL_INTERVAL_MICROSECONDS);
+
+                usleep(
+                    self::POLL_INTERVAL_MICROSECONDS
+                );
             }
 
             $running = array_values($running);
         }
 
-        return $bestCandidate;
+        return $this->selectSweetSpot($results);
     }
 
-    private function createCandidateProcess(string $tempFilePath, array $candidate): Process
-    {
+    /**
+     * Поиск точки насыщения качества.
+     *
+     * Алгоритм ищет момент,
+     * когда perceptual quality
+     * почти перестаёт расти,
+     * но размер файла
+     * продолжает увеличиваться.
+     */
+    private function selectSweetSpot(
+        array $results
+    ): ?array {
+
+        if ($results === []) {
+            return null;
+        }
+
+        usort(
+            $results,
+            static fn(array $a, array $b): int =>
+                $a['quality']
+                <=> $b['quality']
+        );
+
+        $best = $results[0];
+
+        for (
+            $i = 1;
+            $i < count($results);
+            $i++
+        ) {
+
+            $previous = $results[$i - 1];
+            $current = $results[$i];
+
+            $visualGainPercent =
+                (
+                    $current['visual_score']
+                    - $previous['visual_score']
+                )
+                / max(
+                    $previous['visual_score'],
+                    0.0001
+                );
+
+            $sizeGrowthPercent =
+                (
+                    $current['compressed_size']
+                    - $previous['compressed_size']
+                )
+                / max(
+                    $previous['compressed_size'],
+                    1
+                );
+
+            /**
+             * Sweet spot найден.
+             */
+            if (
+                $visualGainPercent
+                < self::VISUAL_GAIN_PERCENT_THRESHOLD
+                &&
+                $sizeGrowthPercent
+                > self::SIZE_GROWTH_PERCENT_THRESHOLD
+            ) {
+
+                return $previous;
+            }
+
+            $best = $current;
+        }
+
+        return $best;
+    }
+
+    private function createCandidateProcess(
+        string $tempFilePath,
+        array $candidate
+    ): Process {
+
         $process = new Process([
             PHP_BINARY,
             base_path('bin/score_candidate.php'),
@@ -187,29 +438,70 @@ class CompressionRecommendationService
             (string) self::SIZE_WEIGHT,
         ]);
 
-        $process->setTimeout(self::PROCESS_TIMEOUT_SECONDS);
+        $process->setTimeout(
+            self::PROCESS_TIMEOUT_SECONDS
+        );
 
         return $process;
     }
 
-    private function buildCandidates(string $contentType): array
-    {
-        $candidates = [];
+    /**
+     * Выбор рекомендуемого формата
+     * на основе типа изображения.
+     *
+     * Основано на исследованиях:
+     * - AVIF показывает лучшую
+     *   compression efficiency
+     *   для photographic content.
+     * - PNG остаётся предпочтительным
+     *   для text graphics и UI.
+     * - WebP эффективен
+     *   для illustration content.
+     */
+    private function recommendedFormatForContentType(
+        string $contentType
+    ): string {
 
-        foreach ($this->formatsForContentType($contentType) as $format) {
-            foreach ($this->candidateQualitiesForFormat($format, $contentType) as $quality) {
-                $candidates[] = [
-                    'format' => $format,
-                    'quality' => $quality,
-                ];
-            }
-        }
+        return match ($contentType) {
 
-        return $candidates;
+            'photo' => 'avif',
+
+            'text_graphics',
+            'ui_screenshot' => 'png',
+
+            'illustration' => 'webp',
+
+            default => 'webp',
+        };
     }
 
-    private function buildRefinementCandidates(string $format, int $quality): array
-    {
+    private function candidateQualitiesForFormat(
+        string $format
+    ): array {
+
+        return match ($format) {
+
+            'avif' =>
+                $this->qualityRange(60, 90),
+
+            'webp' =>
+                $this->qualityRange(70, 95),
+
+            'jpeg' =>
+                $this->qualityRange(75, 90),
+
+            'png' => [100],
+
+            default =>
+                $this->qualityRange(75, 90),
+        };
+    }
+
+    private function buildRefinementCandidates(
+        string $format,
+        int $quality
+    ): array {
+
         if (strtolower($format) === 'png') {
             return [];
         }
@@ -217,67 +509,69 @@ class CompressionRecommendationService
         $candidates = [];
 
         for (
-            $candidateQuality = max(0, $quality - self::REFINEMENT_RADIUS);
-            $candidateQuality <= min(100, $quality + self::REFINEMENT_RADIUS);
+            $candidateQuality = max(
+                0,
+                $quality - self::REFINEMENT_RADIUS
+            );
+
+            $candidateQuality <= min(
+                100,
+                $quality + self::REFINEMENT_RADIUS
+            );
+
             $candidateQuality += self::REFINEMENT_STEP
         ) {
+
             $candidates[] = [
                 'format' => $format,
                 'quality' => $candidateQuality,
             ];
         }
 
-        if (!in_array($quality, array_column($candidates, 'quality'), true)) {
-            $candidates[] = [
-                'format' => $format,
-                'quality' => $quality,
-            ];
-        }
+        return array_values(
+            array_unique($candidates, SORT_REGULAR)
+        );
+    }
 
-        usort(
-            $candidates,
-            static fn (array $left, array $right): int => $left['quality'] <=> $right['quality']
+    private function qualityRange(
+        int $start,
+        int $end
+    ): array {
+
+        $lowerBound = max(
+            0,
+            min(100, $start)
         );
 
-        return array_values(array_unique($candidates, SORT_REGULAR));
-    }
+        $upperBound = max(
+            $lowerBound,
+            min(100, $end)
+        );
 
-    private function formatsForContentType(string $contentType): array
-    {
-        return match ($contentType) {
-            'photo' => ['webp', 'avif'],
-            'text_graphics' => ['png', 'webp'],
-            'ui_screenshot' => ['png', 'webp'],
-            'illustration' => ['webp', 'avif', 'png'],
-            default => ['webp', 'jpeg'],
-        };
-    }
+        $qualities = [];
 
-    private function candidateQualitiesForFormat(string $format, string $contentType): array
-    {
-        return match ($contentType) {
-            'photo' => match ($format) {
-                'webp' => [72, 78, 84, 90, 96],
-                'avif' => [68, 74, 80, 86, 92],
-                default => [85],
-            },
-            'text_graphics', 'ui_screenshot' => match ($format) {
-                'png' => [100],
-                'webp' => [90, 93, 96, 100],
-                default => [100],
-            },
-            'illustration' => match ($format) {
-                'png' => [100],
-                'webp' => [78, 84, 90, 96],
-                'avif' => [74, 80, 86, 92],
-                default => [86],
-            },
-            default => match ($format) {
-                'jpeg' => [68, 76, 84, 92],
-                'webp' => [68, 76, 84, 92],
-                default => [82],
-            },
-        };
-    }
+        for (
+            $quality = $lowerBound;
+            $quality <= $upperBound;
+            $quality += self::INITIAL_QUALITY_STEP
+        ) {
 
+            $qualities[] = $quality;
+        }
+
+        if (
+            !in_array(
+                $upperBound,
+                $qualities,
+                true
+            )
+        ) {
+
+            $qualities[] = $upperBound;
+        }
+
+        return array_values(
+            array_unique($qualities)
+        );
+    }
 }

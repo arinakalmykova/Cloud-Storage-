@@ -9,4 +9,5 @@ interface CompressorServiceInterface
         CompressionQuality $quality,
         string $format
     ): string;
+    public function getLastCompressedBlob(): ?string;
 }

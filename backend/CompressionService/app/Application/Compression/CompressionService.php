@@ -4,7 +4,6 @@ namespace App\Application\Compression;
 
 use App\Domain\Compression\Services\CompressorServiceInterface;
 use App\Domain\Compression\ValueObjects\CompressionQuality;
-use App\Events\PhotoCompressed;
 
 class CompressionService {
     public function __construct(

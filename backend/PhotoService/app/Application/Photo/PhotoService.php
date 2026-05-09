@@ -14,7 +14,6 @@ use App\Application\Color\ColorService;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use ColorThief\ColorThief;
-use App\Domain\PhotoProcessResult;
 use Carbon\Carbon;
 use Imagick;
 

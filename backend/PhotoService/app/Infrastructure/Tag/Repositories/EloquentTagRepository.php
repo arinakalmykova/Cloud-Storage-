@@ -24,7 +24,7 @@ class EloquentTagRepository implements TagRepositoryInterface
 
     public function findById(array $id): array
     {
-        $models = TagModel::whereIn('id', $ids)->get();
+        $models = TagModel::whereIn('id', $id)->get();
         $tags = [];
         foreach ($models as $model) {
             $tags[] = new Tag($model->id, $model->name);

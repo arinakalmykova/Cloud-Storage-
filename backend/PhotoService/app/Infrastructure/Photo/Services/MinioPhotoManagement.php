@@ -6,12 +6,15 @@ use App\Domain\Photo\Entities\Photo;
 use App\Domain\Photo\Services\PhotoManagementServiceInterface;
 use Illuminate\Support\Facades\Storage;
 use League\Flysystem\StorageAttributes;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Filesystem\AwsS3V3Adapter;
 
 class MinioPhotoManagement implements PhotoManagementServiceInterface
 {
-    private $publicDisk;     
-    private $backendDisk;     
+     /** @var AwsS3V3Adapter */
+    private $publicDisk;
+
+    /** @var AwsS3V3Adapter */
+    private $backendDisk; 
     private string $bucket;
 
     public function __construct()

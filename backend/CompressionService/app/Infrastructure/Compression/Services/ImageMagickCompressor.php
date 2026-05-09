@@ -110,8 +110,8 @@ class ImageMagickCompressor implements CompressorServiceInterface
         try {
             $process = new Process([
                 $avifencPath,
-                '--min', (string) $quality->value(),
-                '--max', (string) $quality->value(),
+                '--qcolor', (string) $quality->value(),
+                '--qalpha', (string) $quality->value(),
                 '--speed', '4',
                 $tempInput,
                 $tempOutput
